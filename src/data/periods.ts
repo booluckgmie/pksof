@@ -8,8 +8,8 @@ export const periods: Period[] = [
   { id: "Q4FY25", label: "Q4 FY2025", fy: "FY2025", quarter: 4, cumulativeThreshold: 1.00, mofThreshold: 0.80, isCurrent: false, isOpenForEntry: false },
   // FY2026 — current financial year.
   { id: "Q1FY26", label: "Q1 FY2026", fy: "FY2026", quarter: 1, cumulativeThreshold: 0.25, mofThreshold: 0.20, isCurrent: false, isOpenForEntry: false },
-  { id: "Q2FY26", label: "Q2 FY2026", fy: "FY2026", quarter: 2, cumulativeThreshold: 0.50, mofThreshold: 0.40, isCurrent: false, isOpenForEntry: true },
-  { id: "Q3FY26", label: "Q3 FY2026", fy: "FY2026", quarter: 3, cumulativeThreshold: 0.75, mofThreshold: 0.60, isCurrent: true, isOpenForEntry: true },
+  { id: "Q2FY26", label: "Q2 FY2026", fy: "FY2026", quarter: 2, cumulativeThreshold: 0.50, mofThreshold: 0.40, isCurrent: true, isOpenForEntry: true },
+  { id: "Q3FY26", label: "Q3 FY2026", fy: "FY2026", quarter: 3, cumulativeThreshold: 0.75, mofThreshold: 0.60, isCurrent: false, isOpenForEntry: false },
   { id: "Q4FY26", label: "Q4 FY2026", fy: "FY2026", quarter: 4, cumulativeThreshold: 1.00, mofThreshold: 0.80, isCurrent: false, isOpenForEntry: false },
   // FY2027 — future financial year, not yet open for entry.
   { id: "Q1FY27", label: "Q1 FY2027", fy: "FY2027", quarter: 1, cumulativeThreshold: 0.25, mofThreshold: 0.20, isCurrent: false, isOpenForEntry: false },
@@ -30,18 +30,14 @@ function periodDateRange(p: Period): [Date, Date] {
 }
 
 /**
- * The period whose calendar quarter contains `now` — computed from the real date rather than
+ * The most recently *completed* quarter as of `now` — computed from the real date rather than
  * a hardcoded flag, so the app's default selection tracks forward on its own every quarter.
- * Falls back to the closest period if `now` falls outside the seeded FY range entirely.
+ * Reporting is retrospective: the quarter `now` currently falls inside isn't over yet, so there's
+ * nothing to report for it — the right default is the last quarter that has actually closed.
+ * Falls back to the earliest seeded period if `now` predates all of them.
  */
 export function resolveCurrentPeriodId(now: Date = new Date()): PeriodId {
-  const containing = periods.find((p) => {
-    const [start, end] = periodDateRange(p);
-    return now >= start && now < end;
-  });
-  if (containing) return containing.id;
-
   const sorted = [...periods].sort((a, b) => periodDateRange(a)[0].getTime() - periodDateRange(b)[0].getTime());
-  const past = sorted.filter((p) => periodDateRange(p)[0] <= now);
-  return (past[past.length - 1] ?? sorted[0]).id;
+  const completed = sorted.filter((p) => periodDateRange(p)[1] <= now);
+  return (completed[completed.length - 1] ?? sorted[0]).id;
 }

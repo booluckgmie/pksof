@@ -124,6 +124,15 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
         </label>
       </div>
 
+      <div className="mb-5">
+        <InfoNote>
+          Skip <b>KPI4 (Governance Index)</b> and <b>KPI5 (External Client Satisfaction)</b> when they're not due —
+          per their formula notes, KPI4 is only assessed annually in Q4, and KPI5's survey is bi-annual. Leave those
+          rows blank rather than entering a placeholder value; a blank KPI correctly shows as no data instead of a
+          fabricated figure.
+        </InfoNote>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-5">
         {channel === "web-form" ? (
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-5 flex flex-col gap-4">
