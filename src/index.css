@@ -10,22 +10,22 @@
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 155 82% 26%;
+    --primary: 160 84% 33%;
     --primary-foreground: 0 0% 100%;
     --secondary: 213 15% 94%;
     --secondary-foreground: 213 67% 13%;
     --muted: 213 15% 94%;
     --muted-foreground: 213 15% 48%;
-    --accent: 155 45% 92%;
-    --accent-foreground: 155 82% 20%;
+    --accent: 160 50% 92%;
+    --accent-foreground: 160 84% 22%;
     --destructive: 358 53% 46%;
     --destructive-foreground: 0 0% 98%;
     --border: 213 20% 88%;
     --input: 213 20% 88%;
-    --ring: 155 82% 26%;
-    --radius: 0.5rem;
+    --ring: 160 84% 33%;
+    --radius: 1rem;
 
-    /* Dashboard tokens — navy / green editorial palette */
+    /* Dashboard tokens — navy / emerald editorial palette */
     --pk-ink: 213 67% 13%;
     --pk-ink-soft: 213 30% 33%;
     --pk-ink-faint: 213 15% 48%;
@@ -33,15 +33,15 @@
     --pk-surface: 0 0% 100%;
     --pk-surface-2: 213 15% 94%;
     --pk-border: 213 20% 88%;
-    --pk-accent: 155 82% 26%;
-    --pk-accent-lt: 155 50% 50%;
+    --pk-accent: 160 84% 33%;
+    --pk-accent-lt: 160 64% 52%;
     --pk-accent-ink: 0 0% 100%;
-    --pk-accent-soft: 155 45% 92%;
+    --pk-accent-soft: 160 50% 92%;
     --pk-navy: 213 67% 13%;
     --pk-navy-soft: 213 40% 93%;
-    --pk-good: 155 82% 26%;
-    --pk-good-lt: 155 50% 50%;
-    --pk-good-soft: 155 45% 92%;
+    --pk-good: 160 84% 33%;
+    --pk-good-lt: 160 64% 52%;
+    --pk-good-soft: 160 50% 92%;
     --pk-warn: 36 71% 42%;
     --pk-warn-lt: 40 77% 60%;
     --pk-warn-soft: 40 60% 92%;

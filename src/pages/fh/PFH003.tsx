@@ -30,7 +30,7 @@ export function PFH003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <ScreenHeader id="PFH003" subtitle="Comparative analysis of actual performance, approved budget and previous year." onNavigate={onNavigate} />
       <FhTabs current="PFH003" onNavigate={onNavigate} />
 
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] overflow-x-auto mb-5">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-5">
         <table className="w-full text-sm min-w-[560px]">
           <thead>
             <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
@@ -64,7 +64,7 @@ export function PFH003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Variance Commentary — direct on-screen editing (Finance only)</div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         {fields.map((f) => (
-          <div key={f.key} className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-3.5">
+          <div key={f.key} className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-3.5">
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-semibold text-[hsl(var(--pk-ink))]">{f.label}</label>
               {!readOnly && (

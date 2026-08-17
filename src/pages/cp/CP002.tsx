@@ -30,7 +30,7 @@ export function CP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     <div>
       <ScreenHeader id="CP002" subtitle="All KPI performance grouped by the six perspectives for the selected period." onNavigate={onNavigate} />
 
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] overflow-x-auto">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
         <table className="w-full text-sm min-w-[900px]">
           <thead>
             <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">

@@ -22,7 +22,7 @@ export function PerspectiveCard({
     <button
       onClick={onOpen}
       className={cn(
-        "group text-left rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))]",
+        "group text-left rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card",
         "p-4 flex flex-col gap-2.5 hover:border-[hsl(var(--pk-accent))] hover:shadow-md transition-all"
       )}
     >

@@ -43,7 +43,7 @@ export function RP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <SectionLabel>Section B — KPI 13: Bumiputera Training &amp; Development</SectionLabel>
         <InfoTip title="KPI 13 formula">Staff completing at least 2 registered competency-development programmes, against the annual target of {target} staff.</InfoTip>
       </div>
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
         <div className="flex items-center justify-between mb-3">
           <div>
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weight 1.66%</div>

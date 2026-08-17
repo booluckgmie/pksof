@@ -45,7 +45,10 @@ export function StatCard({ label, value, sub, tone, rail }: { label: string; val
     tone === "good" ? "hsl(var(--pk-good))" : tone === "bad" ? "hsl(var(--pk-bad))" : tone === "pending" ? "hsl(var(--pk-pending))" : "hsl(var(--pk-ink))";
   return (
     <div
-      className={cn("rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-4 py-3", rail && "border-l-2")}
+      className={cn(
+        "rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card px-4 py-3 transition-shadow hover:shadow-floating",
+        rail && "border-l-2"
+      )}
       style={rail ? { borderLeftColor: color } : undefined}
     >
       <div className="text-[10px] uppercase tracking-[0.1em] text-[hsl(var(--pk-ink-faint))] font-semibold">{label}</div>

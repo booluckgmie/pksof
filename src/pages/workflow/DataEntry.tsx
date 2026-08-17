@@ -346,7 +346,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-5">
         {channel === "web-form" && formSection === "kpi" ? (
-          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-5 flex flex-col gap-4">
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5 flex flex-col gap-4">
             <div className="overflow-x-auto">
               <table className="w-full text-sm min-w-[640px]">
                 <thead>
@@ -416,7 +416,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
             <InfoNote>Each filled-in row becomes its own submission with status <b>Submitted</b>. Nothing reaches a dashboard until a checker reviews it in Verify &amp; Publish. Leave a KPI blank to skip it this period (e.g. an annual or bi-annual measure not due).</InfoNote>
           </div>
         ) : channel === "web-form" && formSection === "detail" ? (
-          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-5 flex flex-col gap-4">
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5 flex flex-col gap-4">
             <div className="max-h-[560px] overflow-y-auto overflow-x-auto">
               <table className="w-full text-sm min-w-[520px]">
                 <thead className="sticky top-0 bg-[hsl(var(--pk-surface))] z-10">
@@ -473,7 +473,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
             <InfoNote>Unlike the KPI scorecard, these figures save directly and appear on the dashboards immediately — there's no checker queue behind supporting data. Covers every parameter in the Excel template's Workforce Summary, Financial Trend and All Other Detail Data sheets — fill in only what changed this quarter.</InfoNote>
           </div>
         ) : (
-          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-5 flex flex-col gap-4 h-fit">
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5 flex flex-col gap-4 h-fit">
             <div className="flex flex-col gap-2">
               <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Completed Excel template — KPIs and/or workforce &amp; financial detail, {periods.find((p) => p.id === periodId)?.label}</span>
               <label className="flex flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-[hsl(var(--pk-border))] py-6 cursor-pointer hover:border-[hsl(var(--pk-accent))] transition-colors">
@@ -533,7 +533,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
           </div>
         )}
 
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4 h-fit">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 h-fit">
           <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-3">Recent submissions — this pillar</div>
           {mySubmissions.length === 0 ? (
             <p className="text-sm text-[hsl(var(--pk-ink-faint))]">No submissions yet. Once you submit, it'll appear here with its review status.</p>

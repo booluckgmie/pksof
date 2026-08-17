@@ -18,7 +18,7 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     <div>
       <ScreenHeader id="CP007" subtitle="Organisational Capacity performance: recruitment efficiency and people development. Weight 20.0%." onNavigate={onNavigate} />
 
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4 mb-4">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
         <div className="flex items-center justify-between mb-3">
           <div>
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 9 · Weight 10.0%</div>
@@ -60,7 +60,7 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         )}
       </div>
 
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
         <div className="flex items-center justify-between mb-3">
           <div>
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 10 · Weight 10.0%</div>

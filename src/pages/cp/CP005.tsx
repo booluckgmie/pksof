@@ -17,7 +17,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <ScreenHeader id="CP005" subtitle="Customer Perspective performance for Management and Board reporting. Weight 15.0% · 2 KPIs." onNavigate={onNavigate} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 5 · Weight 7.5% · bi-annual</div>
             <StatusChip status={kpi5.status} />
@@ -27,7 +27,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <p className="text-xs text-[hsl(var(--pk-ink-faint))] mt-2">No survey conducted this quarter → Not Measurable. Next round scheduled Q2 FY2026.</p>
         </div>
 
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 6 · Weight 7.5% · quarterly</div>
             <StatusChip status={kpi6.status} />

@@ -20,7 +20,7 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <FhTabs current="PFH004" onNavigate={onNavigate} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Assets (RM Million)</div>
           <div className="divide-y divide-[hsl(var(--pk-border))]">
             {balanceSheet.assets.map((a) => (
@@ -29,7 +29,7 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div className="flex justify-between py-1.5 text-sm font-semibold"><span>Total Assets</span><span className="tnum">{totalAssets.toFixed(1)}</span></div>
           </div>
         </div>
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Liabilities (RM Million)</div>
           <div className="divide-y divide-[hsl(var(--pk-border))]">
             {balanceSheet.liabilities.map((l) => (
@@ -38,7 +38,7 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div className="flex justify-between py-1.5 text-sm font-semibold"><span>Total Liabilities</span><span className="tnum">{totalLiabilities.toFixed(1)}</span></div>
           </div>
         </div>
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Equity</div>
           <div className="tnum font-head text-2xl font-semibold text-[hsl(var(--pk-good))]">RM {equity.toFixed(1)}m</div>
           <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-1">Shareholders' Fund = Total Assets − Total Liabilities</div>
@@ -51,7 +51,7 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <StatCard label="Equity Ratio" value={`${equityRatio.toFixed(1)}%`} tone="good" sub={`Equity vs prior period +${equityGrowth.toFixed(1)}%`} />
       </div>
 
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
         <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-3">Balance sheet trend — Shareholders' Fund vs Total Liabilities (RM Million)</div>
         <svg viewBox="0 0 320 150" className="w-full h-auto">
           {balanceSheet.trend.map((t, i) => {

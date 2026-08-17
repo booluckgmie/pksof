@@ -31,7 +31,7 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="font-head font-semibold text-[hsl(var(--pk-ink))]">KPI 1 — Profit Before Tax (PBT)</span>
             <StatusChip status={kpi1.status} />
@@ -44,7 +44,7 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             )}
           </div>
         </div>
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="font-head font-semibold text-[hsl(var(--pk-ink))]">KPI 2 — Cost-to-Income Ratio</span>
             <StatusChip status={kpi2.status} />
@@ -61,11 +61,11 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Quarterly Trend Analysis</div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Profit Before Tax — RM Million</div>
           <BarTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.pbt }))} unit="m" />
         </div>
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Cost-to-Income Ratio — %</div>
           <LineTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.cir }))} unit="%" />
         </div>

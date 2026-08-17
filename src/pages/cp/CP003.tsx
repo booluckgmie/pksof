@@ -20,7 +20,7 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <ScreenHeader id="CP003" subtitle="Financial Perspective performance against approved targets for the year. Weight 25.0% · 2 KPIs." onNavigate={onNavigate} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-1">
             <div>
               <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 1 · Weight 12.5%</div>
@@ -40,7 +40,7 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <div className="mt-2"><DataOriginBadge result={kpi1} /></div>
         </div>
 
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-1">
             <div>
               <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 2 · Weight 12.5% · lower is better</div>

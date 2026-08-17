@@ -21,17 +21,17 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <FhTabs current="PFH002" onNavigate={onNavigate} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">PBT quarter-on-quarter trend</div>
           <BarTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.pbt }))} unit="m" />
         </div>
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Net Profit Margin trend</div>
           <LineTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.netMargin }))} unit="%" />
         </div>
       </div>
 
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] overflow-x-auto mb-4">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
         <table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">

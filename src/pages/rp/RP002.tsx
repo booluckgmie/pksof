@@ -38,7 +38,7 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <StatCard label="Vacant Position" value={String(vacant)} tone="pending" sub="Approved − filled" />
       </div>
 
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4 mb-5">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-5">
         <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-3">Approved vs filled by department</div>
         <div className="flex flex-col gap-2.5">
           {departmentHeadcount.map((d) => (
@@ -54,7 +54,7 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       <SectionLabel>Section B — KPI 10: People Development Programme</SectionLabel>
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
         <div className="flex items-center justify-between mb-1">
           <div>
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 10 · Weight 10.0%</div>

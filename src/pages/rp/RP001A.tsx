@@ -30,7 +30,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <ScreenHeader id="RP001A" subtitle="Resource & People · Headcount by Gender, Grade and Age Group." onNavigate={onNavigate} />
 
       <SectionLabel>Section A — Breakdown by Gender</SectionLabel>
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4 mb-5">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-5">
         <DonutStat segments={[{ label: "Male", value: genderBreakdown.male, color: "hsl(var(--pk-navy))" }, { label: "Female", value: genderBreakdown.female, color: "hsl(var(--pk-accent))" }]} />
         <p className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">Gender is a mandatory HRMS field — no blanks permitted. Male + Female reconciles to Total Employees ({headcountSummary.totalEmployees}).</p>
       </div>
@@ -44,7 +44,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <SectionLabel>Section C — Breakdown by Age Group (4 bands)</SectionLabel>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mb-2">Male / female headcount per age band (HRMS)</div>
           <GroupedBarTrend
             data={ageGenderBreakdown.map((a) => ({ label: a.band, a: a.male, b: a.female }))}
@@ -54,7 +54,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             bColor="hsl(var(--pk-accent))"
           />
         </div>
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Age Profile — Summary</div>
           <div className="flex items-center gap-4">
             <svg viewBox="0 0 100 100" width={104} height={104}>
@@ -107,7 +107,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       <SectionLabel>Section D — Cross-tab: Grade × Gender × Average Age</SectionLabel>
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] overflow-x-auto">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
         <table className="w-full text-sm min-w-[480px]">
           <thead>
             <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">

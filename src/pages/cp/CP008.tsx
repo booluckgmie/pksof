@@ -25,7 +25,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <ScreenHeader id="CP008" subtitle="Weight 5.0% · 3 KPIs — Procurement, Composition and Training." onNavigate={onNavigate} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 11 · Weight 1.67%</div>
             <StatusChip status={kpi11.status} />
@@ -42,7 +42,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
         </div>
 
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 12 · Weight 1.67%</div>
             <StatusChip status={kpi12.status} />
@@ -57,7 +57,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">Target {kpi12.ytdTarget}% · Actual {kpi12.ytdActual?.toFixed(1)}%</div>
         </div>
 
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weight 1.66%</div>
             <StatusChip status={kpi13.status} />

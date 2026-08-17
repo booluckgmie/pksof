@@ -21,7 +21,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <ScreenHeader id="CP004" subtitle="Mandate & Governance performance, including the managed-entity KPI summary. Weight 15.0%." onNavigate={onNavigate} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 3 · Weight 7.5%</div>
             <StatusChip status={kpi3.status} />
@@ -35,7 +35,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi3.ytdTarget ?? "—"}</span>
           </div>
         </div>
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 4 · Weight 7.5%</div>
             <StatusChip status={kpi4.status} />
@@ -56,7 +56,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </span>
         )}
       </div>
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] overflow-x-auto mb-4">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
         <table className="w-full text-sm min-w-[560px]">
           <thead>
             <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
@@ -92,7 +92,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Governance Index — Progress Updates</div>
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] divide-y divide-[hsl(var(--pk-border))] mb-4">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card divide-y divide-[hsl(var(--pk-border))] mb-4">
         {governanceIndex.map((g) => (
           <div key={g.item} className="flex items-center justify-between px-4 py-2.5 text-sm">
             <span className="text-[hsl(var(--pk-ink-soft))]">{g.item}</span>

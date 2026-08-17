@@ -8,7 +8,7 @@ import { useDetails, type Initiative } from "@/lib/details";
 
 function InitiativeTable({ title, weight, rows }: { title: string; weight: string; rows: Initiative[] }) {
   return (
-    <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+    <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
       <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-1">{weight}</div>
       <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">{title}</div>
       <div className="divide-y divide-[hsl(var(--pk-border))]">

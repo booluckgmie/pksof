@@ -28,11 +28,11 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Turnover trend by quarter vs industry benchmark</div>
           <LineTrend data={turnoverTrend.map((t) => ({ label: t.period.replace(" FY", " '"), value: t.rate }))} unit="%" />
         </div>
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))]">KPI 12 — Bumiputera Composition</div>
             <StatusChip status={kpi12.status} />
@@ -41,7 +41,7 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </div>
       </div>
 
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
         <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">KPI 12 performance detail</div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[480px]">

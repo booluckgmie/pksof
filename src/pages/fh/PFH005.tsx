@@ -30,7 +30,7 @@ export function PFH005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <Lock className="h-3 w-3" />Transactions involving other related parties are blurred — only {homeEntityName}'s are visible to your pillar
         </div>
       )}
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] overflow-x-auto">
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
         <table className="w-full text-sm min-w-[720px]">
           <thead>
             <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">

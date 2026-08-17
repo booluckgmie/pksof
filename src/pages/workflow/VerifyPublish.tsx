@@ -105,7 +105,7 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
               const e = entityById(s.entityId);
               const p = periodById(s.periodId);
               return (
-                <div key={s.id} className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
+                <div key={s.id} className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
@@ -187,7 +187,7 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
       ) : history.length === 0 ? (
         <NoDataState title="No activity yet" body="Every submit, approve, reject and publish event will be logged here — who, what, and when." />
       ) : (
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] overflow-x-auto">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
           <table className="w-full text-sm min-w-[760px]">
             <thead>
               <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
