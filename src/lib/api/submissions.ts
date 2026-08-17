@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import type { EntityId, PeriodId, Submission, SubmissionSource, SubmissionStatus } from "@/types";
 
 interface SubmissionRow {
@@ -36,7 +36,7 @@ function toSubmission(row: SubmissionRow): Submission {
 }
 
 export async function fetchSubmissions(): Promise<Submission[]> {
-  const { data, error } = await supabase.from("submissions").select("*").order("submitted_at", { ascending: false });
+  const { data, error } = await getSupabase().from("submissions").select("*").order("submitted_at", { ascending: false });
   if (error) throw error;
   return (data as SubmissionRow[]).map(toSubmission);
 }
@@ -51,7 +51,7 @@ export async function insertSubmission(input: {
   source: SubmissionSource;
   submittedBy: string;
 }): Promise<void> {
-  const { error } = await supabase.from("submissions").insert({
+  const { error } = await getSupabase().from("submissions").insert({
     id: input.id,
     kpi_id: input.kpiId,
     entity_id: input.entityId,
@@ -71,7 +71,7 @@ export async function updateSubmissionStatus(input: {
   reviewedBy: string;
   reviewNote?: string;
 }): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("submissions")
     .update({
       status: input.status,

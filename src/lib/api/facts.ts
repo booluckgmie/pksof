@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 import type { EntityId, FactKpiResultSeed, KpiStatus, PeriodId } from "@/types";
 
 interface FactRow {
@@ -25,7 +25,7 @@ function toFactSeed(row: FactRow): FactKpiResultSeed {
 
 /** All published KPI facts across every entity/period — small table, fetched in full like the old static factSeed array. */
 export async function fetchFactResults(): Promise<FactKpiResultSeed[]> {
-  const { data, error } = await supabase.from("fact_kpi_results").select("*");
+  const { data, error } = await getSupabase().from("fact_kpi_results").select("*");
   if (error) throw error;
   return (data as FactRow[]).map(toFactSeed);
 }
@@ -39,7 +39,7 @@ export async function upsertFactResult(input: {
   ytdTarget: number | null;
   status: KpiStatus;
 }): Promise<void> {
-  const { error } = await supabase.from("fact_kpi_results").upsert({
+  const { error } = await getSupabase().from("fact_kpi_results").upsert({
     kpi_id: input.kpiId,
     entity_id: input.entityId,
     period_id: input.periodId,
