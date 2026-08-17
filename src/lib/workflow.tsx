@@ -1,10 +1,13 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
-import type { EntityId, KpiStatus, PeriodId, Submission, SubmissionSource } from "@/types";
-import { factSeed } from "@/data/factSeed";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { toast } from "sonner";
+import type { EntityId, FactKpiResultSeed, KpiStatus, PeriodId, Submission, SubmissionSource } from "@/types";
 import { kpiById, kpiStatus, weightedAchievement } from "@/data/kpis";
+import { fetchFactResults, upsertFactResult } from "@/lib/api/facts";
+import { fetchSubmissions, insertSubmission, updateSubmissionStatus } from "@/lib/api/submissions";
 
 interface WorkflowContextValue {
   submissions: Submission[];
+  loading: boolean;
   submit: (input: {
     kpiId: string;
     entityId: EntityId;
@@ -34,38 +37,92 @@ export interface KpiResult {
 const WorkflowContext = createContext<WorkflowContextValue | null>(null);
 
 let seq = 1;
+const newSubmissionId = () => `SUB-${Date.now().toString(36)}-${String(seq++).padStart(3, "0")}`;
 
+/**
+ * Backed by Supabase (fact_kpi_results + submissions tables) instead of an in-memory array —
+ * see supabase/migrations/0001_init.sql for schema. Facts and submissions are fetched once on
+ * mount and cached in state so `latestValue` stays a synchronous read (all 19 screens call it
+ * that way); writes go to Supabase first and update local state once they succeed, with a toast
+ * on failure so a dropped connection doesn't silently lose someone's submission.
+ */
 export function WorkflowProvider({ children }: { children: ReactNode }) {
+  const [facts, setFacts] = useState<FactKpiResultSeed[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([fetchFactResults(), fetchSubmissions()])
+      .then(([factRows, submissionRows]) => {
+        if (cancelled) return;
+        setFacts(factRows);
+        setSubmissions(submissionRows);
+      })
+      .catch((err: Error) => {
+        console.error("Failed to load dashboard data from Supabase", err);
+        toast.error("Could not load data from the database", { description: err.message });
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const submit: WorkflowContextValue["submit"] = (input) => {
     const s: Submission = {
-      id: `SUB-${String(seq++).padStart(4, "0")}`,
+      id: newSubmissionId(),
       ...input,
       submittedAt: new Date().toISOString(),
       status: "submitted",
     };
     setSubmissions((prev) => [s, ...prev]);
+    insertSubmission(s).catch((err: Error) => {
+      console.error("Failed to save submission", err);
+      toast.error("Submission wasn't saved", { description: err.message });
+      setSubmissions((prev) => prev.filter((x) => x.id !== s.id));
+    });
   };
 
   const approve: WorkflowContextValue["approve"] = (id, reviewedBy, reviewNote) => {
+    const target = submissions.find((s) => s.id === id);
+    const reviewedAt = new Date().toISOString();
     setSubmissions((prev) =>
-      prev.map((s) =>
-        s.id === id
-          ? { ...s, status: "published", reviewedBy, reviewedAt: new Date().toISOString(), reviewNote }
-          : s
-      )
+      prev.map((s) => (s.id === id ? { ...s, status: "published", reviewedBy, reviewedAt, reviewNote } : s))
     );
+
+    updateSubmissionStatus({ id, status: "published", reviewedBy, reviewNote })
+      .then(() => {
+        if (!target) return;
+        const k = kpiById(target.kpiId);
+        const seed = facts.find((f) => f.kpiId === target.kpiId && f.entityId === target.entityId && f.periodId === target.periodId);
+        const ytdTarget = seed?.ytdTarget ?? k.fyTarget;
+        const status = kpiStatus(k, target.value, ytdTarget);
+        return upsertFactResult({ kpiId: target.kpiId, entityId: target.entityId, periodId: target.periodId, ytdActual: target.value, ytdTarget, status }).then(() => {
+          setFacts((prev) => {
+            const next = prev.filter((f) => !(f.kpiId === target.kpiId && f.entityId === target.entityId && f.periodId === target.periodId));
+            next.push({ kpiId: target.kpiId, entityId: target.entityId, periodId: target.periodId, ytdTarget, ytdActual: target.value, status });
+            return next;
+          });
+        });
+      })
+      .catch((err: Error) => {
+        console.error("Failed to publish submission", err);
+        toast.error("Publish didn't save to the database", { description: err.message });
+      });
   };
 
   const reject: WorkflowContextValue["reject"] = (id, reviewedBy, reviewNote) => {
+    const reviewedAt = new Date().toISOString();
     setSubmissions((prev) =>
-      prev.map((s) =>
-        s.id === id
-          ? { ...s, status: "rejected", reviewedBy, reviewedAt: new Date().toISOString(), reviewNote }
-          : s
-      )
+      prev.map((s) => (s.id === id ? { ...s, status: "rejected", reviewedBy, reviewedAt, reviewNote } : s))
     );
+    updateSubmissionStatus({ id, status: "rejected", reviewedBy, reviewNote }).catch((err: Error) => {
+      console.error("Failed to reject submission", err);
+      toast.error("Rejection didn't save to the database", { description: err.message });
+    });
   };
 
   const pending = submissions.filter((s) => s.status === "submitted");
@@ -79,7 +136,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
 
     if (published.length > 0) {
       const v = published[0];
-      const seed = factSeed.find((f) => f.kpiId === kpiId && f.entityId === entityId && f.periodId === periodId);
+      const seed = facts.find((f) => f.kpiId === kpiId && f.entityId === entityId && f.periodId === periodId);
       const ytdTarget = seed?.ytdTarget ?? k.fyTarget;
       return {
         ytdActual: v.value,
@@ -92,7 +149,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
       };
     }
 
-    const seed = factSeed.find((f) => f.kpiId === kpiId && f.entityId === entityId && f.periodId === periodId);
+    const seed = facts.find((f) => f.kpiId === kpiId && f.entityId === entityId && f.periodId === periodId);
     if (seed) {
       return {
         ytdActual: seed.ytdActual,
@@ -108,7 +165,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <WorkflowContext.Provider value={{ submissions, submit, approve, reject, pending, latestValue }}>
+    <WorkflowContext.Provider value={{ submissions, loading, submit, approve, reject, pending, latestValue }}>
       {children}
     </WorkflowContext.Provider>
   );

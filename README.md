@@ -1,32 +1,28 @@
-# React + TypeScript + Vite
+# Prokhas Group Performance Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React + TypeScript + Vite dashboard covering the 19 BRS-specified screens across Corporate
+Performance, Financial Health, and Resource & People, with role-based pillar isolation and a
+maker-checker (Submit → Verify → Publish) data-entry workflow.
 
-Currently, two official plugins are available:
+## Data layer
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+KPI/entity/period reference data lives in `src/data/*.ts`. Live dashboard figures and the
+submission workflow are backed by Supabase (`src/lib/workflow.tsx`, `src/lib/api/*.ts`) —
+see [supabase/README.md](./supabase/README.md) for schema setup.
 
-## React Compiler
+## Getting started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+pnpm install
+cp .env.example .env   # fill in your Supabase project URL + publishable key
+pnpm dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Run the migration and seed in `supabase/` (via the Supabase SQL Editor, or the Supabase CLI)
+before starting the app, or every screen will show "no submissions published yet".
+
+## Scripts
+
+- `pnpm dev` — local dev server
+- `pnpm build` — typecheck + production build
+- `pnpm lint` — Oxlint
