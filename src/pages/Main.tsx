@@ -145,7 +145,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 ? `${entityName}'s pillar is scoped to KPI 3 sub-metric reporting for this phase of the engagement — see the note below for what's expected.`
                 : hasAnyData
                   ? <>Group weighted achievement is <strong className="text-[hsl(var(--pk-ink))]">{overall.toFixed(1)}%</strong> for {period.label}, with <strong className="text-[hsl(var(--pk-ink))]">{met} of {kpis.length}</strong> KPIs met{notMet > 0 ? <> and <strong className="text-[hsl(var(--pk-ink))]">{notMet}</strong> not met</> : ""}{notMeasurable > 0 ? <>; {notMeasurable} not yet measurable this period</> : ""}.</>
-                  : <>No submissions have been published yet for {entityName} in {period.label} — figures below reflect the last published period where available.</>}
+                  : <>No submissions have been published yet for {entityName} in {period.label} — switch to an earlier reporting period to see published figures.</>}
             </p>
             {!isRestrictedPillar && (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">

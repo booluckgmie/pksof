@@ -3,11 +3,11 @@ import { ShieldCheck, KeyRound, Building2 } from "lucide-react";
 import { useSession } from "@/lib/session";
 import { roleDefs } from "@/lib/roles";
 import { entities } from "@/data/entities";
-import { periods } from "@/data/periods";
+import { resolveCurrentPeriodId } from "@/data/periods";
 import type { EntityId, Role } from "@/types";
 
-/** The most recently reported period — new sign-ins land on it by default. */
-const latestPeriodId = (periods.find((p) => p.isCurrent) ?? periods[0]).id;
+/** The period whose calendar quarter contains today — new sign-ins land on it by default. */
+const latestPeriodId = resolveCurrentPeriodId();
 
 export function Login() {
   const { login } = useSession();

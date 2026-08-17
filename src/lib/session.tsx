@@ -2,10 +2,10 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from "re
 import type { EntityId, PeriodId, Role } from "@/types";
 import { roleById } from "@/lib/roles";
 import { entityById } from "@/data/entities";
-import { periods } from "@/data/periods";
+import { resolveCurrentPeriodId } from "@/data/periods";
 
-/** The most recently reported period — sessions default to it until the user picks another. */
-const latestPeriodId: PeriodId = (periods.find((p) => p.isCurrent) ?? periods[0]).id;
+/** The period whose calendar quarter contains today — sessions default to it until the user picks another. */
+const latestPeriodId: PeriodId = resolveCurrentPeriodId();
 
 interface AuthedSession {
   loggedIn: boolean;
