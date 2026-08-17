@@ -7,29 +7,101 @@ import { InfoNote } from "@/components/pk/Misc";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
+import { useDetails } from "@/lib/details";
 import { perspectives } from "@/data/perspectives";
 import { kpisByPerspective, kpiById, type KpiExt } from "@/data/kpis";
 import { periods } from "@/data/periods";
 import { cn } from "@/lib/utils";
-import { parseKpiTemplate, type ParsedKpiRow } from "@/lib/excelTemplate";
+import { parseKpiTemplate, parseDetailTemplate, type ParsedKpiRow, type ParsedDetailMetric } from "@/lib/excelTemplate";
+import { upsertDetailMetric } from "@/lib/api/details";
 
 type Entries = Record<string, { value: string; note: string }>;
+
+const DETAIL_METRICS: { label: string; metricKey: string; dimension: string; unit: string }[] = [
+  { label: "Total Employees", metricKey: "headcount_summary", dimension: "total_employees", unit: "" },
+  { label: "Bumiputera", metricKey: "headcount_summary", dimension: "bumiputera", unit: "" },
+  { label: "Non-Bumiputera", metricKey: "headcount_summary", dimension: "non_bumiputera", unit: "" },
+  { label: "Approved Headcount", metricKey: "headcount_summary", dimension: "approved_headcount", unit: "" },
+  { label: "Filled Position", metricKey: "headcount_summary", dimension: "filled_position", unit: "" },
+  { label: "Male", metricKey: "gender_breakdown", dimension: "male", unit: "" },
+  { label: "Female", metricKey: "gender_breakdown", dimension: "female", unit: "" },
+  { label: "Revenue", metricKey: "financial_trend", dimension: "revenue", unit: "RM mil" },
+  { label: "Profit Before Tax", metricKey: "financial_trend", dimension: "pbt", unit: "RM mil" },
+  { label: "Cost-to-Income Ratio", metricKey: "financial_trend", dimension: "cir", unit: "%" },
+  { label: "Net Profit Margin", metricKey: "financial_trend", dimension: "net_margin", unit: "%" },
+];
 
 export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, userName, periodId: sessionPeriodId } = useSession();
   const { submit, submissions, latestValue } = useWorkflow();
+  const { headcountSummaryByPeriod, genderBreakdownByPeriod, quarterlyTrend, refresh } = useDetails();
 
   const [channel, setChannel] = useState<"web-form" | "excel-upload">("web-form");
+  const [formSection, setFormSection] = useState<"kpi" | "detail">("kpi");
   const openPeriods = periods.filter((p) => p.isOpenForEntry);
   const [periodId, setPeriodIdLocal] = useState(
     openPeriods.some((p) => p.id === sessionPeriodId) ? sessionPeriodId : (openPeriods[0]?.id ?? periods[0].id)
   );
   const [entries, setEntries] = useState<Entries>({});
+  const [detailEntries, setDetailEntries] = useState<Record<string, string>>({});
+  const [savingDetail, setSavingDetail] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [parsing, setParsing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const [parsed, setParsed] = useState<ParsedKpiRow[]>([]);
+  const [parsedDetail, setParsedDetail] = useState<ParsedDetailMetric[]>([]);
+  const [detailSheetsFound, setDetailSheetsFound] = useState<string[]>([]);
   const [skippedNoValue, setSkippedNoValue] = useState(0);
+  const [submittingParsed, setSubmittingParsed] = useState(false);
+
+  const currentDetailValue = (metricKey: string, dimension: string): number | null => {
+    if (metricKey === "headcount_summary") return (headcountSummaryByPeriod[periodId] as unknown as Record<string, number>)[
+      dimension === "total_employees" ? "totalEmployees" : dimension === "non_bumiputera" ? "nonBumiputera" : dimension === "approved_headcount" ? "approvedHeadcount" : dimension === "filled_position" ? "filledPosition" : "bumiputera"
+    ] ?? null;
+    if (metricKey === "gender_breakdown") return (genderBreakdownByPeriod[periodId] as unknown as Record<string, number>)[dimension] ?? null;
+    if (metricKey === "financial_trend") {
+      const label = periods.find((p) => p.id === periodId)?.label.replace("FY20", "FY");
+      const row = quarterlyTrend.find((t) => t.period === label);
+      if (!row) return null;
+      const key = dimension === "net_margin" ? "netMargin" : dimension;
+      return (row as unknown as Record<string, number>)[key] ?? null;
+    }
+    return null;
+  };
+
+  const detailFilledCount = Object.values(detailEntries).filter((v) => v.trim() !== "").length;
+
+  const handleSaveDetailSnapshot = async () => {
+    const rows = Object.entries(detailEntries).filter(([, v]) => v.trim() !== "");
+    if (rows.length === 0) {
+      toast.error("Enter at least one value before saving.");
+      return;
+    }
+    setSavingDetail(true);
+    let saved = 0;
+    let invalid = 0;
+    for (const [key, raw] of rows) {
+      const value = Number(raw);
+      if (Number.isNaN(value)) {
+        invalid++;
+        continue;
+      }
+      const [metricKey, dimension] = key.split("::");
+      try {
+        await upsertDetailMetric({ entityId, periodId, metricKey, dimension, value });
+        saved++;
+      } catch (err) {
+        toast.error(`Couldn't save ${dimension}`, { description: err instanceof Error ? err.message : String(err) });
+      }
+    }
+    await refresh();
+    setSavingDetail(false);
+    if (saved > 0) {
+      toast.success(`Saved ${saved} figure${saved > 1 ? "s" : ""}`, { description: `${periods.find((p) => p.id === periodId)?.label} — reflected on the dashboards immediately.` });
+      setDetailEntries({});
+    }
+    if (invalid > 0) toast.error(`${invalid} value${invalid > 1 ? "s" : ""} skipped — must be numeric.`);
+  };
 
   const mySubmissions = useMemo(
     () => submissions.filter((s) => s.submittedBy === userName || s.entityId === entityId).slice(0, 12),
@@ -87,14 +159,20 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
     setParsing(true);
     setParseError(null);
     setParsed([]);
+    setParsedDetail([]);
+    setDetailSheetsFound([]);
     setSkippedNoValue(0);
     try {
-      const result = await parseKpiTemplate(file);
-      if (result.rows.length === 0) {
-        setParseError("No KPI values found — check this is the standard KPI Submission template with the YTD Actual column filled in.");
-      } else {
-        setParsed(result.rows);
-        setSkippedNoValue(result.skippedNoValue);
+      const [kpiResult, detailResult] = await Promise.all([
+        parseKpiTemplate(file).catch(() => ({ rows: [] as ParsedKpiRow[], skippedNoValue: 0 })),
+        parseDetailTemplate(file).catch(() => ({ rows: [] as ParsedDetailMetric[], sheetsFound: [] as string[] })),
+      ]);
+      setParsed(kpiResult.rows);
+      setSkippedNoValue(kpiResult.skippedNoValue);
+      setParsedDetail(detailResult.rows);
+      setDetailSheetsFound(detailResult.sheetsFound);
+      if (kpiResult.rows.length === 0 && detailResult.rows.length === 0) {
+        setParseError("Nothing recognized in this file — check it's built from the standard template (KPI Submission, Workforce Summary, Financial Trend, or All Other Detail Data sheets).");
       }
     } catch (err) {
       setParseError(err instanceof Error ? err.message : "Couldn't read this file.");
@@ -103,16 +181,34 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
     }
   };
 
-  const handleSubmitParsed = () => {
-    if (parsed.length === 0) return;
+  const handleSubmitParsed = async () => {
+    if (parsed.length === 0 && parsedDetail.length === 0) return;
+    setSubmittingParsed(true);
     for (const row of parsed) {
       submit({ kpiId: row.kpiId, entityId, periodId, value: row.value, note: row.note, source: "excel-upload", submittedBy: userName || "reporting.officer" });
     }
-    toast.success(`Submitted ${parsed.length} KPI update${parsed.length > 1 ? "s" : ""} for verification`, {
-      description: `${fileName} · ${periods.find((p) => p.id === periodId)?.label} — routed to the checker queue.`,
-    });
+    let detailSaved = 0;
+    for (const row of parsedDetail) {
+      try {
+        await upsertDetailMetric({ entityId, periodId, metricKey: row.metricKey, dimension: row.dimension, dimension2: row.dimension2, value: row.value, note: row.note || null });
+        detailSaved++;
+      } catch (err) {
+        toast.error(`Couldn't save ${row.metricKey}/${row.dimension}`, { description: err instanceof Error ? err.message : String(err) });
+      }
+    }
+    if (detailSaved > 0) await refresh();
+    setSubmittingParsed(false);
+
+    const parts: string[] = [];
+    if (parsed.length > 0) parts.push(`${parsed.length} KPI update${parsed.length > 1 ? "s" : ""} routed to the checker queue`);
+    if (detailSaved > 0) parts.push(`${detailSaved} detail figure${detailSaved > 1 ? "s" : ""} saved directly to the dashboards`);
+    if (parts.length > 0) {
+      toast.success("Upload processed", { description: `${fileName} · ${periods.find((p) => p.id === periodId)?.label} — ${parts.join("; ")}.` });
+    }
     setFileName(null);
     setParsed([]);
+    setParsedDetail([]);
+    setDetailSheetsFound([]);
     setSkippedNoValue(0);
   };
 
@@ -159,8 +255,25 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
         </InfoNote>
       </div>
 
+      {channel === "web-form" && (
+        <div className="flex items-center gap-1 mb-5 border border-[hsl(var(--pk-border))] rounded-lg p-1 w-fit bg-[hsl(var(--pk-surface))]">
+          <button
+            onClick={() => setFormSection("kpi")}
+            className={cn("rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", formSection === "kpi" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}
+          >
+            KPI Scorecard
+          </button>
+          <button
+            onClick={() => setFormSection("detail")}
+            className={cn("rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", formSection === "detail" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}
+          >
+            Workforce &amp; Financial Snapshot
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-5">
-        {channel === "web-form" ? (
+        {channel === "web-form" && formSection === "kpi" ? (
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-5 flex flex-col gap-4">
             <div className="overflow-x-auto">
               <table className="w-full text-sm min-w-[640px]">
@@ -230,10 +343,60 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
             </div>
             <InfoNote>Each filled-in row becomes its own submission with status <b>Submitted</b>. Nothing reaches a dashboard until a checker reviews it in Verify &amp; Publish. Leave a KPI blank to skip it this period (e.g. an annual or bi-annual measure not due).</InfoNote>
           </div>
+        ) : channel === "web-form" && formSection === "detail" ? (
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-5 flex flex-col gap-4">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[520px]">
+                <thead>
+                  <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
+                    <th className="text-left font-medium pb-1.5">Metric</th>
+                    <th className="text-right font-medium pb-1.5 pr-2 w-24">Current</th>
+                    <th className="text-right font-medium pb-1.5 pl-2 w-32">New value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {DETAIL_METRICS.map((m) => {
+                    const key = `${m.metricKey}::${m.dimension}`;
+                    const current = currentDetailValue(m.metricKey, m.dimension);
+                    return (
+                      <tr key={key} className="border-t border-[hsl(var(--pk-border))]">
+                        <td className="py-2 pr-2">
+                          <span className="font-medium text-[hsl(var(--pk-ink))]">{m.label}</span>
+                          {m.unit && <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]"> · {m.unit}</span>}
+                        </td>
+                        <td className="py-2 pr-2 text-right tnum">{current === null ? <span className="text-[hsl(var(--pk-ink-faint))]">—</span> : <>{current}{m.unit === "%" ? "%" : ""}</>}</td>
+                        <td className="py-2 pl-2">
+                          <input
+                            value={detailEntries[key] ?? ""}
+                            onChange={(e) => setDetailEntries((prev) => ({ ...prev, [key]: e.target.value }))}
+                            type="number"
+                            step="any"
+                            placeholder="e.g. 219"
+                            className="w-full rounded-md border border-[hsl(var(--pk-border))] px-2 py-1.5 text-sm bg-transparent outline-none focus:border-[hsl(var(--pk-accent))] tnum text-right"
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex items-center justify-between gap-3 pt-1 border-t border-[hsl(var(--pk-border))]">
+              <span className="text-[13px] text-[hsl(var(--pk-ink-faint))]">{detailFilledCount} of {DETAIL_METRICS.length} filled in</span>
+              <button
+                onClick={handleSaveDetailSnapshot}
+                disabled={detailFilledCount === 0 || savingDetail}
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] font-medium text-sm px-4 py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Send className="h-4 w-4" />{savingDetail ? "Saving…" : `Save ${detailFilledCount > 0 ? detailFilledCount : ""} figure${detailFilledCount === 1 ? "" : "s"}`}
+              </button>
+            </div>
+            <InfoNote>Unlike the KPI scorecard, these figures save directly and appear on the dashboards immediately — there's no checker queue behind supporting data like headcount and financial trend. Data owners: HR (workforce), Finance (financial).</InfoNote>
+          </div>
         ) : (
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-5 flex flex-col gap-4 h-fit">
             <div className="flex flex-col gap-2">
-              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Completed Excel template — all KPIs, {periods.find((p) => p.id === periodId)?.label}</span>
+              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Completed Excel template — KPIs and/or workforce &amp; financial detail, {periods.find((p) => p.id === periodId)?.label}</span>
               <label className="flex flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-[hsl(var(--pk-border))] py-6 cursor-pointer hover:border-[hsl(var(--pk-accent))] transition-colors">
                 <UploadCloud className="h-5 w-5 text-[hsl(var(--pk-ink-faint))]" />
                 <span className="text-xs text-[hsl(var(--pk-ink-faint))]">{parsing ? "Reading file…" : (fileName ?? "Click to choose a .xlsx file")}</span>
@@ -248,9 +411,9 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
             {parsed.length > 0 && (
               <div className="flex flex-col gap-2">
                 <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
-                  Extracted {parsed.length} value{parsed.length > 1 ? "s" : ""}{skippedNoValue > 0 ? ` · ${skippedNoValue} left blank (not due)` : ""}
+                  KPI Submission — {parsed.length} value{parsed.length > 1 ? "s" : ""}{skippedNoValue > 0 ? ` · ${skippedNoValue} left blank (not due)` : ""}
                 </span>
-                <div className="rounded-md border border-[hsl(var(--pk-border))] divide-y divide-[hsl(var(--pk-border))] max-h-64 overflow-y-auto">
+                <div className="rounded-md border border-[hsl(var(--pk-border))] divide-y divide-[hsl(var(--pk-border))] max-h-48 overflow-y-auto">
                   {parsed.map((row) => {
                     const k = kpiById(row.kpiId);
                     return (
@@ -264,14 +427,30 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
               </div>
             )}
 
+            {parsedDetail.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
+                  {detailSheetsFound.join(", ")} — {parsedDetail.length} value{parsedDetail.length > 1 ? "s" : ""}
+                </span>
+                <div className="rounded-md border border-[hsl(var(--pk-border))] divide-y divide-[hsl(var(--pk-border))] max-h-48 overflow-y-auto">
+                  {parsedDetail.map((row, i) => (
+                    <div key={`${row.metricKey}-${row.dimension}-${row.dimension2}-${i}`} className="flex items-center justify-between gap-2 px-3 py-1.5 text-sm">
+                      <span className="text-[hsl(var(--pk-ink))]">{row.metricKey} / {row.dimension}{row.dimension2 ? ` / ${row.dimension2}` : ""}</span>
+                      <span className="tnum font-medium">{row.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <button
               onClick={handleSubmitParsed}
-              disabled={parsed.length === 0}
+              disabled={(parsed.length === 0 && parsedDetail.length === 0) || submittingParsed}
               className="mt-1 inline-flex items-center justify-center gap-2 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] font-medium text-sm py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <Send className="h-4 w-4" />Submit {parsed.length > 0 ? parsed.length : ""} extracted value{parsed.length === 1 ? "" : "s"}
+              <Send className="h-4 w-4" />{submittingParsed ? "Submitting…" : `Submit ${parsed.length + parsedDetail.length} extracted value${parsed.length + parsedDetail.length === 1 ? "" : "s"}`}
             </button>
-            <InfoNote>Parsed entirely in your browser, matched against the standard template's "KPI No" and "YTD Actual" columns — the file itself isn't uploaded anywhere. Each extracted value becomes its own submission with status <b>Submitted</b>, same as the web form; nothing reaches a dashboard until a checker reviews it in Verify &amp; Publish.</InfoNote>
+            <InfoNote>Parsed entirely in your browser — the file itself isn't uploaded anywhere. KPI values go through the checker queue like the web form; workforce/financial detail values save directly to the dashboards. Sheets recognized: KPI Submission, Workforce Summary, Financial Trend, All Other Detail Data — include any subset.</InfoNote>
           </div>
         )}
 
