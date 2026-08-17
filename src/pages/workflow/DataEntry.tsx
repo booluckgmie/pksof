@@ -11,6 +11,7 @@ import { perspectives } from "@/data/perspectives";
 import { kpisByPerspective, kpiById, type KpiExt } from "@/data/kpis";
 import { periods } from "@/data/periods";
 import { cn } from "@/lib/utils";
+import { parseKpiTemplate, type ParsedKpiRow } from "@/lib/excelTemplate";
 
 type Entries = Record<string, { value: string; note: string }>;
 
@@ -25,7 +26,10 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
   );
   const [entries, setEntries] = useState<Entries>({});
   const [fileName, setFileName] = useState<string | null>(null);
-  const [fileNote, setFileNote] = useState("");
+  const [parsing, setParsing] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
+  const [parsed, setParsed] = useState<ParsedKpiRow[]>([]);
+  const [skippedNoValue, setSkippedNoValue] = useState(0);
 
   const mySubmissions = useMemo(
     () => submissions.filter((s) => s.submittedBy === userName || s.entityId === entityId).slice(0, 12),
@@ -77,17 +81,39 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
     }
   };
 
-  const handleFileSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!fileName) {
-      toast.error("Choose a completed .xlsx template before submitting.");
-      return;
+  const handleFileChange = async (file: File | undefined) => {
+    if (!file) return;
+    setFileName(file.name);
+    setParsing(true);
+    setParseError(null);
+    setParsed([]);
+    setSkippedNoValue(0);
+    try {
+      const result = await parseKpiTemplate(file);
+      if (result.rows.length === 0) {
+        setParseError("No KPI values found — check this is the standard KPI Submission template with the YTD Actual column filled in.");
+      } else {
+        setParsed(result.rows);
+        setSkippedNoValue(result.skippedNoValue);
+      }
+    } catch (err) {
+      setParseError(err instanceof Error ? err.message : "Couldn't read this file.");
+    } finally {
+      setParsing(false);
     }
-    toast.success("Template received", {
-      description: `${fileName} — ${periods.find((p) => p.id === periodId)?.label}. A PMO reviewer will extract and route each KPI value from the checker queue.`,
+  };
+
+  const handleSubmitParsed = () => {
+    if (parsed.length === 0) return;
+    for (const row of parsed) {
+      submit({ kpiId: row.kpiId, entityId, periodId, value: row.value, note: row.note, source: "excel-upload", submittedBy: userName || "reporting.officer" });
+    }
+    toast.success(`Submitted ${parsed.length} KPI update${parsed.length > 1 ? "s" : ""} for verification`, {
+      description: `${fileName} · ${periods.find((p) => p.id === periodId)?.label} — routed to the checker queue.`,
     });
     setFileName(null);
-    setFileNote("");
+    setParsed([]);
+    setSkippedNoValue(0);
   };
 
   const renderCurrent = (k: KpiExt) => {
@@ -205,24 +231,48 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
             <InfoNote>Each filled-in row becomes its own submission with status <b>Submitted</b>. Nothing reaches a dashboard until a checker reviews it in Verify &amp; Publish. Leave a KPI blank to skip it this period (e.g. an annual or bi-annual measure not due).</InfoNote>
           </div>
         ) : (
-          <form onSubmit={handleFileSubmit} className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-5 flex flex-col gap-4 h-fit">
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-5 flex flex-col gap-4 h-fit">
             <div className="flex flex-col gap-2">
               <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Completed Excel template — all KPIs, {periods.find((p) => p.id === periodId)?.label}</span>
               <label className="flex flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-[hsl(var(--pk-border))] py-6 cursor-pointer hover:border-[hsl(var(--pk-accent))] transition-colors">
                 <UploadCloud className="h-5 w-5 text-[hsl(var(--pk-ink-faint))]" />
-                <span className="text-xs text-[hsl(var(--pk-ink-faint))]">{fileName ?? "Click to choose a .xlsx file"}</span>
-                <input type="file" accept=".xlsx,.xls" className="hidden" onChange={(e) => setFileName(e.target.files?.[0]?.name ?? null)} />
+                <span className="text-xs text-[hsl(var(--pk-ink-faint))]">{parsing ? "Reading file…" : (fileName ?? "Click to choose a .xlsx file")}</span>
+                <input type="file" accept=".xlsx,.xls" className="hidden" onChange={(e) => handleFileChange(e.target.files?.[0])} />
               </label>
             </div>
-            <label className="flex flex-col gap-1">
-              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Note to checker (optional)</span>
-              <textarea value={fileNote} onChange={(e) => setFileNote(e.target.value)} rows={2} className="rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-2 text-sm bg-transparent outline-none focus:border-[hsl(var(--pk-accent))]" placeholder="Context for the reviewer, e.g. which department compiled this." />
-            </label>
-            <button type="submit" className="mt-1 inline-flex items-center justify-center gap-2 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] font-medium text-sm py-2.5 hover:opacity-90 transition-opacity">
-              <Send className="h-4 w-4" />Submit template
+
+            {parseError && (
+              <div className="rounded-md border border-[hsl(var(--pk-bad))] bg-[hsl(var(--pk-bad-soft))] px-3 py-2 text-xs text-[hsl(var(--pk-bad))]">{parseError}</div>
+            )}
+
+            {parsed.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
+                  Extracted {parsed.length} value{parsed.length > 1 ? "s" : ""}{skippedNoValue > 0 ? ` · ${skippedNoValue} left blank (not due)` : ""}
+                </span>
+                <div className="rounded-md border border-[hsl(var(--pk-border))] divide-y divide-[hsl(var(--pk-border))] max-h-64 overflow-y-auto">
+                  {parsed.map((row) => {
+                    const k = kpiById(row.kpiId);
+                    return (
+                      <div key={row.kpiId} className="flex items-center justify-between gap-2 px-3 py-1.5 text-sm">
+                        <span className="text-[hsl(var(--pk-ink))]">KPI {row.kpiNo} — {k.name}</span>
+                        <span className="tnum font-medium">{row.value}{k.unit === "%" ? "%" : ""}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={handleSubmitParsed}
+              disabled={parsed.length === 0}
+              className="mt-1 inline-flex items-center justify-center gap-2 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] font-medium text-sm py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Send className="h-4 w-4" />Submit {parsed.length > 0 ? parsed.length : ""} extracted value{parsed.length === 1 ? "" : "s"}
             </button>
-            <InfoNote>Prototype only — the uploaded file is logged for the PMO to extract manually. Automatic per-KPI parsing isn't wired up yet, so use the web form for entries that need to land on the dashboard.</InfoNote>
-          </form>
+            <InfoNote>Parsed entirely in your browser, matched against the standard template's "KPI No" and "YTD Actual" columns — the file itself isn't uploaded anywhere. Each extracted value becomes its own submission with status <b>Submitted</b>, same as the web form; nothing reaches a dashboard until a checker reviews it in Verify &amp; Publish.</InfoNote>
+          </div>
         )}
 
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4 h-fit">
