@@ -115,7 +115,7 @@ export function Login() {
           </button>
         </form>
 
-        <p className="text-center text-[11.5px] text-white/40 mt-5">Reporting year FY2026 · Prototype build with sample data</p>
+        <p className="text-center text-[11.5px] text-white/40 mt-5">Created by xxx @2026</p>
       </div>
     </div>
   );
