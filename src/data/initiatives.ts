@@ -5,7 +5,7 @@ export type InitiativeStatus = "Completed" | "In Progress" | "Planned" | "Delaye
 export const processInitiatives = [
   { name: "eGLS Refresh Project", start: "Q1", end: "Q4", status: "In Progress" as InitiativeStatus, nextAction: "Finalise design documents; development in progress" },
   { name: "Migration to New Email System", start: "Q1", end: "Q3", status: "In Progress" as InitiativeStatus, nextAction: "Submit draft Future State Report in Apr" },
-  { name: "Prokhas / ME Performance Dashboard (Pilot)", start: "Q1", end: "Q3", status: "In Progress" as InitiativeStatus, nextAction: "Requirements gathering with stakeholders" },
+  { name: "Group / ME Performance Dashboard (Pilot)", start: "Q1", end: "Q3", status: "In Progress" as InitiativeStatus, nextAction: "Requirements gathering with stakeholders" },
 ];
 
 export const techInitiatives = [

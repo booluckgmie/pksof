@@ -1,4 +1,4 @@
-export type EntityId = "PROKHAS" | "SJPP" | "SJKP" | "DANAHARTA" | "DANAINFRA" | "GOVCO";
+export type EntityId = "HQ" | "SJPP" | "SJKP" | "DANAHARTA" | "DANAINFRA" | "GOVCO";
 
 export interface Entity {
   id: EntityId;

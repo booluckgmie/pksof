@@ -37,7 +37,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const kpi9 = latestValue("KPI9", entityId, periodId);
   const kpi12 = latestValue("KPI12", entityId, periodId);
 
-  const groupSnap = entitySnapshot[entityId] ?? entitySnapshot.PROKHAS;
+  const groupSnap = entitySnapshot[entityId] ?? entitySnapshot.HQ;
   const groupTone = STATUS_TONE[groupSnap.status] ?? STATUS_TONE["on-track"];
 
   const ranked = entities
@@ -67,7 +67,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
           <div>
             <div className="text-[10px] uppercase tracking-[0.14em] text-[hsl(var(--pk-accent-lt))] font-semibold">
-              {isRestrictedPillar ? `${entityName} pillar` : "Prokhas Sdn Bhd · wholly owned by MOF Inc."}
+              {isRestrictedPillar ? `${entityName} pillar` : "Group Headquarters · wholly owned by MOF Inc."}
             </div>
             <h1 className="font-head text-2xl sm:text-[28px] font-semibold tracking-tight mt-1">
               {isRestrictedPillar ? `${entityName} Performance` : "Group Performance"}
@@ -170,9 +170,9 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </div>
       )}
 
-      {entityId !== "PROKHAS" && !isRestrictedPillar && (
+      {entityId !== "HQ" && !isRestrictedPillar && (
         <InfoNote>
-          Managed Entity screens for {entityName} follow within the 3-month engagement — Prokhas priority 1 is fully modelled first. Figures above are illustrative until {entityName}'s BRS is signed off.
+          Managed Entity screens for {entityName} follow within the 3-month engagement — Group HQ priority 1 is fully modelled first. Figures above are illustrative until {entityName}'s BRS is signed off.
         </InfoNote>
       )}
 
@@ -180,7 +180,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="mt-5">
           <NoDataState
             title={`${entityName}'s own dashboards aren't built yet`}
-            body={`Corporate Performance, Financial Health and Resource & People above are Prokhas HQ's own scorecard — not ${entityName}'s. ${entityName}'s dedicated modules are scoped for a later phase of this engagement; today, this pillar's job is to keep its KPI 3 sub-metrics current.`}
+            body={`Corporate Performance, Financial Health and Resource & People above are Group HQ's own scorecard — not ${entityName}'s. ${entityName}'s dedicated modules are scoped for a later phase of this engagement; today, this pillar's job is to keep its KPI 3 sub-metrics current.`}
             action={
               canEnterData ? (
                 <button

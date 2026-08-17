@@ -37,8 +37,8 @@ const SCREEN_MAP: Record<ScreenId, React.ComponentType<{ onNavigate: (id: Screen
   VERIFY_PUBLISH: VerifyPublish,
 };
 
-/** Prokhas HQ's own dashboards — off-limits to a login scoped to a Managed Entity pillar. */
-const PROKHAS_ONLY_GROUPS = new Set(["cp", "fh", "rp"]);
+/** Group HQ's own dashboards — off-limits to a login scoped to a Managed Entity pillar. */
+const HQ_ONLY_GROUPS = new Set(["cp", "fh", "rp"]);
 
 function AuthedApp() {
   const { loggedIn, isRestrictedPillar, homeEntityName } = useSession();
@@ -51,7 +51,7 @@ function AuthedApp() {
 
   if (!loggedIn) return <Login />;
 
-  const blocked = isRestrictedPillar && PROKHAS_ONLY_GROUPS.has(screens[screen].group);
+  const blocked = isRestrictedPillar && HQ_ONLY_GROUPS.has(screens[screen].group);
   const Screen = SCREEN_MAP[screen];
 
   return (
@@ -63,7 +63,7 @@ function AuthedApp() {
           </div>
           <div className="font-head text-lg font-semibold text-[hsl(var(--pk-ink))]">Not part of {homeEntityName}'s pillar</div>
           <p className="text-sm text-[hsl(var(--pk-ink-faint))] max-w-[46ch]">
-            This dashboard belongs to Prokhas HQ's own scorecard. Your login is scoped to {homeEntityName} and can't view it.
+            This dashboard belongs to Group HQ's own scorecard. Your login is scoped to {homeEntityName} and can't view it.
           </p>
           <button
             onClick={() => setScreen("MAIN")}

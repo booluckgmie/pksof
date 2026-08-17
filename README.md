@@ -1,4 +1,4 @@
-# Prokhas Group Performance Dashboard
+# Group Performance Dashboard
 
 React + TypeScript + Vite dashboard covering the 19 BRS-specified screens across Corporate
 Performance, Financial Health, and Resource & People, with role-based pillar isolation and a

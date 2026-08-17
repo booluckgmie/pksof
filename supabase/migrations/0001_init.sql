@@ -1,4 +1,4 @@
--- Prokhas Group Performance Dashboard — initial schema
+-- Group Performance Dashboard — initial schema
 -- Target: Postgres (Supabase). Written to stay portable to MariaDB later:
 --   - natural string primary keys (business codes like 'KPI1', 'Q1FY26') instead of
 --     Postgres-only gen_random_uuid()/uuid type

@@ -14,7 +14,7 @@ export function Login() {
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("exec");
-  const [homeEntity, setHomeEntity] = useState<EntityId>("PROKHAS");
+  const [homeEntity, setHomeEntity] = useState<EntityId>("HQ");
 
   const roleDef = roleDefs.find((r) => r.id === role)!;
 
@@ -33,7 +33,7 @@ export function Login() {
         <div className="flex items-center gap-2.5 mb-8 justify-center">
           <div className="leading-tight text-white text-center">
             <div className="font-head font-semibold text-xl tracking-tight">
-              pro<span className="text-[hsl(var(--pk-accent-lt))]">khas</span>
+              Group <span className="text-[hsl(var(--pk-accent-lt))]">HQ</span>
             </div>
             <div className="text-[11px] text-white/50 -mt-0.5 tracking-wide">Group Performance Dashboard — prototype</div>
           </div>

@@ -1,4 +1,4 @@
--- Prokhas Group Performance Dashboard — seed data
+-- Group Performance Dashboard — seed data
 -- Transcribed exactly from the app's existing dummy dataset
 -- (src/data/entities.ts, perspectives.ts, kpis.ts, periods.ts, factSeed.ts)
 -- so the Supabase-backed app shows identical figures to the static prototype.
@@ -6,7 +6,7 @@
 -- ── Entities ───────────────────────────────────────────────────────────
 
 insert into entities (id, name, full_name, kind) values
-  ('PROKHAS',   'Prokhas',   'Prokhas Sdn Bhd',                        'HQ'),
+  ('HQ',   'Group HQ',  'Group Headquarters',                     'HQ'),
   ('SJPP',      'SJPP',      'Syarikat Jaminan Pembiayaan Perniagaan',  'ME'),
   ('SJKP',      'SJKP',      'Syarikat Jaminan Kredit Perumahan',       'ME'),
   ('DANAHARTA', 'DanaHarta', 'Danaharta Nasional Berhad',               'ME'),
@@ -14,7 +14,7 @@ insert into entities (id, name, full_name, kind) values
   ('GOVCO',     'GovCo',     'GovCo Holdings',                         'ME');
 
 insert into entity_modules (entity_id, module) values
-  ('PROKHAS','CP'), ('PROKHAS','FH'), ('PROKHAS','RP'),
+  ('HQ','CP'), ('HQ','FH'), ('HQ','RP'),
   ('SJPP','CP'), ('SJPP','FH'),
   ('SJKP','CP'), ('SJKP','FH'),
   ('DANAHARTA','CP'), ('DANAHARTA','FH'),
@@ -65,93 +65,93 @@ insert into periods (id, label, fy, quarter, cumulative_threshold, mof_threshold
 -- ── Demo users (one per role; this app has no real auth yet — see migration notes) ──
 
 insert into app_users (id, display_name, role, home_entity) values
-  ('ahmad.najmi',  'Ahmad Najmi',  'exec',              'PROKHAS'),
-  ('board.member',  'Board Member', 'board',             'PROKHAS'),
-  ('hafiz.deptlead','Hafiz Rahman', 'dept_head',         'PROKHAS'),
+  ('ahmad.najmi',  'Ahmad Najmi',  'exec',              'HQ'),
+  ('board.member',  'Board Member', 'board',             'HQ'),
+  ('hafiz.deptlead','Hafiz Rahman', 'dept_head',         'HQ'),
   ('siti.aminah',  'Siti Aminah',  'reporting_officer', 'SJKP'),
-  ('pmo.checker',  'PMO Checker',  'checker',           'PROKHAS'),
-  ('sys.admin',    'System Admin', 'admin',             'PROKHAS');
+  ('pmo.checker',  'PMO Checker',  'checker',           'HQ'),
+  ('sys.admin',    'System Admin', 'admin',             'HQ');
 
 -- ── Fact KPI results (published figures) ──────────────────────────────
 -- FY2025: closed year, all four quarters final. FY2026: Q1 seeded as already
 -- published; Q2-Q4 intentionally absent — submit them via Data Entry.
 
 insert into fact_kpi_results (kpi_id, entity_id, period_id, ytd_target, ytd_actual, status, note) values
-  ('KPI1','PROKHAS','Q1FY25', 25.0,  19.8, 'not-met', null),
-  ('KPI1','PROKHAS','Q2FY25', 50.0,  23.1, 'not-met', null),
-  ('KPI1','PROKHAS','Q3FY25', 75.0,  24.4, 'not-met', null),
-  ('KPI1','PROKHAS','Q4FY25', 100.0, 33.6, 'not-met', null),
+  ('KPI1','HQ','Q1FY25', 25.0,  19.8, 'not-met', null),
+  ('KPI1','HQ','Q2FY25', 50.0,  23.1, 'not-met', null),
+  ('KPI1','HQ','Q3FY25', 75.0,  24.4, 'not-met', null),
+  ('KPI1','HQ','Q4FY25', 100.0, 33.6, 'not-met', null),
 
-  ('KPI2','PROKHAS','Q1FY25', 58.0, 61.4, 'not-met', null),
-  ('KPI2','PROKHAS','Q2FY25', 58.0, 57.8, 'met',     null),
-  ('KPI2','PROKHAS','Q3FY25', 58.0, 55.1, 'met',     null),
-  ('KPI2','PROKHAS','Q4FY25', 58.0, 49.6, 'met',     null),
+  ('KPI2','HQ','Q1FY25', 58.0, 61.4, 'not-met', null),
+  ('KPI2','HQ','Q2FY25', 58.0, 57.8, 'met',     null),
+  ('KPI2','HQ','Q3FY25', 58.0, 55.1, 'met',     null),
+  ('KPI2','HQ','Q4FY25', 58.0, 49.6, 'met',     null),
 
-  ('KPI3','PROKHAS','Q1FY25', 4.5, 4.1, 'not-met', null),
-  ('KPI3','PROKHAS','Q2FY25', 4.5, 4.2, 'not-met', null),
-  ('KPI3','PROKHAS','Q3FY25', 4.5, 4.3, 'not-met', null),
-  ('KPI3','PROKHAS','Q4FY25', 4.5, 4.3, 'not-met', null),
+  ('KPI3','HQ','Q1FY25', 4.5, 4.1, 'not-met', null),
+  ('KPI3','HQ','Q2FY25', 4.5, 4.2, 'not-met', null),
+  ('KPI3','HQ','Q3FY25', 4.5, 4.3, 'not-met', null),
+  ('KPI3','HQ','Q4FY25', 4.5, 4.3, 'not-met', null),
 
-  ('KPI4','PROKHAS','Q1FY25', null,  null, 'not-measurable', 'Annual assessment — results at FY close'),
-  ('KPI4','PROKHAS','Q2FY25', null,  null, 'not-measurable', 'Annual assessment — results at FY close'),
-  ('KPI4','PROKHAS','Q3FY25', null,  null, 'not-measurable', 'Annual assessment — results at FY close'),
-  ('KPI4','PROKHAS','Q4FY25', 100.0, 94.0, 'not-met',        null),
+  ('KPI4','HQ','Q1FY25', null,  null, 'not-measurable', 'Annual assessment — results at FY close'),
+  ('KPI4','HQ','Q2FY25', null,  null, 'not-measurable', 'Annual assessment — results at FY close'),
+  ('KPI4','HQ','Q3FY25', null,  null, 'not-measurable', 'Annual assessment — results at FY close'),
+  ('KPI4','HQ','Q4FY25', 100.0, 94.0, 'not-met',        null),
 
-  ('KPI5','PROKHAS','Q1FY25', null, null, 'not-measurable', 'Bi-annual survey — next in Q2'),
-  ('KPI5','PROKHAS','Q2FY25', 4.7,  4.5,  'not-met',        null),
-  ('KPI5','PROKHAS','Q3FY25', null, null, 'not-measurable', 'Bi-annual survey — next in Q4'),
-  ('KPI5','PROKHAS','Q4FY25', 4.7,  4.6,  'not-met',        null),
+  ('KPI5','HQ','Q1FY25', null, null, 'not-measurable', 'Bi-annual survey — next in Q2'),
+  ('KPI5','HQ','Q2FY25', 4.7,  4.5,  'not-met',        null),
+  ('KPI5','HQ','Q3FY25', null, null, 'not-measurable', 'Bi-annual survey — next in Q4'),
+  ('KPI5','HQ','Q4FY25', 4.7,  4.6,  'not-met',        null),
 
-  ('KPI6','PROKHAS','Q1FY25', 95.0, 94.0, 'not-met', null),
-  ('KPI6','PROKHAS','Q2FY25', 95.0, 95.5, 'met',     null),
-  ('KPI6','PROKHAS','Q3FY25', 95.0, 96.2, 'met',     null),
-  ('KPI6','PROKHAS','Q4FY25', 95.0, 96.8, 'met',     null),
+  ('KPI6','HQ','Q1FY25', 95.0, 94.0, 'not-met', null),
+  ('KPI6','HQ','Q2FY25', 95.0, 95.5, 'met',     null),
+  ('KPI6','HQ','Q3FY25', 95.0, 96.2, 'met',     null),
+  ('KPI6','HQ','Q4FY25', 95.0, 96.8, 'met',     null),
 
-  ('KPI7','PROKHAS','Q1FY25', 1, 0, 'not-met', null),
-  ('KPI7','PROKHAS','Q2FY25', 2, 1, 'not-met', null),
-  ('KPI7','PROKHAS','Q3FY25', 2, 2, 'met',     null),
-  ('KPI7','PROKHAS','Q4FY25', 3, 3, 'met',     null),
+  ('KPI7','HQ','Q1FY25', 1, 0, 'not-met', null),
+  ('KPI7','HQ','Q2FY25', 2, 1, 'not-met', null),
+  ('KPI7','HQ','Q3FY25', 2, 2, 'met',     null),
+  ('KPI7','HQ','Q4FY25', 3, 3, 'met',     null),
 
-  ('KPI8','PROKHAS','Q1FY25', 2, 1, 'not-met', null),
-  ('KPI8','PROKHAS','Q2FY25', 3, 2, 'not-met', null),
-  ('KPI8','PROKHAS','Q3FY25', 5, 4, 'not-met', null),
-  ('KPI8','PROKHAS','Q4FY25', 6, 5, 'not-met', null),
+  ('KPI8','HQ','Q1FY25', 2, 1, 'not-met', null),
+  ('KPI8','HQ','Q2FY25', 3, 2, 'not-met', null),
+  ('KPI8','HQ','Q3FY25', 5, 4, 'not-met', null),
+  ('KPI8','HQ','Q4FY25', 6, 5, 'not-met', null),
 
-  ('KPI9','PROKHAS','Q1FY25', 80.0, 76.3, 'not-met', null),
-  ('KPI9','PROKHAS','Q2FY25', 80.0, 82.0, 'met',     null),
-  ('KPI9','PROKHAS','Q3FY25', 80.0, 87.0, 'met',     null),
-  ('KPI9','PROKHAS','Q4FY25', 80.0, 92.7, 'met',     null),
+  ('KPI9','HQ','Q1FY25', 80.0, 76.3, 'not-met', null),
+  ('KPI9','HQ','Q2FY25', 80.0, 82.0, 'met',     null),
+  ('KPI9','HQ','Q3FY25', 80.0, 87.0, 'met',     null),
+  ('KPI9','HQ','Q4FY25', 80.0, 92.7, 'met',     null),
 
-  ('KPI10','PROKHAS','Q1FY25', null,  null, 'not-measurable', 'Programmes had not yet commenced'),
-  ('KPI10','PROKHAS','Q2FY25', 100.0, 45.0, 'not-met',        null),
-  ('KPI10','PROKHAS','Q3FY25', 100.0, 70.0, 'not-met',        null),
-  ('KPI10','PROKHAS','Q4FY25', 100.0, 88.0, 'not-met',        null),
+  ('KPI10','HQ','Q1FY25', null,  null, 'not-measurable', 'Programmes had not yet commenced'),
+  ('KPI10','HQ','Q2FY25', 100.0, 45.0, 'not-met',        null),
+  ('KPI10','HQ','Q3FY25', 100.0, 70.0, 'not-met',        null),
+  ('KPI10','HQ','Q4FY25', 100.0, 88.0, 'not-met',        null),
 
-  ('KPI11','PROKHAS','Q1FY25', 0.55, 0.50, 'not-met', null),
-  ('KPI11','PROKHAS','Q2FY25', 1.10, 1.15, 'met',     null),
-  ('KPI11','PROKHAS','Q3FY25', 1.65, 1.80, 'met',     null),
-  ('KPI11','PROKHAS','Q4FY25', 2.20, 2.40, 'met',     null),
+  ('KPI11','HQ','Q1FY25', 0.55, 0.50, 'not-met', null),
+  ('KPI11','HQ','Q2FY25', 1.10, 1.15, 'met',     null),
+  ('KPI11','HQ','Q3FY25', 1.65, 1.80, 'met',     null),
+  ('KPI11','HQ','Q4FY25', 2.20, 2.40, 'met',     null),
 
-  ('KPI12','PROKHAS','Q1FY25', 70.0, 86.0, 'met', null),
-  ('KPI12','PROKHAS','Q2FY25', 70.0, 87.0, 'met', null),
-  ('KPI12','PROKHAS','Q3FY25', 70.0, 88.0, 'met', null),
-  ('KPI12','PROKHAS','Q4FY25', 70.0, 88.5, 'met', null),
+  ('KPI12','HQ','Q1FY25', 70.0, 86.0, 'met', null),
+  ('KPI12','HQ','Q2FY25', 70.0, 87.0, 'met', null),
+  ('KPI12','HQ','Q3FY25', 70.0, 88.0, 'met', null),
+  ('KPI12','HQ','Q4FY25', 70.0, 88.5, 'met', null),
 
-  ('KPI13','PROKHAS','Q1FY25', 30,  30,  'met', null),
-  ('KPI13','PROKHAS','Q2FY25', 60,  65,  'met', null),
-  ('KPI13','PROKHAS','Q3FY25', 90,  100, 'met', null),
-  ('KPI13','PROKHAS','Q4FY25', 120, 132, 'met', null),
+  ('KPI13','HQ','Q1FY25', 30,  30,  'met', null),
+  ('KPI13','HQ','Q2FY25', 60,  65,  'met', null),
+  ('KPI13','HQ','Q3FY25', 90,  100, 'met', null),
+  ('KPI13','HQ','Q4FY25', 120, 132, 'met', null),
 
-  ('KPI1', 'PROKHAS','Q1FY26', 23.2, 27.5, 'met', null),
-  ('KPI2', 'PROKHAS','Q1FY26', 58.0, 44.2, 'met', null),
-  ('KPI3', 'PROKHAS','Q1FY26', 4.5,  4.2,  'not-met', null),
-  ('KPI4', 'PROKHAS','Q1FY26', null, null, 'not-measurable', 'Annual assessment scheduled Q4'),
-  ('KPI5', 'PROKHAS','Q1FY26', null, null, 'not-measurable', 'Bi-annual survey — next in Q2'),
-  ('KPI6', 'PROKHAS','Q1FY26', null, null, 'not-measurable', 'Baseline monitoring framework in progress'),
-  ('KPI7', 'PROKHAS','Q1FY26', null, null, 'not-measurable', 'Initiatives planned to complete from Q3'),
-  ('KPI8', 'PROKHAS','Q1FY26', null, null, 'not-measurable', 'Initiatives planned to complete from Q2'),
-  ('KPI9', 'PROKHAS','Q1FY26', 80.0, 88.7, 'met', null),
-  ('KPI10','PROKHAS','Q1FY26', null, null, 'not-measurable', 'Programmes commence Q2 onward'),
-  ('KPI11','PROKHAS','Q1FY26', 0.55, 0.82, 'met', null),
-  ('KPI12','PROKHAS','Q1FY26', 70.0, 90.7, 'met', null),
-  ('KPI13','PROKHAS','Q1FY26', null, null, 'not-measurable', 'Training commences Q2 onward');
+  ('KPI1', 'HQ','Q1FY26', 23.2, 27.5, 'met', null),
+  ('KPI2', 'HQ','Q1FY26', 58.0, 44.2, 'met', null),
+  ('KPI3', 'HQ','Q1FY26', 4.5,  4.2,  'not-met', null),
+  ('KPI4', 'HQ','Q1FY26', null, null, 'not-measurable', 'Annual assessment scheduled Q4'),
+  ('KPI5', 'HQ','Q1FY26', null, null, 'not-measurable', 'Bi-annual survey — next in Q2'),
+  ('KPI6', 'HQ','Q1FY26', null, null, 'not-measurable', 'Baseline monitoring framework in progress'),
+  ('KPI7', 'HQ','Q1FY26', null, null, 'not-measurable', 'Initiatives planned to complete from Q3'),
+  ('KPI8', 'HQ','Q1FY26', null, null, 'not-measurable', 'Initiatives planned to complete from Q2'),
+  ('KPI9', 'HQ','Q1FY26', 80.0, 88.7, 'met', null),
+  ('KPI10','HQ','Q1FY26', null, null, 'not-measurable', 'Programmes commence Q2 onward'),
+  ('KPI11','HQ','Q1FY26', 0.55, 0.82, 'met', null),
+  ('KPI12','HQ','Q1FY26', 70.0, 90.7, 'met', null),
+  ('KPI13','HQ','Q1FY26', null, null, 'not-measurable', 'Training commences Q2 onward');

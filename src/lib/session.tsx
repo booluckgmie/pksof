@@ -38,8 +38,8 @@ const DEFAULT: AuthedSession = {
   loggedIn: false,
   role: "exec",
   userName: "",
-  homeEntity: "PROKHAS",
-  entityId: "PROKHAS",
+  homeEntity: "HQ",
+  entityId: "HQ",
   periodId: latestPeriodId,
 };
 
@@ -55,7 +55,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       canEnterData: roleDef.canEnterData,
       canVerify: roleDef.canVerify,
       roleLabel: roleDef.label,
-      isRestrictedPillar: roleDef.pillarLocked && state.homeEntity !== "PROKHAS",
+      isRestrictedPillar: roleDef.pillarLocked && state.homeEntity !== "HQ",
       homeEntityName: entityById(state.homeEntity).name,
       entityName: entityById(state.entityId).name,
       login: ({ role, userName, homeEntity, periodId }) =>

@@ -1,7 +1,7 @@
 import type { Entity } from "@/types";
 
 export const entities: Entity[] = [
-  { id: "PROKHAS", name: "Prokhas", fullName: "Prokhas Sdn Bhd", kind: "HQ", modules: ["CP", "FH", "RP"] },
+  { id: "HQ", name: "Group HQ", fullName: "Group Headquarters", kind: "HQ", modules: ["CP", "FH", "RP"] },
   { id: "SJPP", name: "SJPP", fullName: "Syarikat Jaminan Pembiayaan Perniagaan", kind: "ME", modules: ["CP", "FH"] },
   { id: "SJKP", name: "SJKP", fullName: "Syarikat Jaminan Kredit Perumahan", kind: "ME", modules: ["CP", "FH"] },
   { id: "DANAHARTA", name: "DanaHarta", fullName: "Danaharta Nasional Berhad", kind: "ME", modules: ["CP", "FH"] },
