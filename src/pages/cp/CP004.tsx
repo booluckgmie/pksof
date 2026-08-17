@@ -7,11 +7,12 @@ import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
-import { managedEntityRatings, governanceIndex } from "@/data/initiatives";
+import { useDetails } from "@/lib/details";
 
 export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId, isRestrictedPillar, homeEntityName } = useSession();
   const { latestValue } = useWorkflow();
+  const { managedEntityRatings, governanceIndex } = useDetails();
   const kpi3 = latestValue("KPI3", entityId, periodId);
   const kpi4 = latestValue("KPI4", entityId, periodId);
 

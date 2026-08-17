@@ -4,11 +4,12 @@ import { InitiativeStatusDot } from "@/components/pk/Misc";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
-import { recruitmentIndexByPeriod, peopleDevProgrammes } from "@/data/headcount";
+import { useDetails, peopleDevProgrammes } from "@/lib/details";
 
 export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
+  const { recruitmentIndexByPeriod } = useDetails();
   const kpi9 = latestValue("KPI9", entityId, periodId);
   const kpi10 = latestValue("KPI10", entityId, periodId);
   const recruitmentIndex = recruitmentIndexByPeriod[periodId];

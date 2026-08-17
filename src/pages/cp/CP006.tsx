@@ -4,9 +4,9 @@ import { InitiativeStatusDot, StatusLegend } from "@/components/pk/Misc";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
-import { processInitiatives, techInitiatives } from "@/data/initiatives";
+import { useDetails, type Initiative } from "@/lib/details";
 
-function InitiativeTable({ title, weight, rows }: { title: string; weight: string; rows: typeof processInitiatives }) {
+function InitiativeTable({ title, weight, rows }: { title: string; weight: string; rows: Initiative[] }) {
   return (
     <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4">
       <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-1">{weight}</div>
@@ -32,6 +32,7 @@ function InitiativeTable({ title, weight, rows }: { title: string; weight: strin
 export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
+  const { processInitiatives, techInitiatives } = useDetails();
   const kpi7 = latestValue("KPI7", entityId, periodId);
   const kpi8 = latestValue("KPI8", entityId, periodId);
 

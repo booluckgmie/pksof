@@ -3,10 +3,7 @@ import { StatCard } from "@/components/pk/Misc";
 import { DonutStat, GroupedBarTrend } from "@/components/pk/Charts";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
-import {
-  genderBreakdownByPeriod, ageGenderBreakdownFor, averageAgeByPeriod, gradeGenderCrossTabFor,
-  gradeBreakdownFor, ageBreakdownFor, headcountSummaryByPeriod,
-} from "@/data/headcount";
+import { useDetails } from "@/lib/details";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-2">{children}</div>;
@@ -16,6 +13,10 @@ const AGE_DONUT_COLORS = ["hsl(var(--pk-accent))", "hsl(var(--pk-navy))", "hsl(v
 
 export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { periodId } = useSession();
+  const {
+    genderBreakdownByPeriod, ageGenderBreakdownFor, averageAgeByPeriod, gradeGenderCrossTabFor,
+    gradeBreakdownFor, ageBreakdownFor, headcountSummaryByPeriod,
+  } = useDetails();
   const genderBreakdown = genderBreakdownByPeriod[periodId];
   const gradeBreakdown = gradeBreakdownFor(periodId);
   const ageBreakdown = ageBreakdownFor(periodId);
@@ -58,7 +59,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <div className="flex items-center gap-4">
             <svg viewBox="0 0 100 100" width={104} height={104}>
               {(() => {
-                const total = ageBreakdown.reduce((s, a) => s + a.count, 0);
+                const total = ageBreakdown.reduce((s, a) => s + a.count, 0) || 1;
                 const r = 42;
                 const c = 2 * Math.PI * r;
                 let acc = 0;
@@ -88,7 +89,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </svg>
             <div className="flex flex-col gap-1.5">
               {ageBreakdown.map((a, i) => {
-                const total = ageBreakdown.reduce((s, x) => s + x.count, 0);
+                const total = ageBreakdown.reduce((s, x) => s + x.count, 0) || 1;
                 const pct = ((a.count / total) * 100).toFixed(1);
                 return (
                   <div key={a.band} className="flex items-center gap-2 text-xs">

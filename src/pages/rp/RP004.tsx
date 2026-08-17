@@ -6,7 +6,7 @@ import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { kpiById } from "@/data/kpis";
-import { headcountSummaryByPeriod, industryBenchmark, bumiputeraTrainingByPeriod, resignedByPeriod, priorYearTrained } from "@/data/headcount";
+import { useDetails, industryBenchmark, priorYearTrained } from "@/lib/details";
 import { periodById } from "@/data/periods";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -16,13 +16,14 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export function RP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
+  const { headcountSummaryByPeriod, bumiputeraTrainingByPeriod, resignedByPeriod } = useDetails();
   const kpi13 = latestValue("KPI13", entityId, periodId);
   const kpi13Def = kpiById("KPI13");
   const period = periodById(periodId);
   const headcountSummary = headcountSummaryByPeriod[periodId];
   const bumiputeraTraining = bumiputeraTrainingByPeriod[periodId];
   const resigned = resignedByPeriod[periodId];
-  const turnoverRate = (resigned / headcountSummary.totalEmployees) * 100;
+  const turnoverRate = headcountSummary.totalEmployees > 0 ? (resigned / headcountSummary.totalEmployees) * 100 : 0;
   const target = kpi13Def.fyTarget ?? 0;
   const notCommenced = bumiputeraTraining.attendedOne === 0;
 

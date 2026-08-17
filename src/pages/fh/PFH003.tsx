@@ -5,11 +5,12 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { FhTabs } from "@/components/pk/FhTabs";
 import { InfoNote } from "@/components/pk/Misc";
 import type { ScreenId } from "@/lib/nav";
-import { actualVsBudget, varianceCommentary } from "@/data/financialDetail";
+import { useDetails } from "@/lib/details";
 import { useSession } from "@/lib/session";
 
 export function PFH003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { userName, readOnly } = useSession();
+  const { actualVsBudget, varianceCommentary } = useDetails();
   const [commentary, setCommentary] = useState(varianceCommentary);
 
   const save = () => {

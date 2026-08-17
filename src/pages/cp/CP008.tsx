@@ -4,13 +4,13 @@ import { DonutStat } from "@/components/pk/Charts";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
-import { bumiputeraProcurement } from "@/data/initiatives";
-import { bumiputeraTrainingByPeriod, headcountSummaryByPeriod } from "@/data/headcount";
+import { useDetails } from "@/lib/details";
 import { kpiById } from "@/data/kpis";
 
 export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
+  const { bumiputeraProcurement, bumiputeraTrainingByPeriod, headcountSummaryByPeriod } = useDetails();
   const kpi11 = latestValue("KPI11", entityId, periodId);
   const kpi12 = latestValue("KPI12", entityId, periodId);
   const kpi13 = latestValue("KPI13", entityId, periodId);

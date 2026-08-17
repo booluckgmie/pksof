@@ -5,15 +5,16 @@ import { LineTrend, DonutStat } from "@/components/pk/Charts";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
-import { headcountSummaryByPeriod, turnoverTrend, industryBenchmark, resignedByPeriod } from "@/data/headcount";
+import { useDetails, industryBenchmark } from "@/lib/details";
 
 export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
+  const { headcountSummaryByPeriod, turnoverTrend, resignedByPeriod } = useDetails();
   const kpi12 = latestValue("KPI12", entityId, periodId);
   const headcountSummary = headcountSummaryByPeriod[periodId];
   const resigned = resignedByPeriod[periodId];
-  const turnoverRate = (resigned / headcountSummary.totalEmployees) * 100;
+  const turnoverRate = headcountSummary.totalEmployees > 0 ? (resigned / headcountSummary.totalEmployees) * 100 : 0;
 
   return (
     <div>

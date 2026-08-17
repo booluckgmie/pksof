@@ -7,7 +7,7 @@ import { DonutStat, BarTrend } from "@/components/pk/Charts";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
-import { headcountSummaryByPeriod, headcountTrend, recruitmentIndexByPeriod } from "@/data/headcount";
+import { useDetails } from "@/lib/details";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-2">{children}</div>;
@@ -16,6 +16,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
+  const { headcountSummaryByPeriod, headcountTrend, recruitmentIndexByPeriod } = useDetails();
   const kpi9 = latestValue("KPI9", entityId, periodId);
   const recruitmentIndex = recruitmentIndexByPeriod[periodId];
   const totalWeighted = recruitmentIndex?.reduce((s, m) => s + m.weighted, 0) ?? null;

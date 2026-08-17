@@ -3,11 +3,12 @@ import { StatusChip } from "@/components/pk/StatusChip";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
-import { timeCharterCompliance } from "@/data/initiatives";
+import { useDetails } from "@/lib/details";
 
 export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
+  const { timeCharterCompliance } = useDetails();
   const kpi5 = latestValue("KPI5", entityId, periodId);
   const kpi6 = latestValue("KPI6", entityId, periodId);
 

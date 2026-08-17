@@ -4,9 +4,10 @@ import { FhTabs } from "@/components/pk/FhTabs";
 import { BarTrend, LineTrend } from "@/components/pk/Charts";
 import { InfoNote } from "@/components/pk/Misc";
 import type { ScreenId } from "@/lib/nav";
-import { quarterlyTrend } from "@/data/financialDetail";
+import { useDetails } from "@/lib/details";
 
 export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
+  const { quarterlyTrend } = useDetails();
   const rows = [
     { section: "INCOME METRICS", metric: "Revenue (RM Million)", values: quarterlyTrend.map((q) => q.revenue) },
     { section: "PROFIT METRICS", metric: "Profit Before Tax (RM Million)", values: quarterlyTrend.map((q) => q.pbt) },

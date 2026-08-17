@@ -6,11 +6,12 @@ import { BarTrend, LineTrend } from "@/components/pk/Charts";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
-import { quarterlyTrend } from "@/data/financialDetail";
+import { useDetails } from "@/lib/details";
 
 export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
+  const { quarterlyTrend } = useDetails();
   const kpi1 = latestValue("KPI1", entityId, periodId);
   const kpi2 = latestValue("KPI2", entityId, periodId);
   const met = [kpi1, kpi2].filter((k) => k.status === "met").length;

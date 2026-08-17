@@ -6,11 +6,12 @@ import { InfoTip } from "@/components/pk/InfoTip";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
-import { quarterlyTrend } from "@/data/financialDetail";
+import { useDetails } from "@/lib/details";
 
 export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
+  const { quarterlyTrend } = useDetails();
   const kpi1 = latestValue("KPI1", entityId, periodId);
   const kpi2 = latestValue("KPI2", entityId, periodId);
 

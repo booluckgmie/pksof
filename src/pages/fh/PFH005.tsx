@@ -5,13 +5,14 @@ import { StatCard } from "@/components/pk/Misc";
 import { pillarRowClass } from "@/components/pk/PillarGate";
 import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
-import { relatedPartyTransactions } from "@/data/financialDetail";
+import { useDetails } from "@/lib/details";
 import { useSession } from "@/lib/session";
 
 export function PFH005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { isRestrictedPillar, homeEntityName } = useSession();
+  const { relatedPartyTransactions } = useDetails();
   const total = relatedPartyTransactions.reduce((s, t) => s + t.value, 0);
-  const compliance = (relatedPartyTransactions.filter((t) => t.approved).length / relatedPartyTransactions.length) * 100;
+  const compliance = relatedPartyTransactions.length > 0 ? (relatedPartyTransactions.filter((t) => t.approved).length / relatedPartyTransactions.length) * 100 : 0;
 
   return (
     <div>

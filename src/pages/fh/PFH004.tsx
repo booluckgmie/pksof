@@ -2,16 +2,17 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { FhTabs } from "@/components/pk/FhTabs";
 import { StatCard } from "@/components/pk/Misc";
 import type { ScreenId } from "@/lib/nav";
-import { balanceSheet } from "@/data/financialDetail";
+import { useDetails } from "@/lib/details";
 
 export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
+  const { balanceSheet } = useDetails();
   const totalAssets = balanceSheet.assets.reduce((s, a) => s + a.value, 0);
   const totalLiabilities = balanceSheet.liabilities.reduce((s, l) => s + l.value, 0);
   const equity = totalAssets - totalLiabilities;
-  const equityRatio = (equity / totalAssets) * 100;
-  const equityGrowth = ((equity - balanceSheet.priorShareholdersFund) / balanceSheet.priorShareholdersFund) * 100;
+  const equityRatio = totalAssets > 0 ? (equity / totalAssets) * 100 : 0;
+  const equityGrowth = balanceSheet.priorShareholdersFund > 0 ? ((equity - balanceSheet.priorShareholdersFund) / balanceSheet.priorShareholdersFund) * 100 : 0;
 
-  const maxTrend = Math.max(...balanceSheet.trend.map((t) => t.equity + t.liabilities));
+  const maxTrend = Math.max(...balanceSheet.trend.map((t) => t.equity + t.liabilities), 1);
 
   return (
     <div>

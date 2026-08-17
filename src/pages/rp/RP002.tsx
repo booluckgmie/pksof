@@ -5,7 +5,7 @@ import { InfoTip } from "@/components/pk/InfoTip";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
-import { headcountSummaryByPeriod, departmentHeadcountFor, peopleDevProgrammes } from "@/data/headcount";
+import { useDetails, peopleDevProgrammes } from "@/lib/details";
 import { periodById } from "@/data/periods";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -15,6 +15,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
+  const { headcountSummaryByPeriod, departmentHeadcountFor } = useDetails();
   const kpi10 = latestValue("KPI10", entityId, periodId);
   const headcountSummary = headcountSummaryByPeriod[periodId];
   const departmentHeadcount = departmentHeadcountFor(periodId);
@@ -44,7 +45,7 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div key={d.dept} className="flex items-center gap-3">
               <span className="w-40 text-xs text-[hsl(var(--pk-ink-soft))] shrink-0">{d.dept}</span>
               <div className="flex-1 h-3 rounded-full bg-[hsl(var(--pk-surface-2))] overflow-hidden relative">
-                <div className="h-full bg-[hsl(var(--pk-accent))] rounded-full" style={{ width: `${(d.filled / d.approved) * 100}%` }} />
+                <div className="h-full bg-[hsl(var(--pk-accent))] rounded-full" style={{ width: `${d.approved > 0 ? (d.filled / d.approved) * 100 : 0}%` }} />
               </div>
               <span className="tnum text-xs text-[hsl(var(--pk-ink-faint))] w-16 text-right shrink-0">{d.filled} / {d.approved}</span>
             </div>
