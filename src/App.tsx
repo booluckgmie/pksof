@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Lock } from "lucide-react";
 import { SessionProvider, useSession } from "@/lib/session";
 import { WorkflowProvider } from "@/lib/workflow";
+import { DetailsProvider } from "@/lib/details";
 import { Shell } from "@/components/layout/Shell";
 import { Login } from "@/pages/Login";
 import { Main } from "@/pages/Main";
@@ -27,6 +28,7 @@ import { DataEntry } from "@/pages/workflow/DataEntry";
 import { VerifyPublish } from "@/pages/workflow/VerifyPublish";
 import { screens, type ScreenId } from "@/lib/nav";
 import { Toaster } from "@/components/ui/sonner";
+import { ScreenErrorBoundary } from "@/components/pk/ScreenErrorBoundary";
 
 const SCREEN_MAP: Record<ScreenId, React.ComponentType<{ onNavigate: (id: ScreenId) => void }>> = {
   MAIN: Main,
@@ -73,7 +75,9 @@ function AuthedApp() {
           </button>
         </div>
       ) : (
-        <Screen onNavigate={setScreen} />
+        <ScreenErrorBoundary key={screen} onReset={() => setScreen("MAIN")}>
+          <Screen onNavigate={setScreen} />
+        </ScreenErrorBoundary>
       )}
     </Shell>
   );
@@ -83,8 +87,10 @@ function App() {
   return (
     <SessionProvider>
       <WorkflowProvider>
-        <AuthedApp />
-        <Toaster position="bottom-right" richColors />
+        <DetailsProvider>
+          <AuthedApp />
+          <Toaster position="bottom-right" richColors />
+        </DetailsProvider>
       </WorkflowProvider>
     </SessionProvider>
   );

@@ -77,6 +77,14 @@ export function GroupedBarTrend({
 }
 
 export function LineTrend({ data, unit = "", color = "hsl(var(--pk-navy))" }: { data: Point[]; unit?: string; color?: string }) {
+  if (data.length === 0) {
+    return (
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Line trend chart — no data yet">
+        <line x1={PAD} y1={H - 24} x2={W - 6} y2={H - 24} stroke="hsl(var(--pk-border))" strokeWidth={1} />
+        <text x={W / 2} y={H / 2} textAnchor="middle" fontSize={10} className="fill-[hsl(var(--pk-ink-faint))]">No data yet</text>
+      </svg>
+    );
+  }
   const max = Math.max(...data.map((d) => d.value)) * 1.15;
   const min = Math.min(0, Math.min(...data.map((d) => d.value)) * 0.9);
   const range = max - min || 1;
