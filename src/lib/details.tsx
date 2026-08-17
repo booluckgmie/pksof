@@ -153,6 +153,11 @@ export function useDetails() {
   const metricRows = (key: string) => metrics.filter((r) => r.entityId === entityId && r.metricKey === key);
   const recordRows = (type: string) => records.filter((r) => r.entityId === entityId && r.recordType === type);
 
+  /** Exact lookup for a single figure, no carry-forward fallback — for Data Entry, where you
+   * want to know exactly what's recorded for the period you're editing, not an inherited value. */
+  const getMetricValue = (periodId: PeriodId, metricKey: string, dimension: string, dimension2 = ""): number | null =>
+    metrics.find((r) => r.entityId === entityId && r.periodId === periodId && r.metricKey === metricKey && r.dimension === dimension && r.dimension2 === dimension2)?.value ?? null;
+
   const headcountSummaryByPeriod = useMemo(() => {
     const rows = metricRows("headcount_summary");
     const available = periodsWithData(rows, entityId, () => true);
@@ -464,7 +469,7 @@ export function useDetails() {
   }, [metrics, entityId]);
 
   return {
-    loading, refresh,
+    loading, refresh, getMetricValue,
     headcountSummaryByPeriod, headcountTrend, genderBreakdownByPeriod,
     gradeBreakdownFor, ageBreakdownFor, ageGenderBreakdownFor, averageAgeByPeriod,
     gradeGenderCrossTabFor, departmentHeadcountFor, recruitmentIndexByPeriod,

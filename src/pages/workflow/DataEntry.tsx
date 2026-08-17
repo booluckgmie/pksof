@@ -17,24 +17,96 @@ import { upsertDetailMetric } from "@/lib/api/details";
 
 type Entries = Record<string, { value: string; note: string }>;
 
-const DETAIL_METRICS: { label: string; metricKey: string; dimension: string; unit: string }[] = [
-  { label: "Total Employees", metricKey: "headcount_summary", dimension: "total_employees", unit: "" },
-  { label: "Bumiputera", metricKey: "headcount_summary", dimension: "bumiputera", unit: "" },
-  { label: "Non-Bumiputera", metricKey: "headcount_summary", dimension: "non_bumiputera", unit: "" },
-  { label: "Approved Headcount", metricKey: "headcount_summary", dimension: "approved_headcount", unit: "" },
-  { label: "Filled Position", metricKey: "headcount_summary", dimension: "filled_position", unit: "" },
-  { label: "Male", metricKey: "gender_breakdown", dimension: "male", unit: "" },
-  { label: "Female", metricKey: "gender_breakdown", dimension: "female", unit: "" },
-  { label: "Revenue", metricKey: "financial_trend", dimension: "revenue", unit: "RM mil" },
-  { label: "Profit Before Tax", metricKey: "financial_trend", dimension: "pbt", unit: "RM mil" },
-  { label: "Cost-to-Income Ratio", metricKey: "financial_trend", dimension: "cir", unit: "%" },
-  { label: "Net Profit Margin", metricKey: "financial_trend", dimension: "net_margin", unit: "%" },
+interface DetailField {
+  section: string;
+  label: string;
+  metricKey: string;
+  dimension: string;
+  dimension2?: string;
+  unit?: string;
+}
+
+const GRADES = ["Top Management", "Senior Management", "Management", "Executive", "Non-Executive"];
+const BANDS = ["≤30", "31–40", "41–50", "51+"];
+const DEPTS = ["Finance", "Human Resource", "Corporate Performance", "IT & Digital", "Risk & Compliance"];
+const REC_METRICS = ["Time to Hire (TTH)", "MRF Fulfilment Rate", "Quality of Hire", "Offer Acceptance Rate"];
+const ME_ENTITIES = ["SJPP", "SJKP", "DanaInfra", "DanaHarta", "GovCo"];
+const PROC_DEPTS = ["Administration & Security", "Corporate Communications", "Information Technology"];
+const BS_ASSETS = ["Cash & Equivalents", "Fixed Income Investments", "Receivables & Others", "Fixed Assets (Net)"];
+const BS_LIABILITIES = ["Trade & Other Payables", "Deferred Revenue", "Other Liabilities"];
+
+/** Every parameter the Excel template's "Workforce Summary" / "Financial Trend" / "All Other
+ * Detail Data" sheets cover, mirrored here so the web form has full parity with the workbook. */
+const DETAIL_FIELDS: DetailField[] = [
+  { section: "Workforce Summary", label: "Total Employees", metricKey: "headcount_summary", dimension: "total_employees" },
+  { section: "Workforce Summary", label: "Bumiputera", metricKey: "headcount_summary", dimension: "bumiputera" },
+  { section: "Workforce Summary", label: "Non-Bumiputera", metricKey: "headcount_summary", dimension: "non_bumiputera" },
+  { section: "Workforce Summary", label: "Approved Headcount", metricKey: "headcount_summary", dimension: "approved_headcount" },
+  { section: "Workforce Summary", label: "Filled Position", metricKey: "headcount_summary", dimension: "filled_position" },
+  { section: "Workforce Summary", label: "Male", metricKey: "gender_breakdown", dimension: "male" },
+  { section: "Workforce Summary", label: "Female", metricKey: "gender_breakdown", dimension: "female" },
+  { section: "Workforce Summary", label: "Average Age", metricKey: "average_age", dimension: "avg", unit: "years" },
+
+  ...GRADES.map((g): DetailField => ({ section: "Grade Breakdown", label: g, metricKey: "grade_breakdown", dimension: g })),
+
+  ...BANDS.map((b): DetailField => ({ section: "Age Breakdown", label: b, metricKey: "age_breakdown", dimension: b })),
+
+  ...BANDS.flatMap((b): DetailField[] => [
+    { section: "Age × Gender", label: `${b} — Male`, metricKey: "age_gender_breakdown", dimension: b, dimension2: "male" },
+    { section: "Age × Gender", label: `${b} — Female`, metricKey: "age_gender_breakdown", dimension: b, dimension2: "female" },
+  ]),
+
+  ...GRADES.flatMap((g): DetailField[] => [
+    { section: "Grade × Gender × Avg Age", label: `${g} — Male`, metricKey: "grade_gender_crosstab", dimension: g, dimension2: "male" },
+    { section: "Grade × Gender × Avg Age", label: `${g} — Female`, metricKey: "grade_gender_crosstab", dimension: g, dimension2: "female" },
+    { section: "Grade × Gender × Avg Age", label: `${g} — Avg Age`, metricKey: "grade_gender_crosstab", dimension: g, dimension2: "avgAge", unit: "years" },
+  ]),
+
+  ...DEPTS.flatMap((d): DetailField[] => [
+    { section: "Department Headcount", label: `${d} — Approved`, metricKey: "dept_headcount", dimension: d, dimension2: "approved" },
+    { section: "Department Headcount", label: `${d} — Filled`, metricKey: "dept_headcount", dimension: d, dimension2: "filled" },
+  ]),
+
+  ...REC_METRICS.flatMap((m): DetailField[] => [
+    { section: "Recruitment Index", label: `${m} — Weight`, metricKey: "recruitment_index", dimension: m, dimension2: "weight" },
+    { section: "Recruitment Index", label: `${m} — Weighted Score`, metricKey: "recruitment_index", dimension: m, dimension2: "weighted" },
+  ]),
+
+  { section: "Bumiputera Training", label: "Pool Identified", metricKey: "bumiputera_training", dimension: "pool_identified" },
+  { section: "Bumiputera Training", label: "Attended 1 Programme", metricKey: "bumiputera_training", dimension: "attended_one" },
+  { section: "Bumiputera Training", label: "Attended 2+ Programmes", metricKey: "bumiputera_training", dimension: "attended_two_plus" },
+
+  { section: "Turnover", label: "Employees Resigned", metricKey: "resigned", dimension: "count" },
+
+  { section: "Financial Trend", label: "Revenue", metricKey: "financial_trend", dimension: "revenue", unit: "RM mil" },
+  { section: "Financial Trend", label: "Profit Before Tax", metricKey: "financial_trend", dimension: "pbt", unit: "RM mil" },
+  { section: "Financial Trend", label: "Cost-to-Income Ratio", metricKey: "financial_trend", dimension: "cir", unit: "%" },
+  { section: "Financial Trend", label: "Net Profit Margin", metricKey: "financial_trend", dimension: "net_margin", unit: "%" },
+
+  { section: "Balance Sheet", label: "Shareholders' Fund", metricKey: "balance_sheet", dimension: "shareholders_fund", unit: "RM mil" },
+  { section: "Balance Sheet", label: "Total Liabilities", metricKey: "balance_sheet", dimension: "total_liabilities", unit: "RM mil" },
+  ...BS_ASSETS.map((a): DetailField => ({ section: "Balance Sheet", label: `${a} (Asset)`, metricKey: "balance_sheet_lines", dimension: a, dimension2: "asset", unit: "RM mil" })),
+  ...BS_LIABILITIES.map((l): DetailField => ({ section: "Balance Sheet", label: `${l} (Liability)`, metricKey: "balance_sheet_lines", dimension: l, dimension2: "liability", unit: "RM mil" })),
+
+  ...ME_ENTITIES.flatMap((e): DetailField[] => [
+    { section: "Managed Entity Ratings", label: `${e} — Met`, metricKey: "managed_entity_ratings", dimension: e, dimension2: "met" },
+    { section: "Managed Entity Ratings", label: `${e} — Not Met`, metricKey: "managed_entity_ratings", dimension: e, dimension2: "not_met" },
+    { section: "Managed Entity Ratings", label: `${e} — Not Measured`, metricKey: "managed_entity_ratings", dimension: e, dimension2: "not_measured" },
+    { section: "Managed Entity Ratings", label: `${e} — Achievement`, metricKey: "managed_entity_ratings", dimension: e, dimension2: "achievement", unit: "%" },
+  ]),
+
+  ...PROC_DEPTS.flatMap((d): DetailField[] => [
+    { section: "Bumiputera Procurement", label: `${d} — FY Target`, metricKey: "bumiputera_procurement", dimension: d, dimension2: "fy_target", unit: "RM mil" },
+    { section: "Bumiputera Procurement", label: `${d} — YTD Actual`, metricKey: "bumiputera_procurement", dimension: d, dimension2: "ytd_actual", unit: "RM mil" },
+  ]),
 ];
+
+const DETAIL_SECTIONS = [...new Set(DETAIL_FIELDS.map((f) => f.section))];
 
 export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, userName, periodId: sessionPeriodId } = useSession();
-  const { submit, submissions, latestValue } = useWorkflow();
-  const { headcountSummaryByPeriod, genderBreakdownByPeriod, quarterlyTrend, refresh } = useDetails();
+  const { submit, submissions, latestValue, editSubmission } = useWorkflow();
+  const { getMetricValue, refresh } = useDetails();
 
   const [channel, setChannel] = useState<"web-form" | "excel-upload">("web-form");
   const [formSection, setFormSection] = useState<"kpi" | "detail">("kpi");
@@ -53,21 +125,10 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
   const [detailSheetsFound, setDetailSheetsFound] = useState<string[]>([]);
   const [skippedNoValue, setSkippedNoValue] = useState(0);
   const [submittingParsed, setSubmittingParsed] = useState(false);
+  const [editingSubId, setEditingSubId] = useState<string | null>(null);
+  const [editingSubValue, setEditingSubValue] = useState("");
 
-  const currentDetailValue = (metricKey: string, dimension: string): number | null => {
-    if (metricKey === "headcount_summary") return (headcountSummaryByPeriod[periodId] as unknown as Record<string, number>)[
-      dimension === "total_employees" ? "totalEmployees" : dimension === "non_bumiputera" ? "nonBumiputera" : dimension === "approved_headcount" ? "approvedHeadcount" : dimension === "filled_position" ? "filledPosition" : "bumiputera"
-    ] ?? null;
-    if (metricKey === "gender_breakdown") return (genderBreakdownByPeriod[periodId] as unknown as Record<string, number>)[dimension] ?? null;
-    if (metricKey === "financial_trend") {
-      const label = periods.find((p) => p.id === periodId)?.label.replace("FY20", "FY");
-      const row = quarterlyTrend.find((t) => t.period === label);
-      if (!row) return null;
-      const key = dimension === "net_margin" ? "netMargin" : dimension;
-      return (row as unknown as Record<string, number>)[key] ?? null;
-    }
-    return null;
-  };
+  const fieldKey = (f: DetailField) => `${f.metricKey}::${f.dimension}::${f.dimension2 ?? ""}`;
 
   const detailFilledCount = Object.values(detailEntries).filter((v) => v.trim() !== "").length;
 
@@ -86,9 +147,9 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
         invalid++;
         continue;
       }
-      const [metricKey, dimension] = key.split("::");
+      const [metricKey, dimension, dimension2] = key.split("::");
       try {
-        await upsertDetailMetric({ entityId, periodId, metricKey, dimension, value });
+        await upsertDetailMetric({ entityId, periodId, metricKey, dimension, dimension2, value });
         saved++;
       } catch (err) {
         toast.error(`Couldn't save ${dimension}`, { description: err instanceof Error ? err.message : String(err) });
@@ -212,6 +273,17 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
     setSkippedNoValue(0);
   };
 
+  const saveSubmissionEdit = (id: string, note: string) => {
+    const numeric = Number(editingSubValue);
+    if (editingSubValue.trim() === "" || Number.isNaN(numeric)) {
+      toast.error("Value must be numeric.");
+      return;
+    }
+    editSubmission(id, numeric, note);
+    toast.success("Submission updated");
+    setEditingSubId(null);
+  };
+
   const renderCurrent = (k: KpiExt) => {
     const r = latestValue(k.id, entityId, periodId);
     if (r.ytdActual === null) return <span className="text-[hsl(var(--pk-ink-faint))]">—</span>;
@@ -267,7 +339,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
             onClick={() => setFormSection("detail")}
             className={cn("rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", formSection === "detail" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}
           >
-            Workforce &amp; Financial Snapshot
+            Workforce, Financial &amp; Other Detail
           </button>
         </div>
       )}
@@ -345,9 +417,9 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
           </div>
         ) : channel === "web-form" && formSection === "detail" ? (
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-5 flex flex-col gap-4">
-            <div className="overflow-x-auto">
+            <div className="max-h-[560px] overflow-y-auto overflow-x-auto">
               <table className="w-full text-sm min-w-[520px]">
-                <thead>
+                <thead className="sticky top-0 bg-[hsl(var(--pk-surface))] z-10">
                   <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
                     <th className="text-left font-medium pb-1.5">Metric</th>
                     <th className="text-right font-medium pb-1.5 pr-2 w-24">Current</th>
@@ -355,34 +427,41 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
                   </tr>
                 </thead>
                 <tbody>
-                  {DETAIL_METRICS.map((m) => {
-                    const key = `${m.metricKey}::${m.dimension}`;
-                    const current = currentDetailValue(m.metricKey, m.dimension);
-                    return (
-                      <tr key={key} className="border-t border-[hsl(var(--pk-border))]">
-                        <td className="py-2 pr-2">
-                          <span className="font-medium text-[hsl(var(--pk-ink))]">{m.label}</span>
-                          {m.unit && <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]"> · {m.unit}</span>}
-                        </td>
-                        <td className="py-2 pr-2 text-right tnum">{current === null ? <span className="text-[hsl(var(--pk-ink-faint))]">—</span> : <>{current}{m.unit === "%" ? "%" : ""}</>}</td>
-                        <td className="py-2 pl-2">
-                          <input
-                            value={detailEntries[key] ?? ""}
-                            onChange={(e) => setDetailEntries((prev) => ({ ...prev, [key]: e.target.value }))}
-                            type="number"
-                            step="any"
-                            placeholder="e.g. 219"
-                            className="w-full rounded-md border border-[hsl(var(--pk-border))] px-2 py-1.5 text-sm bg-transparent outline-none focus:border-[hsl(var(--pk-accent))] tnum text-right"
-                          />
-                        </td>
+                  {DETAIL_SECTIONS.map((section) => (
+                    <Fragment key={section}>
+                      <tr className="bg-[hsl(var(--pk-surface-2))]">
+                        <td colSpan={3} className="py-1.5 px-2 text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-medium">{section}</td>
                       </tr>
-                    );
-                  })}
+                      {DETAIL_FIELDS.filter((f) => f.section === section).map((f) => {
+                        const key = fieldKey(f);
+                        const current = getMetricValue(periodId, f.metricKey, f.dimension, f.dimension2);
+                        return (
+                          <tr key={key} className="border-t border-[hsl(var(--pk-border))]">
+                            <td className="py-2 pr-2">
+                              <span className="font-medium text-[hsl(var(--pk-ink))]">{f.label}</span>
+                              {f.unit && <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]"> · {f.unit}</span>}
+                            </td>
+                            <td className="py-2 pr-2 text-right tnum">{current === null ? <span className="text-[hsl(var(--pk-ink-faint))]">—</span> : <>{current}{f.unit === "%" ? "%" : ""}</>}</td>
+                            <td className="py-2 pl-2">
+                              <input
+                                value={detailEntries[key] ?? ""}
+                                onChange={(e) => setDetailEntries((prev) => ({ ...prev, [key]: e.target.value }))}
+                                type="number"
+                                step="any"
+                                placeholder="e.g. 219"
+                                className="w-full rounded-md border border-[hsl(var(--pk-border))] px-2 py-1.5 text-sm bg-transparent outline-none focus:border-[hsl(var(--pk-accent))] tnum text-right"
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </Fragment>
+                  ))}
                 </tbody>
               </table>
             </div>
             <div className="flex items-center justify-between gap-3 pt-1 border-t border-[hsl(var(--pk-border))]">
-              <span className="text-[13px] text-[hsl(var(--pk-ink-faint))]">{detailFilledCount} of {DETAIL_METRICS.length} filled in</span>
+              <span className="text-[13px] text-[hsl(var(--pk-ink-faint))]">{detailFilledCount} of {DETAIL_FIELDS.length} filled in</span>
               <button
                 onClick={handleSaveDetailSnapshot}
                 disabled={detailFilledCount === 0 || savingDetail}
@@ -391,7 +470,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
                 <Send className="h-4 w-4" />{savingDetail ? "Saving…" : `Save ${detailFilledCount > 0 ? detailFilledCount : ""} figure${detailFilledCount === 1 ? "" : "s"}`}
               </button>
             </div>
-            <InfoNote>Unlike the KPI scorecard, these figures save directly and appear on the dashboards immediately — there's no checker queue behind supporting data like headcount and financial trend. Data owners: HR (workforce), Finance (financial).</InfoNote>
+            <InfoNote>Unlike the KPI scorecard, these figures save directly and appear on the dashboards immediately — there's no checker queue behind supporting data. Covers every parameter in the Excel template's Workforce Summary, Financial Trend and All Other Detail Data sheets — fill in only what changed this quarter.</InfoNote>
           </div>
         ) : (
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-5 flex flex-col gap-4 h-fit">
@@ -462,15 +541,42 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
             <div className="flex flex-col divide-y divide-[hsl(var(--pk-border))]">
               {mySubmissions.map((s) => {
                 const k = kpiById(s.kpiId);
+                const editing = editingSubId === s.id;
                 return (
                   <div key={s.id} className="py-2.5">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-medium text-[hsl(var(--pk-ink))]">{k.name}</span>
-                      <WorkflowChip status={s.status} />
+                      <div className="flex items-center gap-1.5">
+                        <WorkflowChip status={s.status} />
+                        {s.status === "submitted" && !editing && (
+                          <button
+                            onClick={() => { setEditingSubId(s.id); setEditingSubValue(String(s.value)); }}
+                            className="text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-accent))] transition-colors"
+                            title="Edit before it's reviewed"
+                          >
+                            <PenLine className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-0.5">
-                      {periods.find((p) => p.id === s.periodId)?.label} · {s.value}{k.unit === "%" ? "%" : ""} · {s.source === "web-form" ? "Web form" : "Excel upload"} · {new Date(s.submittedAt).toLocaleDateString()}
-                    </div>
+                    {editing ? (
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <input
+                          value={editingSubValue}
+                          onChange={(e) => setEditingSubValue(e.target.value)}
+                          type="number"
+                          step="any"
+                          autoFocus
+                          className="w-24 rounded-md border border-[hsl(var(--pk-accent))] px-2 py-1 text-xs bg-transparent outline-none tnum"
+                        />
+                        <button onClick={() => saveSubmissionEdit(s.id, s.note)} className="text-xs font-medium text-[hsl(var(--pk-accent))] px-1.5">Save</button>
+                        <button onClick={() => setEditingSubId(null)} className="text-xs text-[hsl(var(--pk-ink-faint))] px-1.5">Cancel</button>
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-0.5">
+                        {periods.find((p) => p.id === s.periodId)?.label} · {s.value}{k.unit === "%" ? "%" : ""} · {s.source === "web-form" ? "Web form" : "Excel upload"} · {new Date(s.submittedAt).toLocaleDateString()}
+                      </div>
+                    )}
                     {s.status === "rejected" && s.reviewNote && (
                       <div className="text-[11px] text-[hsl(var(--pk-bad))] mt-1">Rejected: {s.reviewNote}</div>
                     )}
