@@ -7,9 +7,13 @@ sandbox it was written in blocks the connection) — it's untested against your 
 Run it yourself:
 
 - **Supabase Dashboard**: open your project → SQL Editor → paste the contents of
-  `migrations/0001_init.sql` → Run. Then do the same with `seed.sql`.
-- **Supabase CLI** (alternative): `supabase db push` after linking the project, or
-  `psql "$DATABASE_URL" -f supabase/migrations/0001_init.sql && psql "$DATABASE_URL" -f supabase/seed.sql`.
+  `migrations/0001_init.sql` → Run. Then `migrations/0002_tighten_write_policies.sql` → Run.
+  Then `seed.sql`.
+- **Supabase CLI** (alternative): `supabase db push` after linking the project, or run each
+  file in order with `psql "$DATABASE_URL" -f <file>`.
+
+If you already ran `0001_init.sql` before `0002` existed, just run `0002` on its own now — it
+`drop`s and replaces the four write policies it targets, so it's safe to apply on top.
 
 ## 2. Point the app at your project
 
@@ -31,10 +35,22 @@ publishable (anon) key — both are on the Supabase dashboard under Settings →
 
 ## 4. Security note — this app has no real login yet
 
-The "Sign in" screen accepts any typed corporate ID (a demo/prototype pattern, not real auth).
-The RLS policies in the migration are correspondingly permissive: public read on everything,
-open insert/update on submissions. **Before this goes anywhere near production**: wire up
-Supabase Auth, tie `app_users.id` to `auth.uid()`, and tighten the policies so a submission's
+The "Sign in" screen accepts any typed corporate ID (a demo/prototype pattern, not real auth),
+so no RLS policy here can check *who* is writing — there's no `auth.uid()` to check against.
+Read access is deliberately public (it's a dashboard, not secret data).
+
+Writes are a different story: the publishable key is exposed in the deployed bundle, so
+`0001`'s original `with check (true)` on inserts/updates meant literally anyone with that key
+could write straight to the tables via the REST API, skipping the app's maker-checker flow
+entirely — Supabase's own security advisor flags exactly this. `0002_tighten_write_policies.sql`
+closes that without real auth by enforcing the state machine at the database level instead:
+a submission can only be inserted as `submitted`, can only move from `submitted` to
+`published`/`rejected` (never edited again after review), and `fact_kpi_results` can only be
+written for a kpi/entity/period/value that has a matching `published` row in `submissions` — so
+a figure can't be forged on the dashboard without a real approval trail behind it.
+
+That's still not identity-based, though. **Before this goes anywhere near production**: wire up
+Supabase Auth, tie `app_users.id` to `auth.uid()`, and add policies so a submission's
 `submitted_by` / a review's `reviewed_by` must match the signed-in user, and only users whose
 role has `can_verify` can update `submissions.status`.
 
