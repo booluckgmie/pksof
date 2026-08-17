@@ -20,6 +20,10 @@ export const headcountSummaryByPeriod: Record<PeriodId, HeadcountSummary> = {
   Q2FY26: { totalEmployees: 219, bumiputera: 199, nonBumiputera: 20, approvedHeadcount: 231, filledPosition: 219 },
   Q3FY26: { totalEmployees: 219, bumiputera: 199, nonBumiputera: 20, approvedHeadcount: 231, filledPosition: 219 },
   Q4FY26: { totalEmployees: 219, bumiputera: 199, nonBumiputera: 20, approvedHeadcount: 231, filledPosition: 219 },
+  Q1FY27: { totalEmployees: 219, bumiputera: 199, nonBumiputera: 20, approvedHeadcount: 231, filledPosition: 219 },
+  Q2FY27: { totalEmployees: 219, bumiputera: 199, nonBumiputera: 20, approvedHeadcount: 231, filledPosition: 219 },
+  Q3FY27: { totalEmployees: 219, bumiputera: 199, nonBumiputera: 20, approvedHeadcount: 231, filledPosition: 219 },
+  Q4FY27: { totalEmployees: 219, bumiputera: 199, nonBumiputera: 20, approvedHeadcount: 231, filledPosition: 219 },
 };
 
 export const headcountTrend = [
@@ -38,6 +42,10 @@ export const genderBreakdownByPeriod: Record<PeriodId, { male: number; female: n
   Q2FY26: { male: 116, female: 103 },
   Q3FY26: { male: 116, female: 103 },
   Q4FY26: { male: 116, female: 103 },
+  Q1FY27: { male: 116, female: 103 },
+  Q2FY27: { male: 116, female: 103 },
+  Q3FY27: { male: 116, female: 103 },
+  Q4FY27: { male: 116, female: 103 },
 };
 
 export const gradeBreakdownByPeriod: Record<PeriodId, { grade: string; count: number }[]> = {
@@ -62,6 +70,7 @@ export const gradeBreakdownByPeriod: Record<PeriodId, { grade: string; count: nu
     { grade: "Management", count: 52 }, { grade: "Executive", count: 104 }, { grade: "Non-Executive", count: 35 },
   ],
   Q2FY26: [], Q3FY26: [], Q4FY26: [], // not yet reported
+  Q1FY27: [], Q2FY27: [], Q3FY27: [], Q4FY27: [],
 };
 
 export const ageBreakdownByPeriod: Record<PeriodId, { band: string; count: number }[]> = {
@@ -71,6 +80,7 @@ export const ageBreakdownByPeriod: Record<PeriodId, { band: string; count: numbe
   Q4FY25: [{ band: "≤30", count: 38 }, { band: "31–40", count: 91 }, { band: "41–50", count: 61 }, { band: "51+", count: 27 }],
   Q1FY26: [{ band: "≤30", count: 38 }, { band: "31–40", count: 92 }, { band: "41–50", count: 61 }, { band: "51+", count: 28 }],
   Q2FY26: [], Q3FY26: [], Q4FY26: [],
+  Q1FY27: [], Q2FY27: [], Q3FY27: [], Q4FY27: [],
 };
 
 /** Male / female headcount per age band (HRMS) — each period's bands sum to that period's ageBreakdown and genderBreakdown. */
@@ -81,11 +91,13 @@ export const ageGenderBreakdownByPeriod: Record<PeriodId, { band: string; male: 
   Q4FY25: [{ band: "≤30", male: 20, female: 18 }, { band: "31–40", male: 48, female: 43 }, { band: "41–50", male: 32, female: 29 }, { band: "51+", male: 15, female: 12 }],
   Q1FY26: [{ band: "≤30", male: 20, female: 18 }, { band: "31–40", male: 48, female: 44 }, { band: "41–50", male: 32, female: 29 }, { band: "51+", male: 16, female: 12 }],
   Q2FY26: [], Q3FY26: [], Q4FY26: [],
+  Q1FY27: [], Q2FY27: [], Q3FY27: [], Q4FY27: [],
 };
 
 export const averageAgeByPeriod: Record<PeriodId, number> = {
   Q1FY25: 38.9, Q2FY25: 38.8, Q3FY25: 38.7, Q4FY25: 38.6,
   Q1FY26: 38.6, Q2FY26: 38.6, Q3FY26: 38.6, Q4FY26: 38.6,
+  Q1FY27: 38.6, Q2FY27: 38.6, Q3FY27: 38.6, Q4FY27: 38.6,
 };
 
 export const gradeGenderCrossTabByPeriod: Record<PeriodId, { grade: string; male: number; female: number; avgAge: number }[]> = {
@@ -125,6 +137,7 @@ export const gradeGenderCrossTabByPeriod: Record<PeriodId, { grade: string; male
     { grade: "Non-Executive", male: 20, female: 15, avgAge: 35.8 },
   ],
   Q2FY26: [], Q3FY26: [], Q4FY26: [],
+  Q1FY27: [], Q2FY27: [], Q3FY27: [], Q4FY27: [],
 };
 
 export const departmentHeadcountByPeriod: Record<PeriodId, { dept: string; approved: number; filled: number }[]> = {
@@ -154,6 +167,7 @@ export const departmentHeadcountByPeriod: Record<PeriodId, { dept: string; appro
     { dept: "Risk & Compliance", approved: 16, filled: 14 },
   ],
   Q2FY26: [], Q3FY26: [], Q4FY26: [],
+  Q1FY27: [], Q2FY27: [], Q3FY27: [], Q4FY27: [],
 };
 
 /** Quarters not yet reported (empty array) carry forward the latest known (Q1 FY2026) breakdown. */
@@ -251,6 +265,7 @@ export const industryBenchmark = 4.2;
 export const resignedByPeriod: Record<PeriodId, number> = {
   Q1FY25: 6, Q2FY25: 4, Q3FY25: 5, Q4FY25: 3,
   Q1FY26: 5, Q2FY26: 5, Q3FY26: 5, Q4FY26: 5,
+  Q1FY27: 5, Q2FY27: 5, Q3FY27: 5, Q4FY27: 5,
 };
 
 interface BumiputeraTrainingSnapshot {
@@ -270,6 +285,10 @@ export const bumiputeraTrainingByPeriod: Record<PeriodId, BumiputeraTrainingSnap
   Q2FY26: { poolIdentified: 140, attendedOne: 0, attendedTwoPlus: 0, stage: "Not yet commenced" },
   Q3FY26: { poolIdentified: 140, attendedOne: 0, attendedTwoPlus: 0, stage: "Not yet commenced" },
   Q4FY26: { poolIdentified: 140, attendedOne: 0, attendedTwoPlus: 0, stage: "Not yet commenced" },
+  Q1FY27: { poolIdentified: 140, attendedOne: 0, attendedTwoPlus: 0, stage: "Not yet commenced" },
+  Q2FY27: { poolIdentified: 140, attendedOne: 0, attendedTwoPlus: 0, stage: "Not yet commenced" },
+  Q3FY27: { poolIdentified: 140, attendedOne: 0, attendedTwoPlus: 0, stage: "Not yet commenced" },
+  Q4FY27: { poolIdentified: 140, attendedOne: 0, attendedTwoPlus: 0, stage: "Not yet commenced" },
 };
 
 /** FY2025's final closing figure — a fixed year-over-year reference, shown regardless of which period is selected. */

@@ -35,7 +35,8 @@ export interface Kpi {
 
 export type PeriodId =
   | "Q1FY25" | "Q2FY25" | "Q3FY25" | "Q4FY25"
-  | "Q1FY26" | "Q2FY26" | "Q3FY26" | "Q4FY26";
+  | "Q1FY26" | "Q2FY26" | "Q3FY26" | "Q4FY26"
+  | "Q1FY27" | "Q2FY27" | "Q3FY27" | "Q4FY27";
 
 export interface Period {
   id: PeriodId;

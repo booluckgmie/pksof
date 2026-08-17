@@ -11,6 +11,11 @@ export const periods: Period[] = [
   { id: "Q2FY26", label: "Q2 FY2026", fy: "FY2026", quarter: 2, cumulativeThreshold: 0.50, mofThreshold: 0.40, isCurrent: false, isOpenForEntry: true },
   { id: "Q3FY26", label: "Q3 FY2026", fy: "FY2026", quarter: 3, cumulativeThreshold: 0.75, mofThreshold: 0.60, isCurrent: true, isOpenForEntry: true },
   { id: "Q4FY26", label: "Q4 FY2026", fy: "FY2026", quarter: 4, cumulativeThreshold: 1.00, mofThreshold: 0.80, isCurrent: false, isOpenForEntry: false },
+  // FY2027 — future financial year, not yet open for entry.
+  { id: "Q1FY27", label: "Q1 FY2027", fy: "FY2027", quarter: 1, cumulativeThreshold: 0.25, mofThreshold: 0.20, isCurrent: false, isOpenForEntry: false },
+  { id: "Q2FY27", label: "Q2 FY2027", fy: "FY2027", quarter: 2, cumulativeThreshold: 0.50, mofThreshold: 0.40, isCurrent: false, isOpenForEntry: false },
+  { id: "Q3FY27", label: "Q3 FY2027", fy: "FY2027", quarter: 3, cumulativeThreshold: 0.75, mofThreshold: 0.60, isCurrent: false, isOpenForEntry: false },
+  { id: "Q4FY27", label: "Q4 FY2027", fy: "FY2027", quarter: 4, cumulativeThreshold: 1.00, mofThreshold: 0.80, isCurrent: false, isOpenForEntry: false },
 ];
 
 export const periodById = (id: string) => periods.find((p) => p.id === id)!;
