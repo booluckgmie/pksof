@@ -7,7 +7,8 @@ sandbox it was written in blocks the connection) — it's untested against your 
 Run it yourself:
 
 - **Supabase Dashboard**: open your project → SQL Editor → run, in order: `migrations/0001_init.sql`,
-  `migrations/0002_tighten_write_policies.sql`, `migrations/0003_detail_data.sql`, then `seed.sql`.
+  `migrations/0002_tighten_write_policies.sql`, `migrations/0003_detail_data.sql`,
+  `migrations/0004_allow_pending_submission_edits.sql`, then `seed.sql`.
 - **Supabase CLI** (alternative): `supabase db push` after linking the project, or run each
   file in order with `psql "$DATABASE_URL" -f <file>`.
 

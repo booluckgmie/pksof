@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import type { EntityId, FactKpiResultSeed, KpiStatus, PeriodId, Submission, SubmissionSource } from "@/types";
 import { kpiById, kpiStatus, weightedAchievement } from "@/data/kpis";
 import { fetchFactResults, upsertFactResult } from "@/lib/api/facts";
-import { fetchSubmissions, insertSubmission, updateSubmissionStatus } from "@/lib/api/submissions";
+import { fetchSubmissions, insertSubmission, updateSubmissionStatus, updateSubmissionValue } from "@/lib/api/submissions";
 
 interface WorkflowContextValue {
   submissions: Submission[];
@@ -17,7 +17,9 @@ interface WorkflowContextValue {
     source: SubmissionSource;
     submittedBy: string;
   }) => void;
+  editSubmission: (id: string, value: number, note: string) => void;
   approve: (id: string, reviewedBy: string, reviewNote?: string) => void;
+  approveAll: (reviewedBy: string, reviewNote?: string) => void;
   reject: (id: string, reviewedBy: string, reviewNote: string) => void;
   pending: Submission[];
   latestValue: (kpiId: string, entityId: EntityId, periodId: PeriodId) => KpiResult;
@@ -86,7 +88,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const approve: WorkflowContextValue["approve"] = (id, reviewedBy, reviewNote) => {
+  const approveOne = (id: string, reviewedBy: string, reviewNote?: string) => {
     const target = submissions.find((s) => s.id === id);
     const reviewedAt = new Date().toISOString();
     setSubmissions((prev) =>
@@ -112,6 +114,23 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
         console.error("Failed to publish submission", err);
         toast.error("Publish didn't save to the database", { description: err.message });
       });
+  };
+
+  const approve: WorkflowContextValue["approve"] = (id, reviewedBy, reviewNote) => approveOne(id, reviewedBy, reviewNote);
+
+  const approveAll: WorkflowContextValue["approveAll"] = (reviewedBy, reviewNote) => {
+    const ids = submissions.filter((s) => s.status === "submitted").map((s) => s.id);
+    for (const id of ids) approveOne(id, reviewedBy, reviewNote);
+  };
+
+  const editSubmission: WorkflowContextValue["editSubmission"] = (id, value, note) => {
+    const previous = submissions.find((s) => s.id === id);
+    setSubmissions((prev) => prev.map((s) => (s.id === id ? { ...s, value, note } : s)));
+    updateSubmissionValue({ id, value, note }).catch((err: Error) => {
+      console.error("Failed to update submission", err);
+      toast.error("Edit wasn't saved", { description: err.message });
+      if (previous) setSubmissions((prev) => prev.map((s) => (s.id === id ? previous : s)));
+    });
   };
 
   const reject: WorkflowContextValue["reject"] = (id, reviewedBy, reviewNote) => {
@@ -165,7 +184,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <WorkflowContext.Provider value={{ submissions, loading, submit, approve, reject, pending, latestValue }}>
+    <WorkflowContext.Provider value={{ submissions, loading, submit, editSubmission, approve, approveAll, reject, pending, latestValue }}>
       {children}
     </WorkflowContext.Provider>
   );

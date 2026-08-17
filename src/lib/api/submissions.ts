@@ -65,6 +65,21 @@ export async function insertSubmission(input: {
   if (error) throw error;
 }
 
+/** Corrects a still-pending submission's value/note in place, without touching its status —
+ * RLS only allows this while status is 'submitted' (see migration 0004). */
+export async function updateSubmissionValue(input: {
+  id: string;
+  value: number;
+  note: string;
+}): Promise<void> {
+  const { error } = await getSupabase()
+    .from("submissions")
+    .update({ value: input.value, note: input.note })
+    .eq("id", input.id)
+    .eq("status", "submitted");
+  if (error) throw error;
+}
+
 export async function updateSubmissionStatus(input: {
   id: string;
   status: "published" | "rejected";
