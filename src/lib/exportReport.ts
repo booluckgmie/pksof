@@ -105,7 +105,13 @@ export async function exportScreenAsPdf(ctx: ExportContext, options: ExportOptio
   const { jsPDF } = await import("jspdf");
   const { canvas } = await captureContent(quality.scale);
 
-  const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+  // 960x540pt — the reference decks' actual page size (confirmed via pdfinfo on the
+  // uploaded Q1 2026 CKPI/MEC PDFs) and exactly the PPTX slide's 13.33in x 7.5in
+  // widescreen at 72pt/in. Previously this was A4 (841.89x595.28pt, ~1.41:1), a
+  // different aspect ratio than the 16:9 PPTX slides — same screen content ended up
+  // framed/paginated differently across the two formats. Matching page size means both
+  // exports now scale identically.
+  const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: [960, 540] });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 36;
