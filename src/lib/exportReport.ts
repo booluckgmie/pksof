@@ -40,18 +40,44 @@ export interface ExportContext {
   periodLabel: string;
 }
 
+// Fixed high capture scale (not the display's devicePixelRatio, which is 1 on most
+// desktop monitors) — this is what actually determines icon/text sharpness once the
+// image is placed at print size; the old scale of ~1.5-2 combined with JPEG compression
+// was what crushed thin lucide-icon strokes into faint outlines.
+//
+// (html2canvas's `foreignObjectRendering` option looked like a more direct fix — it
+// routes the capture through the browser's own SVG rasterizer instead of html2canvas's
+// manual DOM painter — but it corrupts the capture for this layout: cropped/misaligned
+// output, not just lower fidelity. Left off; scale + lossless PNG below is the safe fix.)
+const CAPTURE_SCALE = 2;
+
 async function captureContent(): Promise<{ canvas: HTMLCanvasElement }> {
   const el = document.getElementById("screen-content");
   if (!el) throw new Error("Could not find the screen content to export.");
   const html2canvas = (await import("html2canvas")).default;
   const canvas = await html2canvas(el, {
     backgroundColor: "#ffffff",
-    scale: Math.min(2, window.devicePixelRatio || 1.5),
+    scale: CAPTURE_SCALE,
     useCORS: true,
     windowWidth: el.scrollWidth,
     windowHeight: el.scrollHeight,
   });
   return { canvas };
+}
+
+// Embedded slice images are lossless PNG (JPEG compression is what was smudging thin
+// icon strokes), which are much larger than the old JPEG slices at this resolution — so
+// each page/slide carries a shorter slice of the screen than before, meaning a tall
+// screen now spans more pages in exchange for every one of them being crisp.
+const MAX_SLICE_PX = 2200;
+
+function canvasSlice(canvas: HTMLCanvasElement, offsetPx: number, sliceH: number): string {
+  const sliceCanvas = document.createElement("canvas");
+  sliceCanvas.width = canvas.width;
+  sliceCanvas.height = sliceH;
+  const sctx = sliceCanvas.getContext("2d")!;
+  sctx.drawImage(canvas, 0, offsetPx, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+  return sliceCanvas.toDataURL("image/png");
 }
 
 // ---------- PDF ----------
@@ -121,7 +147,7 @@ export async function exportScreenAsPdf(ctx: ExportContext): Promise<void> {
   const contentW = pageW - margin * 2;
   const usablePageH = pageH - contentTop - 40;
   const pxPerPt = canvas.width / contentW;
-  const sliceHeightPx = Math.floor(usablePageH * pxPerPt);
+  const sliceHeightPx = Math.min(Math.floor(usablePageH * pxPerPt), MAX_SLICE_PX);
   let offsetPx = 0;
 
   while (offsetPx < canvas.height) {
@@ -136,14 +162,9 @@ export async function exportScreenAsPdf(ctx: ExportContext): Promise<void> {
     drawGradientRule(margin + 18);
 
     const sliceH = Math.min(sliceHeightPx, canvas.height - offsetPx);
-    const sliceCanvas = document.createElement("canvas");
-    sliceCanvas.width = canvas.width;
-    sliceCanvas.height = sliceH;
-    const sctx = sliceCanvas.getContext("2d")!;
-    sctx.drawImage(canvas, 0, offsetPx, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-    const sliceImg = sliceCanvas.toDataURL("image/jpeg", 0.92);
+    const sliceImg = canvasSlice(canvas, offsetPx, sliceH);
     const sliceHpt = (sliceH * contentW) / canvas.width;
-    doc.addImage(sliceImg, "JPEG", margin, contentTop, contentW, sliceHpt);
+    doc.addImage(sliceImg, "PNG", margin, contentTop, contentW, sliceHpt);
 
     drawFooter();
     offsetPx += sliceHeightPx;
@@ -214,7 +235,7 @@ export async function exportScreenAsPptx(ctx: ExportContext): Promise<void> {
   const contentW = slideW - margin * 2;
   const usableSlideH = slideH - contentTop - 0.55;
   const pxPerIn = canvas.width / contentW;
-  const sliceHeightPx = Math.floor(usableSlideH * pxPerIn);
+  const sliceHeightPx = Math.min(Math.floor(usableSlideH * pxPerIn), MAX_SLICE_PX);
   let offsetPx = 0;
   let pageNum = 1;
 
@@ -231,12 +252,7 @@ export async function exportScreenAsPptx(ctx: ExportContext): Promise<void> {
     addGradientRule(slide, 0.78);
 
     const sliceH = Math.min(sliceHeightPx, canvas.height - offsetPx);
-    const sliceCanvas = document.createElement("canvas");
-    sliceCanvas.width = canvas.width;
-    sliceCanvas.height = sliceH;
-    const sctx = sliceCanvas.getContext("2d")!;
-    sctx.drawImage(canvas, 0, offsetPx, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-    const sliceImg = sliceCanvas.toDataURL("image/jpeg", 0.92);
+    const sliceImg = canvasSlice(canvas, offsetPx, sliceH);
     const sliceHIn = (sliceH * contentW) / canvas.width;
     slide.addImage({ data: sliceImg, x: margin, y: contentTop, w: contentW, h: sliceHIn });
 
