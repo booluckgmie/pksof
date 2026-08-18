@@ -97,6 +97,113 @@ const FINANCIAL_TREND_MAP: Record<string, { metricKey: string; dimension: string
 };
 
 /**
+ * Revenue-by-source, expense-by-category, admin/personnel expense line items, P&L items below
+ * PBT, balance sheet line-item detail, and receivables aging — everything identified as missing
+ * against the client's own Q1 2026 MEC report deck that's a single-value-per-period figure (the
+ * deposit/placement schedule and named-client receivables aging are multi-row datasets that need
+ * a different entry mechanism, not covered here). Keys match DataEntry.tsx's DETAIL_FIELDS
+ * exactly — same metricKey/dimension pairs, same section groupings.
+ */
+const FINANCIAL_DETAIL_MAP: Record<string, { metricKey: string; dimension: string }> = {
+  "management fee — danaharta (investment activities)": { metricKey: "revenue_by_source", dimension: "danaharta_mgmt_fee" },
+  "management fee — govco": { metricKey: "revenue_by_source", dimension: "govco_mgmt_fee" },
+  "management fee — sjkp": { metricKey: "revenue_by_source", dimension: "sjkp_mgmt_fee" },
+  "management fee — sjpp": { metricKey: "revenue_by_source", dimension: "sjpp_mgmt_fee" },
+  "management fee — danainfra": { metricKey: "revenue_by_source", dimension: "danainfra_mgmt_fee" },
+  "fee from sap services": { metricKey: "revenue_by_source", dimension: "sap_services_fee" },
+  "fee from outsourcing services": { metricKey: "revenue_by_source", dimension: "outsourcing_services_fee" },
+  "fee from secretarial services": { metricKey: "revenue_by_source", dimension: "secretarial_services_fee" },
+  "fee from corporate advisory services": { metricKey: "revenue_by_source", dimension: "corporate_advisory_fee" },
+  "fee from credit advisory services": { metricKey: "revenue_by_source", dimension: "credit_advisory_fee" },
+  "income from acquired loans (pam)": { metricKey: "revenue_by_source", dimension: "acquired_loans_income" },
+
+  "administrative expenses": { metricKey: "expense_by_category", dimension: "admin_expenses" },
+  "personnel expenses": { metricKey: "expense_by_category", dimension: "personnel_expenses" },
+  "professional fees": { metricKey: "expense_by_category", dimension: "professional_fees" },
+  "depreciation": { metricKey: "expense_by_category", dimension: "depreciation" },
+  "depreciation of rou asset": { metricKey: "expense_by_category", dimension: "depreciation_rou" },
+  "other expenses": { metricKey: "expense_by_category", dimension: "other_expenses" },
+  "interest expense (lease liability)": { metricKey: "expense_by_category", dimension: "interest_expense_lease" },
+  "provision for impairment loss on receivables": { metricKey: "expense_by_category", dimension: "impairment_receivables" },
+
+  "advertisement, printing and stationery": { metricKey: "admin_expense_detail", dimension: "Advertisement, printing and stationery" },
+  "computer expenses": { metricKey: "admin_expense_detail", dimension: "Computer expenses" },
+  "electricity": { metricKey: "admin_expense_detail", dimension: "Electricity" },
+  "insurance": { metricKey: "admin_expense_detail", dimension: "Insurance" },
+  "motor vehicle expenses": { metricKey: "admin_expense_detail", dimension: "Motor vehicle expenses" },
+  "newspaper/periodicals": { metricKey: "admin_expense_detail", dimension: "Newspaper/periodicals" },
+  "office maintenance and repairs": { metricKey: "admin_expense_detail", dimension: "Office maintenance and repairs" },
+  "lease (service tax)": { metricKey: "admin_expense_detail", dimension: "Lease (service tax)" },
+  "office equipment rental and maintenance": { metricKey: "admin_expense_detail", dimension: "Office equipment rental and maintenance" },
+  "stamps and postages": { metricKey: "admin_expense_detail", dimension: "Stamps and postages" },
+  "telephone": { metricKey: "admin_expense_detail", dimension: "Telephone" },
+  "travelling": { metricKey: "admin_expense_detail", dimension: "Travelling" },
+  "entertainment": { metricKey: "admin_expense_detail", dimension: "Entertainment" },
+  "corporate communication": { metricKey: "admin_expense_detail", dimension: "Corporate Communication" },
+  "service tax": { metricKey: "admin_expense_detail", dimension: "Service tax" },
+
+  "salaries and wages": { metricKey: "personnel_expense_detail", dimension: "Salaries and wages" },
+  "bonus provision": { metricKey: "personnel_expense_detail", dimension: "Bonus provision" },
+  "epf contribution": { metricKey: "personnel_expense_detail", dimension: "EPF contribution" },
+  "socso": { metricKey: "personnel_expense_detail", dimension: "SOCSO" },
+  "staff training": { metricKey: "personnel_expense_detail", dimension: "Staff training" },
+  "staff welfare": { metricKey: "personnel_expense_detail", dimension: "Staff welfare" },
+  "medical expenses": { metricKey: "personnel_expense_detail", dimension: "Medical expenses" },
+  "hrdf fee": { metricKey: "personnel_expense_detail", dimension: "HRDF fee" },
+  "director's benefits": { metricKey: "personnel_expense_detail", dimension: "Director's benefits" },
+  "director's meeting allowance": { metricKey: "personnel_expense_detail", dimension: "Director's meeting allowance" },
+  "mof staff related cost": { metricKey: "personnel_expense_detail", dimension: "MoF staff related cost" },
+
+  "finance income": { metricKey: "pl_detail", dimension: "finance_income" },
+  "other income": { metricKey: "pl_detail", dimension: "other_income" },
+  "taxation": { metricKey: "pl_detail", dimension: "taxation" },
+  "profit after tax": { metricKey: "pl_detail", dimension: "profit_after_tax" },
+  "dividend": { metricKey: "pl_detail", dimension: "dividend" },
+
+  "freehold buildings": { metricKey: "balance_sheet_detail", dimension: "pe_freehold_buildings" },
+  "office furniture & fittings": { metricKey: "balance_sheet_detail", dimension: "pe_furniture_fittings" },
+  "office equipment": { metricKey: "balance_sheet_detail", dimension: "pe_office_equipment" },
+  "motor vehicles": { metricKey: "balance_sheet_detail", dimension: "pe_motor_vehicles" },
+  "computer equipment": { metricKey: "balance_sheet_detail", dimension: "pe_computer_equipment" },
+  "office renovation": { metricKey: "balance_sheet_detail", dimension: "pe_office_renovation" },
+  "work in progress": { metricKey: "balance_sheet_detail", dimension: "pe_work_in_progress" },
+  "right-of-use — office space": { metricKey: "balance_sheet_detail", dimension: "rou_office_space" },
+  "right-of-use — photocopier": { metricKey: "balance_sheet_detail", dimension: "rou_photocopier" },
+  "right-of-use — notebook/computer": { metricKey: "balance_sheet_detail", dimension: "rou_notebook_computer" },
+  "right-of-use — server": { metricKey: "balance_sheet_detail", dimension: "rou_server" },
+  "deferred tax asset": { metricKey: "balance_sheet_detail", dimension: "deferred_tax_asset" },
+  "tax recoverable": { metricKey: "balance_sheet_detail", dimension: "tax_recoverable" },
+  "amount due from related corporations": { metricKey: "balance_sheet_detail", dimension: "amount_due_from_related_corps" },
+  "trade receivables": { metricKey: "balance_sheet_detail", dimension: "recv_trade_receivables" },
+  "impairment of receivables": { metricKey: "balance_sheet_detail", dimension: "recv_impairment" },
+  "expected credit loss": { metricKey: "balance_sheet_detail", dimension: "recv_expected_credit_loss" },
+  "profit receivables from placements": { metricKey: "balance_sheet_detail", dimension: "recv_profit_receivables_placements" },
+  "deposits (receivables)": { metricKey: "balance_sheet_detail", dimension: "recv_deposits" },
+  "prepayments": { metricKey: "balance_sheet_detail", dimension: "recv_prepayments" },
+  "reimbursable personnel cost and fees by mof": { metricKey: "balance_sheet_detail", dimension: "recv_reimbursable_personnel_cost" },
+  "accrued revenue": { metricKey: "balance_sheet_detail", dimension: "recv_accrued_revenue" },
+  "other receivables": { metricKey: "balance_sheet_detail", dimension: "recv_other_receivables" },
+  "deposits and placements (cash)": { metricKey: "balance_sheet_detail", dimension: "cash_deposits_placements" },
+  "cash and bank balances": { metricKey: "balance_sheet_detail", dimension: "cash_bank_balances" },
+  "effective profit rate": { metricKey: "balance_sheet_detail", dimension: "cash_effective_profit_rate" },
+  "staff related provisions": { metricKey: "balance_sheet_detail", dimension: "pay_staff_related_provisions" },
+  "dividend payable": { metricKey: "balance_sheet_detail", dimension: "pay_dividend_payable" },
+  "service tax payable": { metricKey: "balance_sheet_detail", dimension: "pay_service_tax" },
+  "external auditors' fee": { metricKey: "balance_sheet_detail", dimension: "pay_external_auditors_fee" },
+  "tax agent's fee": { metricKey: "balance_sheet_detail", dimension: "pay_tax_agent_fee" },
+  "deposits from sale of properties": { metricKey: "balance_sheet_detail", dimension: "pay_deposits_sale_properties" },
+  "amount due to a related corporation": { metricKey: "balance_sheet_detail", dimension: "pay_amount_due_related_corp" },
+  "accrued expenses and other payables": { metricKey: "balance_sheet_detail", dimension: "pay_accrued_expenses_other" },
+
+  "current": { metricKey: "receivables_aging", dimension: "current" },
+  "1–30 days": { metricKey: "receivables_aging", dimension: "days_1_30" },
+  "31–60 days": { metricKey: "receivables_aging", dimension: "days_31_60" },
+  "61–90 days": { metricKey: "receivables_aging", dimension: "days_61_90" },
+  "91–120 days": { metricKey: "receivables_aging", dimension: "days_91_120" },
+  "over 120 days (impaired)": { metricKey: "receivables_aging", dimension: "days_over_120" },
+};
+
+/**
  * Parses the "Workforce Summary", "Financial Trend" and "All Other Detail Data" tabs of the
  * standard template — all three are optional, and any subset present in the uploaded file is
  * read. "All Other Detail Data" is a direct pass-through of the database's own
@@ -143,6 +250,7 @@ export async function parseDetailTemplate(file: File): Promise<ParsedDetailTempl
 
   readLabelValueSheet(/workforce summary/i, WORKFORCE_SUMMARY_MAP, "Workforce Summary");
   readLabelValueSheet(/financial trend/i, FINANCIAL_TREND_MAP, "Financial Trend");
+  readLabelValueSheet(/financial detail/i, FINANCIAL_DETAIL_MAP, "Financial Detail");
 
   const advancedSheet = findSheet(/all other detail|advanced/i);
   if (advancedSheet) {

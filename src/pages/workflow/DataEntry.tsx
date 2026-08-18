@@ -35,6 +35,96 @@ const PROC_DEPTS = ["Administration & Security", "Corporate Communications", "In
 const BS_ASSETS = ["Cash & Equivalents", "Fixed Income Investments", "Receivables & Others", "Fixed Assets (Net)"];
 const BS_LIABILITIES = ["Trade & Other Payables", "Deferred Revenue", "Other Liabilities"];
 
+const REVENUE_SOURCES = [
+  { label: "Management fee — Danaharta (investment activities)", dim: "danaharta_mgmt_fee" },
+  { label: "Management fee — GovCo", dim: "govco_mgmt_fee" },
+  { label: "Management fee — SJKP", dim: "sjkp_mgmt_fee" },
+  { label: "Management fee — SJPP", dim: "sjpp_mgmt_fee" },
+  { label: "Management fee — DanaInfra", dim: "danainfra_mgmt_fee" },
+  { label: "Fee from SAP services", dim: "sap_services_fee" },
+  { label: "Fee from Outsourcing services", dim: "outsourcing_services_fee" },
+  { label: "Fee from Secretarial services", dim: "secretarial_services_fee" },
+  { label: "Fee from Corporate Advisory services", dim: "corporate_advisory_fee" },
+  { label: "Fee from Credit Advisory services", dim: "credit_advisory_fee" },
+  { label: "Income from acquired loans (PAM)", dim: "acquired_loans_income" },
+];
+
+const EXPENSE_CATEGORIES = [
+  { label: "Administrative expenses", dim: "admin_expenses" },
+  { label: "Personnel expenses", dim: "personnel_expenses" },
+  { label: "Professional fees", dim: "professional_fees" },
+  { label: "Depreciation", dim: "depreciation" },
+  { label: "Depreciation of RoU asset", dim: "depreciation_rou" },
+  { label: "Other expenses", dim: "other_expenses" },
+  { label: "Interest expense (lease liability)", dim: "interest_expense_lease" },
+  { label: "Provision for impairment loss on receivables", dim: "impairment_receivables" },
+];
+
+const ADMIN_EXPENSE_ITEMS = [
+  "Advertisement, printing and stationery", "Computer expenses", "Electricity", "Insurance", "Motor vehicle expenses",
+  "Newspaper/periodicals", "Office maintenance and repairs", "Lease (service tax)", "Office equipment rental and maintenance",
+  "Stamps and postages", "Telephone", "Travelling", "Entertainment", "Corporate Communication", "Service tax",
+];
+
+const PERSONNEL_EXPENSE_ITEMS = [
+  "Salaries and wages", "Bonus provision", "EPF contribution", "SOCSO", "Staff training", "Staff welfare",
+  "Medical expenses", "HRDF fee", "Director's benefits", "Director's meeting allowance", "MoF staff related cost",
+];
+
+const PL_DETAIL_ITEMS = [
+  { label: "Finance income", dim: "finance_income" },
+  { label: "Other income", dim: "other_income" },
+  { label: "Taxation", dim: "taxation" },
+  { label: "Profit After Tax", dim: "profit_after_tax" },
+  { label: "Dividend", dim: "dividend" },
+];
+
+const BS_DETAIL_ITEMS = [
+  { label: "Freehold buildings", dim: "pe_freehold_buildings" },
+  { label: "Office furniture & fittings", dim: "pe_furniture_fittings" },
+  { label: "Office equipment", dim: "pe_office_equipment" },
+  { label: "Motor vehicles", dim: "pe_motor_vehicles" },
+  { label: "Computer equipment", dim: "pe_computer_equipment" },
+  { label: "Office renovation", dim: "pe_office_renovation" },
+  { label: "Work in progress", dim: "pe_work_in_progress" },
+  { label: "Right-of-use — Office Space", dim: "rou_office_space" },
+  { label: "Right-of-use — Photocopier", dim: "rou_photocopier" },
+  { label: "Right-of-use — Notebook/Computer", dim: "rou_notebook_computer" },
+  { label: "Right-of-use — Server", dim: "rou_server" },
+  { label: "Deferred tax asset", dim: "deferred_tax_asset" },
+  { label: "Tax recoverable", dim: "tax_recoverable" },
+  { label: "Amount due from related corporations", dim: "amount_due_from_related_corps" },
+  { label: "Trade receivables", dim: "recv_trade_receivables" },
+  { label: "Impairment of receivables", dim: "recv_impairment" },
+  { label: "Expected credit loss", dim: "recv_expected_credit_loss" },
+  { label: "Profit receivables from placements", dim: "recv_profit_receivables_placements" },
+  { label: "Deposits", dim: "recv_deposits" },
+  { label: "Prepayments", dim: "recv_prepayments" },
+  { label: "Reimbursable personnel cost and fees by MoF", dim: "recv_reimbursable_personnel_cost" },
+  { label: "Accrued revenue", dim: "recv_accrued_revenue" },
+  { label: "Other receivables", dim: "recv_other_receivables" },
+  { label: "Deposits and placements (cash)", dim: "cash_deposits_placements" },
+  { label: "Cash and bank balances", dim: "cash_bank_balances" },
+  { label: "Effective profit rate", dim: "cash_effective_profit_rate", unit: "%" },
+  { label: "Staff related provisions", dim: "pay_staff_related_provisions" },
+  { label: "Dividend payable", dim: "pay_dividend_payable" },
+  { label: "Service tax payable", dim: "pay_service_tax" },
+  { label: "External auditors' fee", dim: "pay_external_auditors_fee" },
+  { label: "Tax agent's fee", dim: "pay_tax_agent_fee" },
+  { label: "Deposits from sale of properties", dim: "pay_deposits_sale_properties" },
+  { label: "Amount due to a related corporation", dim: "pay_amount_due_related_corp" },
+  { label: "Accrued expenses and other payables", dim: "pay_accrued_expenses_other" },
+];
+
+const RECEIVABLES_AGING_BUCKETS = [
+  { label: "Current", dim: "current" },
+  { label: "1–30 days", dim: "days_1_30" },
+  { label: "31–60 days", dim: "days_31_60" },
+  { label: "61–90 days", dim: "days_61_90" },
+  { label: "91–120 days", dim: "days_91_120" },
+  { label: "Over 120 days (impaired)", dim: "days_over_120" },
+];
+
 /** Every parameter the Excel template's "Workforce Summary" / "Financial Trend" / "All Other
  * Detail Data" sheets cover, mirrored here so the web form has full parity with the workbook. */
 const DETAIL_FIELDS: DetailField[] = [
@@ -99,6 +189,20 @@ const DETAIL_FIELDS: DetailField[] = [
     { section: "Bumiputera Procurement", label: `${d} — FY Target`, metricKey: "bumiputera_procurement", dimension: d, dimension2: "fy_target", unit: "RM mil" },
     { section: "Bumiputera Procurement", label: `${d} — YTD Actual`, metricKey: "bumiputera_procurement", dimension: d, dimension2: "ytd_actual", unit: "RM mil" },
   ]),
+
+  ...REVENUE_SOURCES.map((r): DetailField => ({ section: "Revenue by Source", label: r.label, metricKey: "revenue_by_source", dimension: r.dim, unit: "RM '000" })),
+
+  ...EXPENSE_CATEGORIES.map((e): DetailField => ({ section: "Expenses by Category", label: e.label, metricKey: "expense_by_category", dimension: e.dim, unit: "RM '000" })),
+
+  ...ADMIN_EXPENSE_ITEMS.map((label): DetailField => ({ section: "Administrative Expenses (detail)", label, metricKey: "admin_expense_detail", dimension: label, unit: "RM '000" })),
+
+  ...PERSONNEL_EXPENSE_ITEMS.map((label): DetailField => ({ section: "Personnel Expenses (detail)", label, metricKey: "personnel_expense_detail", dimension: label, unit: "RM '000" })),
+
+  ...PL_DETAIL_ITEMS.map((p): DetailField => ({ section: "P&L — Below PBT", label: p.label, metricKey: "pl_detail", dimension: p.dim, unit: "RM '000" })),
+
+  ...BS_DETAIL_ITEMS.map((b): DetailField => ({ section: "Balance Sheet (line-item detail)", label: b.label, metricKey: "balance_sheet_detail", dimension: b.dim, unit: b.unit ?? "RM '000" })),
+
+  ...RECEIVABLES_AGING_BUCKETS.map((a): DetailField => ({ section: "Receivables Aging", label: a.label, metricKey: "receivables_aging", dimension: a.dim, unit: "RM '000" })),
 ];
 
 const DETAIL_SECTIONS = [...new Set(DETAIL_FIELDS.map((f) => f.section))];
@@ -470,7 +574,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
                 <Send className="h-4 w-4" />{savingDetail ? "Saving…" : `Save ${detailFilledCount > 0 ? detailFilledCount : ""} figure${detailFilledCount === 1 ? "" : "s"}`}
               </button>
             </div>
-            <InfoNote>Unlike the KPI scorecard, these figures save directly and appear on the dashboards immediately — there's no checker queue behind supporting data. Covers every parameter in the Excel template's Workforce Summary, Financial Trend and All Other Detail Data sheets — fill in only what changed this quarter.</InfoNote>
+            <InfoNote>Unlike the KPI scorecard, these figures save directly and appear on the dashboards immediately — there's no checker queue behind supporting data. Covers every parameter in the Excel template's Workforce Summary, Financial Trend, Financial Detail and All Other Detail Data sheets — fill in only what changed this quarter. Not yet covered here: the deposit/placement schedule, receivables aging by named client, and the monthly forecast — those need a different, multi-row entry form and are tracked separately.</InfoNote>
           </div>
         ) : (
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5 flex flex-col gap-4 h-fit">
@@ -529,7 +633,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
             >
               <Send className="h-4 w-4" />{submittingParsed ? "Submitting…" : `Submit ${parsed.length + parsedDetail.length} extracted value${parsed.length + parsedDetail.length === 1 ? "" : "s"}`}
             </button>
-            <InfoNote>Parsed entirely in your browser — the file itself isn't uploaded anywhere. KPI values go through the checker queue like the web form; workforce/financial detail values save directly to the dashboards. Sheets recognized: KPI Submission, Workforce Summary, Financial Trend, All Other Detail Data — include any subset.</InfoNote>
+            <InfoNote>Parsed entirely in your browser — the file itself isn't uploaded anywhere. KPI values go through the checker queue like the web form; workforce/financial detail values save directly to the dashboards. Sheets recognized: KPI Submission, Workforce Summary, Financial Trend, Financial Detail, All Other Detail Data — include any subset.</InfoNote>
           </div>
         )}
 

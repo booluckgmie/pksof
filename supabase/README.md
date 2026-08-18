@@ -35,6 +35,23 @@ publishable (anon) key — both are on the Supabase dashboard under Settings →
   the exact per-chart data structures the screens expect. There's no maker-checker queue behind
   this data (see the security note below) — writes from Data Entry's "Workforce & Financial
   Snapshot" tab or an Excel upload save immediately.
+- **Entry-only, no display yet**: `revenue_by_source`, `expense_by_category`,
+  `admin_expense_detail`, `personnel_expense_detail`, `pl_detail`, `balance_sheet_detail`, and
+  `receivables_aging` — 90 line-item figures added to close the gap between the dashboard and
+  the client's own Q1 2026 MEC report deck (revenue by counterparty, admin/personnel expense
+  breakdowns, P&L items below PBT, a fuller balance sheet, receivables aging buckets). Both
+  Data Entry's web form ("Workforce, Financial & Other Detail" tab) and the Excel template's new
+  "Financial Detail" sheet write these — `upsertDetailMetric`/`parseDetailTemplate` handle them
+  exactly like any other `detail_metrics` row — but `src/lib/details.tsx` doesn't reshape them
+  into chart data yet, so nothing renders on a dashboard screen from these fields today. See the
+  metricKey/dimension pairs in `DataEntry.tsx`'s `DETAIL_FIELDS` (search "Revenue by Source"
+  onward) before building the display side, so the shape matches what's already being entered.
+  Deliberately left out of this pass: the deposit/placement schedule and receivables aging by
+  named client. Both are multi-row datasets that belong in `detail_records` (like
+  `related_party_txn`/initiatives), and no entry UI exists yet for *any* `detail_records`
+  dataset — those currently only get populated by writing rows to Supabase directly. Also left
+  out: the monthly forecast schedule, a forward-budgeting artifact, a different kind of thing
+  from the quarterly actuals this app reports.
 - **Still static** (`src/data/*.ts`): entities, perspectives, KPI definitions, periods, and a
   handful of genuinely-fixed reference constants (`industryBenchmark`, `priorYearTrained`, the
   People Development programme catalog in `src/lib/details.tsx`) that are organisational
