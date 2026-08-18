@@ -93,7 +93,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </span>
           )}
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1 rounded-lg overflow-hidden bg-white/10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
           {entities.map((e) => {
             const snap = entitySnapshot[e.id];
             const active = e.id === entityId;
@@ -104,7 +104,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 disabled={pillarLocked}
                 onClick={() => setEntityId(e.id)}
                 className={cn(
-                  "w-full text-left px-3.5 py-3 transition-colors",
+                  "w-full text-left rounded-xl px-3.5 py-3 transition-colors",
                   active ? "bg-white/[0.14]" : "bg-[hsl(213,45%,15%)] hover:bg-white/[0.08]",
                   pillarLocked && !active && "opacity-40 cursor-not-allowed"
                 )}
