@@ -19,7 +19,7 @@ export function Shell({ current, onNavigate, children }: { current: ScreenId; on
             <Menu className="h-5 w-5" />
           </button>
         </div>
-        <main className="flex-1 px-3.5 sm:px-6 py-4 sm:py-6 max-w-[1180px] w-full mx-auto">{children}</main>
+        <main id="screen-content" className="flex-1 px-3.5 sm:px-6 py-4 sm:py-6 max-w-[1180px] w-full mx-auto bg-[hsl(var(--pk-paper))]">{children}</main>
       </div>
     </div>
   );

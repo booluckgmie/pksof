@@ -28,7 +28,7 @@ export function ScreenHeader({
         <div className="flex items-center gap-2">
           <span className="hidden sm:inline text-[11px] text-[hsl(var(--pk-ink-faint))]">Last updated {lastUpdated}</span>
           <RefreshButton />
-          <ExportMenu />
+          <ExportMenu screenId={id} />
           <NotificationsBell count={pending.length} />
         </div>
       </div>
