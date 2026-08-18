@@ -26,11 +26,11 @@ function timestamp() {
   return `${pad2(d.getDate())} ${d.toLocaleString("en-US", { month: "long" })} ${d.getFullYear()}, ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
-function filenameFor(screenLabel: string, ext: string) {
+function filenameFor(screenLabel: string, ext: string, suffix = "") {
   const slug = screenLabel.replace(/[^a-z0-9]+/gi, "_").replace(/^_+|_+$/g, "");
   const d = new Date();
   const stamp = `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}`;
-  return `GroupHQ_${slug}_${stamp}.${ext}`;
+  return `GroupHQ_${slug}_${stamp}${suffix}.${ext}`;
 }
 
 export interface ExportContext {
@@ -40,24 +40,42 @@ export interface ExportContext {
   periodLabel: string;
 }
 
-// Fixed high capture scale (not the display's devicePixelRatio, which is 1 on most
-// desktop monitors) — this is what actually determines icon/text sharpness once the
-// image is placed at print size; the old scale of ~1.5-2 combined with JPEG compression
-// was what crushed thin lucide-icon strokes into faint outlines.
-//
-// (html2canvas's `foreignObjectRendering` option looked like a more direct fix — it
-// routes the capture through the browser's own SVG rasterizer instead of html2canvas's
-// manual DOM painter — but it corrupts the capture for this layout: cropped/misaligned
-// output, not just lower fidelity. Left off; scale + lossless PNG below is the safe fix.)
-const CAPTURE_SCALE = 2;
+export interface ExportOptions {
+  /** Smaller file, lower resolution — trades icon/text crispness for a file that's easy to email. */
+  compact?: boolean;
+}
 
-async function captureContent(): Promise<{ canvas: HTMLCanvasElement }> {
+interface QualitySettings {
+  scale: number;
+  format: "PNG" | "JPEG";
+  jpegQuality?: number;
+  maxSlicePx: number;
+}
+
+// Standard: fixed high capture scale (not the display's devicePixelRatio, which is 1 on
+// most desktop monitors) — this is what actually determines icon/text sharpness once the
+// image is placed at print size; the old scale of ~1.5-2 combined with JPEG compression
+// was what crushed thin lucide-icon strokes into faint outlines. Slices are lossless PNG,
+// capped short so a tall screen spans more pages rather than losing detail to stay short.
+//
+// Compact: lower scale + lossy JPEG — a fraction of the file size, still legible, meant
+// for emailing/sharing rather than printing. Slices can run much taller per page since
+// there's no PNG size pressure, so page count stays closer to what it was originally.
+const STANDARD_QUALITY: QualitySettings = { scale: 2, format: "PNG", maxSlicePx: 2200 };
+const COMPACT_QUALITY: QualitySettings = { scale: 1.25, format: "JPEG", jpegQuality: 0.7, maxSlicePx: 4500 };
+
+// (html2canvas's `foreignObjectRendering` option looked like a more direct fidelity fix —
+// it routes the capture through the browser's own SVG rasterizer instead of html2canvas's
+// manual DOM painter — but it corrupts the capture for this layout: cropped/misaligned
+// output, not just lower fidelity. Left off; scale + format below is the safe lever.)
+
+async function captureContent(scale: number): Promise<{ canvas: HTMLCanvasElement }> {
   const el = document.getElementById("screen-content");
   if (!el) throw new Error("Could not find the screen content to export.");
   const html2canvas = (await import("html2canvas")).default;
   const canvas = await html2canvas(el, {
     backgroundColor: "#ffffff",
-    scale: CAPTURE_SCALE,
+    scale,
     useCORS: true,
     windowWidth: el.scrollWidth,
     windowHeight: el.scrollHeight,
@@ -65,26 +83,27 @@ async function captureContent(): Promise<{ canvas: HTMLCanvasElement }> {
   return { canvas };
 }
 
-// Embedded slice images are lossless PNG (JPEG compression is what was smudging thin
-// icon strokes), which are much larger than the old JPEG slices at this resolution — so
-// each page/slide carries a shorter slice of the screen than before, meaning a tall
-// screen now spans more pages in exchange for every one of them being crisp.
-const MAX_SLICE_PX = 2200;
-
-function canvasSlice(canvas: HTMLCanvasElement, offsetPx: number, sliceH: number): string {
+function canvasSlice(canvas: HTMLCanvasElement, offsetPx: number, sliceH: number, quality: QualitySettings): string {
   const sliceCanvas = document.createElement("canvas");
   sliceCanvas.width = canvas.width;
   sliceCanvas.height = sliceH;
   const sctx = sliceCanvas.getContext("2d")!;
+  if (quality.format === "JPEG") {
+    sctx.fillStyle = "#ffffff";
+    sctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+  }
   sctx.drawImage(canvas, 0, offsetPx, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-  return sliceCanvas.toDataURL("image/png");
+  return quality.format === "JPEG"
+    ? sliceCanvas.toDataURL("image/jpeg", quality.jpegQuality)
+    : sliceCanvas.toDataURL("image/png");
 }
 
 // ---------- PDF ----------
 
-export async function exportScreenAsPdf(ctx: ExportContext): Promise<void> {
+export async function exportScreenAsPdf(ctx: ExportContext, options: ExportOptions = {}): Promise<void> {
+  const quality = options.compact ? COMPACT_QUALITY : STANDARD_QUALITY;
   const { jsPDF } = await import("jspdf");
-  const { canvas } = await captureContent();
+  const { canvas } = await captureContent(quality.scale);
 
   const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
@@ -147,7 +166,7 @@ export async function exportScreenAsPdf(ctx: ExportContext): Promise<void> {
   const contentW = pageW - margin * 2;
   const usablePageH = pageH - contentTop - 40;
   const pxPerPt = canvas.width / contentW;
-  const sliceHeightPx = Math.min(Math.floor(usablePageH * pxPerPt), MAX_SLICE_PX);
+  const sliceHeightPx = Math.min(Math.floor(usablePageH * pxPerPt), quality.maxSlicePx);
   let offsetPx = 0;
 
   while (offsetPx < canvas.height) {
@@ -162,22 +181,23 @@ export async function exportScreenAsPdf(ctx: ExportContext): Promise<void> {
     drawGradientRule(margin + 18);
 
     const sliceH = Math.min(sliceHeightPx, canvas.height - offsetPx);
-    const sliceImg = canvasSlice(canvas, offsetPx, sliceH);
+    const sliceImg = canvasSlice(canvas, offsetPx, sliceH, quality);
     const sliceHpt = (sliceH * contentW) / canvas.width;
-    doc.addImage(sliceImg, "PNG", margin, contentTop, contentW, sliceHpt);
+    doc.addImage(sliceImg, quality.format, margin, contentTop, contentW, sliceHpt);
 
     drawFooter();
     offsetPx += sliceHeightPx;
   }
 
-  doc.save(filenameFor(ctx.screenLabel, "pdf"));
+  doc.save(filenameFor(ctx.screenLabel, "pdf", options.compact ? "_compact" : ""));
 }
 
 // ---------- PPTX ----------
 
-export async function exportScreenAsPptx(ctx: ExportContext): Promise<void> {
+export async function exportScreenAsPptx(ctx: ExportContext, options: ExportOptions = {}): Promise<void> {
+  const quality = options.compact ? COMPACT_QUALITY : STANDARD_QUALITY;
   const PptxGenJS = (await import("pptxgenjs")).default;
-  const { canvas } = await captureContent();
+  const { canvas } = await captureContent(quality.scale);
 
   const pres = new PptxGenJS();
   pres.layout = "LAYOUT_WIDE"; // 13.33in x 7.5in, matches the reference decks' 960x540pt slides
@@ -235,7 +255,7 @@ export async function exportScreenAsPptx(ctx: ExportContext): Promise<void> {
   const contentW = slideW - margin * 2;
   const usableSlideH = slideH - contentTop - 0.55;
   const pxPerIn = canvas.width / contentW;
-  const sliceHeightPx = Math.min(Math.floor(usableSlideH * pxPerIn), MAX_SLICE_PX);
+  const sliceHeightPx = Math.min(Math.floor(usableSlideH * pxPerIn), quality.maxSlicePx);
   let offsetPx = 0;
   let pageNum = 1;
 
@@ -252,7 +272,7 @@ export async function exportScreenAsPptx(ctx: ExportContext): Promise<void> {
     addGradientRule(slide, 0.78);
 
     const sliceH = Math.min(sliceHeightPx, canvas.height - offsetPx);
-    const sliceImg = canvasSlice(canvas, offsetPx, sliceH);
+    const sliceImg = canvasSlice(canvas, offsetPx, sliceH, quality);
     const sliceHIn = (sliceH * contentW) / canvas.width;
     slide.addImage({ data: sliceImg, x: margin, y: contentTop, w: contentW, h: sliceHIn });
 
@@ -260,7 +280,7 @@ export async function exportScreenAsPptx(ctx: ExportContext): Promise<void> {
     offsetPx += sliceHeightPx;
   }
 
-  await pres.writeFile({ fileName: filenameFor(ctx.screenLabel, "pptx") });
+  await pres.writeFile({ fileName: filenameFor(ctx.screenLabel, "pptx", options.compact ? "_compact" : "") });
 }
 
 // Flattens an HTML table into a rectangular grid, repeating a cell's text into every

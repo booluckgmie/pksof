@@ -5,7 +5,7 @@ import { breadcrumbTrail, screenLabel, type ScreenId } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/session";
 import { periodById } from "@/data/periods";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { exportScreenAsExcel, exportScreenAsPdf, exportScreenAsPptx } from "@/lib/exportReport";
 
 export function StatusLegend() {
@@ -61,12 +61,17 @@ export function StatCard({ label, value, sub, tone, rail }: { label: string; val
   );
 }
 
-type ExportFormat = "pdf" | "pptx" | "excel";
+type ExportFormat = "pdf" | "pptx" | "excel" | "pdf-compact" | "pptx-compact";
 
 const EXPORT_FORMATS: { format: ExportFormat; label: string; description: string; icon: typeof FileText }[] = [
   { format: "pdf", label: "Export as PDF", description: "Branded report — cover page + full snapshot", icon: FileText },
   { format: "pptx", label: "Export as PowerPoint", description: "Same report as slides", icon: Presentation },
   { format: "excel", label: "Export as Excel", description: "Raw tables from this screen", icon: Sheet },
+];
+
+const COMPACT_EXPORT_FORMATS: { format: ExportFormat; label: string; description: string; icon: typeof FileText }[] = [
+  { format: "pdf-compact", label: "PDF (Compact)", description: "Smaller file, lower resolution — easier to email", icon: FileText },
+  { format: "pptx-compact", label: "PowerPoint (Compact)", description: "Smaller file, lower resolution — easier to email", icon: Presentation },
 ];
 
 export function ExportMenu({ screenId, label = "Export" }: { screenId: ScreenId; label?: string }) {
@@ -79,9 +84,12 @@ export function ExportMenu({ screenId, label = "Export" }: { screenId: ScreenId;
     const ctx = { screenId, screenLabel: screenLabel(screenId, entityName), entityName, periodLabel: periodById(periodId).label };
     try {
       if (format === "pdf") await exportScreenAsPdf(ctx);
+      else if (format === "pdf-compact") await exportScreenAsPdf(ctx, { compact: true });
       else if (format === "pptx") await exportScreenAsPptx(ctx);
+      else if (format === "pptx-compact") await exportScreenAsPptx(ctx, { compact: true });
       else await exportScreenAsExcel(ctx);
-      toast.success(`${ctx.screenLabel} exported`, { description: `Saved as ${format === "pptx" ? "PowerPoint" : format.toUpperCase()}.` });
+      const formatLabel = format.startsWith("pptx") ? "PowerPoint" : format.startsWith("pdf") ? "PDF" : "Excel";
+      toast.success(`${ctx.screenLabel} exported`, { description: `Saved as ${formatLabel}${format.endsWith("-compact") ? " (compact)" : ""}.` });
     } catch (err) {
       toast.error("Export failed", { description: err instanceof Error ? err.message : "Something went wrong generating the file." });
     } finally {
@@ -104,6 +112,19 @@ export function ExportMenu({ screenId, label = "Export" }: { screenId: ScreenId;
         {EXPORT_FORMATS.map(({ format, label: itemLabel, description, icon: Icon }) => (
           <DropdownMenuItem key={format} onClick={() => runExport(format)} className="gap-2.5 py-2 cursor-pointer">
             <Icon className="h-4 w-4 text-[hsl(var(--pk-accent))] shrink-0" />
+            <div className="flex flex-col">
+              <span className="text-[13px] font-medium">{itemLabel}</span>
+              <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">{description}</span>
+            </div>
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.08em] text-[hsl(var(--pk-ink-faint))] font-semibold px-2 py-1">
+          Smaller file size
+        </DropdownMenuLabel>
+        {COMPACT_EXPORT_FORMATS.map(({ format, label: itemLabel, description, icon: Icon }) => (
+          <DropdownMenuItem key={format} onClick={() => runExport(format)} className="gap-2.5 py-2 cursor-pointer">
+            <Icon className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] shrink-0" />
             <div className="flex flex-col">
               <span className="text-[13px] font-medium">{itemLabel}</span>
               <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">{description}</span>
