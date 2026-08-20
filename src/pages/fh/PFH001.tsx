@@ -3,6 +3,7 @@ import { FhTabs } from "@/components/pk/FhTabs";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { StatCard } from "@/components/pk/Misc";
 import { BarTrend, LineTrend } from "@/components/pk/Charts";
+import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -11,7 +12,8 @@ import { useDetails } from "@/lib/details";
 export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
-  const { quarterlyTrend } = useDetails();
+  const { quarterlyTrend: fullTrend } = useDetails();
+  const { duration, setDuration, filtered: quarterlyTrend } = useDurationFilter(fullTrend);
   const kpi1 = latestValue("KPI1", entityId, periodId);
   const kpi2 = latestValue("KPI2", entityId, periodId);
   const met = [kpi1, kpi2].filter((k) => k.status === "met").length;
@@ -59,7 +61,10 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </div>
       </div>
 
-      <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Quarterly Trend Analysis</div>
+      <div className="flex items-center justify-between flex-wrap gap-1.5 mb-2">
+        <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Quarterly Trend Analysis</div>
+        <DurationFilterBar duration={duration} onChange={setDuration} total={fullTrend.length} label="" />
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Profit Before Tax — RM Million</div>

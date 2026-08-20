@@ -4,6 +4,7 @@ import { StatCard } from "@/components/pk/Misc";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { InfoTip } from "@/components/pk/InfoTip";
 import { CategoryBar, BarTrend } from "@/components/pk/Charts";
+import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -16,7 +17,8 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
-  const { headcountSummaryByPeriod, headcountTrend, recruitmentIndexByPeriod } = useDetails();
+  const { headcountSummaryByPeriod, headcountTrend: fullHeadcountTrend, recruitmentIndexByPeriod } = useDetails();
+  const { duration, setDuration, filtered: headcountTrend } = useDurationFilter(fullHeadcountTrend);
   const kpi9 = latestValue("KPI9", entityId, periodId);
   const recruitmentIndex = recruitmentIndexByPeriod[periodId];
   const totalWeighted = recruitmentIndex?.reduce((s, m) => s + m.weighted, 0) ?? null;
@@ -37,7 +39,10 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))]">Headcount Trend — minimum 4 quarters</div>
+          <div className="flex items-center justify-between flex-wrap gap-1.5">
+            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))]">Headcount Trend — minimum 4 quarters</div>
+            <DurationFilterBar duration={duration} onChange={setDuration} total={fullHeadcountTrend.length} label="" />
+          </div>
           <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mb-2">Actual headcount (HRMS) vs approved establishment</div>
           <BarTrend data={headcountTrend.map((h) => ({ label: h.period.replace(" FY", " '"), value: h.actual }))} />
         </div>

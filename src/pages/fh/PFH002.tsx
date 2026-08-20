@@ -3,11 +3,13 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { FhTabs } from "@/components/pk/FhTabs";
 import { BarTrend, LineTrend } from "@/components/pk/Charts";
 import { InfoNote } from "@/components/pk/Misc";
+import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import type { ScreenId } from "@/lib/nav";
 import { useDetails } from "@/lib/details";
 
 export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { quarterlyTrend } = useDetails();
+  const { quarterlyTrend: fullTrend } = useDetails();
+  const { duration, setDuration, filtered: quarterlyTrend } = useDurationFilter(fullTrend);
   const rows = [
     { section: "INCOME METRICS", metric: "Revenue (RM Million)", values: quarterlyTrend.map((q) => q.revenue) },
     { section: "PROFIT METRICS", metric: "Profit Before Tax (RM Million)", values: quarterlyTrend.map((q) => q.pbt) },
@@ -20,6 +22,7 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <ScreenHeader id="PFH002" subtitle="Quarter-on-quarter profitability, cost efficiency and operational financial metrics." onNavigate={onNavigate} />
       <FhTabs current="PFH002" onNavigate={onNavigate} />
 
+      <DurationFilterBar duration={duration} onChange={setDuration} total={fullTrend.length} className="mb-3" />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">PBT quarter-on-quarter trend</div>

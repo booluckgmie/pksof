@@ -1,20 +1,13 @@
-import { useState } from "react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { BarTrend, LineTrend } from "@/components/pk/Charts";
 import { DataOriginBadge } from "@/components/pk/DataOrigin";
 import { InfoTip } from "@/components/pk/InfoTip";
+import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
-import { cn } from "@/lib/utils";
-
-const DURATIONS = [
-  { id: "4q", label: "Last 4Q", n: 4 },
-  { id: "8q", label: "Last 8Q", n: 8 },
-  { id: "all", label: "All", n: Infinity },
-] as const;
 
 export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
@@ -22,31 +15,13 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { quarterlyTrend: fullTrend } = useDetails();
   const kpi1 = latestValue("KPI1", entityId, periodId);
   const kpi2 = latestValue("KPI2", entityId, periodId);
-  const [duration, setDuration] = useState<(typeof DURATIONS)[number]["id"]>("8q");
-  const n = DURATIONS.find((d) => d.id === duration)!.n;
-  const quarterlyTrend = fullTrend.slice(Math.max(0, fullTrend.length - n));
+  const { duration, setDuration, filtered: quarterlyTrend } = useDurationFilter(fullTrend);
 
   return (
     <div>
       <ScreenHeader id="CP003" subtitle="Financial Perspective performance against approved targets for the year. Weight 25.0% · 2 KPIs." onNavigate={onNavigate} />
 
-      <div className="flex items-center gap-1.5 mb-4">
-        <span className="text-[11px] text-[hsl(var(--pk-ink-faint))] mr-1">Trend duration</span>
-        {DURATIONS.map((d) => (
-          <button
-            key={d.id}
-            onClick={() => setDuration(d.id)}
-            className={cn(
-              "text-[11px] px-2.5 py-1 rounded-md border transition-colors",
-              duration === d.id
-                ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] border-[hsl(var(--pk-accent))]"
-                : "border-[hsl(var(--pk-border))] text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))]"
-            )}
-          >
-            {d.label}
-          </button>
-        ))}
-      </div>
+      <DurationFilterBar duration={duration} onChange={setDuration} total={fullTrend.length} className="mb-4" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
