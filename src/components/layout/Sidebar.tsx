@@ -55,9 +55,10 @@ function GroupLabel({ children }: { children: React.ReactNode }) {
 }
 
 /** Entity + reporting period pickers, moved into the sidebar so they read as global session context rather than a per-page filter. */
-function SidebarFilters() {
+function SidebarFilters({ current }: { current: ScreenId }) {
   const { entityId, setEntityId, periodId, setPeriodId, pillarLocked, entityName } = useSession();
   const fyGroups = Array.from(new Set(periods.map((p) => p.fy)));
+  const onMain = current === "MAIN";
 
   return (
     <div className="px-4 py-3 border-b border-white/10 flex flex-col gap-2.5 shrink-0">
@@ -68,6 +69,11 @@ function SidebarFilters() {
             <Lock className="h-3 w-3 text-white/40 shrink-0" />
             <span className="truncate">{entityName}</span>
           </div>
+        ) : onMain ? (
+          <>
+            <div className="text-sm font-medium text-white truncate">{entityName}</div>
+            <p className="text-[10.5px] text-white/35 mt-1 leading-snug">Main shows the Group rollup — switch entity from within a perspective screen.</p>
+          </>
         ) : (
           <>
             <select
@@ -155,7 +161,7 @@ export function Sidebar({
           </button>
         </div>
 
-        <SidebarFilters />
+        <SidebarFilters current={current} />
 
         <SearchTrigger onOpen={() => setPaletteOpen(true)} />
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} onNavigate={navigate} />
