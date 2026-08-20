@@ -1,4 +1,4 @@
-import { Lock } from "lucide-react";
+import { Lock, ChevronRight } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { InfoTip } from "@/components/pk/InfoTip";
@@ -8,9 +8,10 @@ import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
+import { entities } from "@/data/entities";
 
 export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId, isRestrictedPillar, homeEntityName } = useSession();
+  const { entityId, periodId, isRestrictedPillar, homeEntityName, setEntityId } = useSession();
   const { latestValue } = useWorkflow();
   const { managedEntityRatings, governanceIndex } = useDetails();
   const kpi3 = latestValue("KPI3", entityId, periodId);
@@ -71,12 +72,19 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <tbody>
             {managedEntityRatings.map((r) => {
               const restricted = isRestrictedPillar && r.entity !== homeEntityName;
+              const target = entities.find((e) => e.name === r.entity);
+              const clickable = !restricted && !!target;
               return (
-                <tr key={r.entity} className="border-t border-[hsl(var(--pk-border))]">
+                <tr
+                  key={r.entity}
+                  onClick={clickable ? () => { setEntityId(target.id); onNavigate("MAIN"); } : undefined}
+                  className={cn("border-t border-[hsl(var(--pk-border))]", clickable && "cursor-pointer hover:bg-[hsl(var(--pk-surface-2))]")}
+                >
                   <td className={cn("px-3 py-2 font-medium text-[hsl(var(--pk-ink))]", pillarRowClass(restricted))}>
                     <span className="inline-flex items-center gap-1.5">
                       {r.entity}
                       {restricted && <Lock className="h-3 w-3 text-[hsl(var(--pk-ink-faint))]" />}
+                      {clickable && <ChevronRight className="h-3 w-3 text-[hsl(var(--pk-ink-faint))]" />}
                     </span>
                   </td>
                   <td className={cn("px-3 py-2 text-right tnum text-[hsl(var(--pk-good))]", pillarRowClass(restricted))}>{r.met}</td>

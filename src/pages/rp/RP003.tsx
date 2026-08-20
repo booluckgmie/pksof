@@ -1,20 +1,31 @@
+import { useState } from "react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatCard } from "@/components/pk/Misc";
 import { StatusChip } from "@/components/pk/StatusChip";
-import { LineTrend, DonutStat } from "@/components/pk/Charts";
+import { LineTrend, CategoryBar } from "@/components/pk/Charts";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails, industryBenchmark } from "@/lib/details";
+import { cn } from "@/lib/utils";
+
+const DURATIONS = [
+  { id: "4q", label: "Last 4Q", n: 4 },
+  { id: "8q", label: "Last 8Q", n: 8 },
+  { id: "all", label: "All", n: Infinity },
+] as const;
 
 export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
-  const { headcountSummaryByPeriod, turnoverTrend, resignedByPeriod } = useDetails();
+  const { headcountSummaryByPeriod, turnoverTrend: fullTurnoverTrend, resignedByPeriod } = useDetails();
   const kpi12 = latestValue("KPI12", entityId, periodId);
   const headcountSummary = headcountSummaryByPeriod[periodId];
   const resigned = resignedByPeriod[periodId];
   const turnoverRate = headcountSummary.totalEmployees > 0 ? (resigned / headcountSummary.totalEmployees) * 100 : 0;
+  const [duration, setDuration] = useState<(typeof DURATIONS)[number]["id"]>("8q");
+  const n = DURATIONS.find((d) => d.id === duration)!.n;
+  const turnoverTrend = fullTurnoverTrend.slice(Math.max(0, fullTurnoverTrend.length - n));
 
   return (
     <div>
@@ -29,7 +40,25 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Turnover trend by quarter vs industry benchmark</div>
+          <div className="flex items-center justify-between mb-2 flex-wrap gap-1.5">
+            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))]">Turnover trend by quarter vs industry benchmark</div>
+            <div className="flex items-center gap-1">
+              {DURATIONS.map((d) => (
+                <button
+                  key={d.id}
+                  onClick={() => setDuration(d.id)}
+                  className={cn(
+                    "text-[10.5px] px-2 py-0.5 rounded border transition-colors",
+                    duration === d.id
+                      ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] border-[hsl(var(--pk-accent))]"
+                      : "border-[hsl(var(--pk-border))] text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))]"
+                  )}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <LineTrend data={turnoverTrend.map((t) => ({ label: t.period.replace(" FY", " '"), value: t.rate }))} unit="%" />
         </div>
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
@@ -37,7 +66,7 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))]">KPI 12 — Bumiputera Composition</div>
             <StatusChip status={kpi12.status} />
           </div>
-          <DonutStat segments={[{ label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" }, { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" }]} />
+          <CategoryBar segments={[{ label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" }, { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" }]} />
         </div>
       </div>
 

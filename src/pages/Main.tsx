@@ -1,9 +1,8 @@
-import { LayoutGrid, Wallet, Users2, ChevronRight, Lock, PenLine } from "lucide-react";
+import { LayoutGrid, Wallet, Users2, ChevronRight, PenLine } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { Gauge } from "@/components/pk/Gauge";
 import { StatCard } from "@/components/pk/Misc";
 import { InfoNote } from "@/components/pk/Misc";
-import { PillarGate } from "@/components/pk/PillarGate";
 import { NoDataState } from "@/components/pk/DataOrigin";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
@@ -12,7 +11,6 @@ import { kpis } from "@/data/kpis";
 import { entities } from "@/data/entities";
 import { entitySnapshot } from "@/data/factSeed";
 import { periodById } from "@/data/periods";
-import { cn } from "@/lib/utils";
 
 const STATUS_TONE: Record<string, { rail: string; lt: string; label: string }> = {
   "on-track": { rail: "hsl(var(--pk-good))", lt: "hsl(var(--pk-good-lt))", label: "On track" },
@@ -21,7 +19,7 @@ const STATUS_TONE: Record<string, { rail: string; lt: string; label: string }> =
 };
 
 export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, setEntityId, periodId, pillarLocked, isRestrictedPillar, entityName, canEnterData } = useSession();
+  const { entityId, periodId, isRestrictedPillar, entityName, canEnterData } = useSession();
   const { latestValue } = useWorkflow();
   const period = periodById(periodId);
 
@@ -84,47 +82,21 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </div>
           )}
         </div>
+      </div>
 
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-[10px] uppercase tracking-[0.12em] text-white/45">Entity performance snapshot</div>
-          {isRestrictedPillar && (
-            <span className="flex items-center gap-1.5 text-[11px] text-white/45">
-              <Lock className="h-3 w-3" />Other pillars are blurred — outside your assigned scope
-            </span>
+      {!isRestrictedPillar && (
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4 mb-5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <StatCard label="Total KPIs" value={String(kpis.length)} />
+            <StatCard label="KPI Met" value={String(met)} tone="good" />
+            <StatCard label="KPI Not Met" value={String(notMet)} tone={notMet > 0 ? "bad" : "default"} />
+            <StatCard label="Not Measurable" value={String(notMeasurable)} tone="pending" />
+          </div>
+          {!hasAnyData && (
+            <p className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mt-2">No submissions published yet for this entity / period.</p>
           )}
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-          {entities.map((e) => {
-            const snap = entitySnapshot[e.id];
-            const active = e.id === entityId;
-            const tone = STATUS_TONE[snap.status] ?? STATUS_TONE["on-track"];
-            const tile = (
-              <button
-                key={e.id}
-                disabled={pillarLocked}
-                onClick={() => setEntityId(e.id)}
-                className={cn(
-                  "w-full text-left rounded-xl px-3.5 py-3 transition-colors",
-                  active ? "bg-white/[0.14]" : "bg-[hsl(213,45%,15%)] hover:bg-white/[0.08]",
-                  pillarLocked && !active && "opacity-40 cursor-not-allowed"
-                )}
-              >
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <span className="text-[10px] uppercase tracking-[0.1em] font-semibold text-white/55 truncate">{e.name}</span>
-                  <span className="h-2 w-2 rounded-full shrink-0" style={{ background: tone.lt }} />
-                </div>
-                <div className="tnum text-xl font-semibold">{snap.achievement.toFixed(1)}%</div>
-                <div className="text-[11px] mt-0.5" style={{ color: tone.lt }}>{tone.label}</div>
-              </button>
-            );
-            return (
-              <PillarGate key={e.id} restricted={isRestrictedPillar && !active} reason="Not your pillar">
-                {tile}
-              </PillarGate>
-            );
-          })}
-        </div>
-      </div>
+      )}
 
       {!isRestrictedPillar && (
         <div className="flex mb-5 rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-hidden">
@@ -194,19 +166,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
-          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4">
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              <StatCard label="Total KPIs" value={String(kpis.length)} />
-              <StatCard label="KPI Met" value={String(met)} tone="good" />
-              <StatCard label="KPI Not Met" value={String(notMet)} tone={notMet > 0 ? "bad" : "default"} />
-              <StatCard label="Not Measurable" value={String(notMeasurable)} tone="pending" />
-            </div>
-            {!hasAnyData && (
-              <p className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mt-2">No submissions published yet for this entity / period.</p>
-            )}
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
           <button onClick={() => onNavigate("CP001")} className="group rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 text-left hover:border-[hsl(var(--pk-accent))] hover:shadow-floating transition-all flex flex-col items-center">
             <div className="w-full flex items-center justify-between mb-1">
               <span className="flex items-center gap-2 font-head font-semibold text-[hsl(var(--pk-ink))]"><LayoutGrid className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Corporate Performance</span>

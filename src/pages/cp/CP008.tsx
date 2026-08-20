@@ -1,11 +1,19 @@
+import { useState } from "react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
-import { DonutStat } from "@/components/pk/Charts";
+import { CategoryBar } from "@/components/pk/Charts";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
 import { kpiById } from "@/data/kpis";
+import { cn } from "@/lib/utils";
+
+const TABS = [
+  { id: "composition", label: "Composition (KPI 12)" },
+  { id: "procurement", label: "Procurement (KPI 11)" },
+  { id: "training", label: "Training (KPI 13)" },
+] as const;
 
 export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
@@ -17,15 +25,50 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const bumiputeraTraining = bumiputeraTrainingByPeriod[periodId];
   const headcountSummary = headcountSummaryByPeriod[periodId];
   const kpi13Target = kpiById("KPI13").fyTarget ?? 0;
+  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("composition");
 
   const procTotal = bumiputeraProcurement.reduce((s, r) => s + r.ytdActual, 0);
 
   return (
     <div>
-      <ScreenHeader id="CP008" subtitle="Weight 5.0% · 3 KPIs — Procurement, Composition and Training." onNavigate={onNavigate} />
+      <ScreenHeader id="CP008" subtitle="Weight 5.0% · 3 KPIs — Composition, Procurement and Training." onNavigate={onNavigate} />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+      <div className="flex flex-wrap gap-1.5 mb-4">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={cn(
+              "text-xs font-medium px-3 py-1.5 rounded-md border transition-colors",
+              tab === t.id
+                ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] border-[hsl(var(--pk-accent))]"
+                : "border-[hsl(var(--pk-border))] text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))]"
+            )}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "composition" && (
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 max-w-md">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 12 · Weight 1.67%</div>
+            <StatusChip status={kpi12.status} />
+          </div>
+          <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Composition</div>
+          <CategoryBar
+            segments={[
+              { label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" },
+              { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" },
+            ]}
+          />
+          <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">Target {kpi12.ytdTarget}% · Actual {kpi12.ytdActual?.toFixed(1)}%</div>
+        </div>
+      )}
+
+      {tab === "procurement" && (
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 max-w-md">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 11 · Weight 1.67%</div>
             <StatusChip status={kpi11.status} />
@@ -41,23 +84,10 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             ))}
           </div>
         </div>
+      )}
 
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 12 · Weight 1.67%</div>
-            <StatusChip status={kpi12.status} />
-          </div>
-          <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Composition</div>
-          <DonutStat
-            segments={[
-              { label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" },
-              { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" },
-            ]}
-          />
-          <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">Target {kpi12.ytdTarget}% · Actual {kpi12.ytdActual?.toFixed(1)}%</div>
-        </div>
-
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+      {tab === "training" && (
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 max-w-md">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weight 1.66%</div>
             <StatusChip status={kpi13.status} />
@@ -69,7 +99,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
           <p className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-3">Annual target {kpi13Target} staff{bumiputeraTraining.attendedOne === 0 ? " · training not yet commenced this financial year." : ` · stage: ${bumiputeraTraining.stage}.`}</p>
         </div>
-      </div>
+      )}
     </div>
   );
 }

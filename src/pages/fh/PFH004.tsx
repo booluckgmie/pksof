@@ -52,28 +52,36 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-        <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-3">Balance sheet trend — Shareholders' Fund vs Total Liabilities (RM Million)</div>
-        <svg viewBox="0 0 320 150" className="w-full h-auto">
+        <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Balance sheet trend — Shareholders' Fund vs Total Liabilities (RM Million)</div>
+        <div className="flex items-center gap-4 text-[11px] text-[hsl(var(--pk-ink-faint))] mb-2">
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-[hsl(var(--pk-accent))]" />Shareholders' Fund</span>
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-[hsl(var(--pk-navy))]" />Total Liabilities</span>
+        </div>
+        <svg viewBox="0 0 480 220" className="w-full h-auto max-w-xl" role="img" aria-label="Balance sheet trend — stacked bar chart">
           {balanceSheet.trend.map((t, i) => {
-            const bw = 320 / balanceSheet.trend.length;
-            const x = i * bw + bw * 0.22;
-            const totalH = ((t.equity + t.liabilities) / maxTrend) * 110;
-            const liabH = (t.liabilities / maxTrend) * 110;
+            const bw = 480 / balanceSheet.trend.length;
+            const x = i * bw + bw * 0.24;
+            const barW = bw * 0.52;
+            const totalH = ((t.equity + t.liabilities) / maxTrend) * 165;
+            const liabH = (t.liabilities / maxTrend) * 165;
             const eqH = totalH - liabH;
-            const yBase = 130;
+            const yBase = 190;
             return (
               <g key={t.period}>
-                <rect x={x} y={yBase - totalH} width={bw * 0.56} height={eqH} fill="hsl(var(--pk-accent))" rx={2} />
-                <rect x={x} y={yBase - liabH} width={bw * 0.56} height={liabH} fill="hsl(var(--pk-navy))" rx={2} />
-                <text x={x + bw * 0.28} y={yBase + 12} textAnchor="middle" fontSize={9} className="fill-[hsl(var(--pk-ink-faint))]">{t.period.replace(" FY", " '")}</text>
+                <rect x={x} y={yBase - totalH} width={barW} height={eqH} fill="hsl(var(--pk-accent))" rx={3}>
+                  <title>Shareholders' Fund — {t.period}: RM {t.equity.toFixed(1)}m</title>
+                </rect>
+                <rect x={x} y={yBase - liabH} width={barW} height={liabH} fill="hsl(var(--pk-navy))" rx={3}>
+                  <title>Total Liabilities — {t.period}: RM {t.liabilities.toFixed(1)}m</title>
+                </rect>
+                <text x={x + barW / 2} y={yBase - totalH - 8} textAnchor="middle" fontSize={11} fontWeight={600} className="fill-[hsl(var(--pk-ink))] tnum">
+                  {(t.equity + t.liabilities).toFixed(0)}
+                </text>
+                <text x={x + barW / 2} y={yBase + 18} textAnchor="middle" fontSize={11} className="fill-[hsl(var(--pk-ink-faint))]">{t.period.replace(" FY", " '")}</text>
               </g>
             );
           })}
         </svg>
-        <div className="flex items-center gap-4 text-[11px] text-[hsl(var(--pk-ink-faint))] mt-1">
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-[hsl(var(--pk-accent))]" />Shareholders' Fund</span>
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-[hsl(var(--pk-navy))]" />Total Liabilities</span>
-        </div>
       </div>
     </div>
   );

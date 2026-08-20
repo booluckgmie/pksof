@@ -1,9 +1,11 @@
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
+import { StackedBarTrend } from "@/components/pk/Charts";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
+import { periods } from "@/data/periods";
 
 export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
@@ -11,6 +13,17 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { timeCharterCompliance } = useDetails();
   const kpi5 = latestValue("KPI5", entityId, periodId);
   const kpi6 = latestValue("KPI6", entityId, periodId);
+
+  const satisfactionTrend = periods
+    .map((p) => ({ p, r: latestValue("KPI5", entityId, p.id) }))
+    .filter((x) => x.r.ytdActual !== null)
+    .map(({ p, r }) => ({
+      label: p.label.replace("FY20", "FY"),
+      segments: [
+        { label: "Actual", value: r.ytdActual as number, color: r.status === "met" ? "hsl(var(--pk-good))" : "hsl(var(--pk-warn))" },
+        { label: "Gap to target", value: Math.max((r.ytdTarget ?? 0) - (r.ytdActual as number), 0), color: "hsl(var(--pk-surface-2))" },
+      ],
+    }));
 
   return (
     <div>
@@ -25,6 +38,10 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-2">External Client Satisfaction</div>
           <div className="tnum font-head text-2xl font-semibold text-[hsl(var(--pk-ink-faint))]">— <span className="text-sm font-sans font-normal">/ target 4.7</span></div>
           <p className="text-xs text-[hsl(var(--pk-ink-faint))] mt-2">No survey conducted this quarter → Not Measurable. Next round scheduled Q2 FY2026.</p>
+          <div className="mt-3">
+            <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mb-1.5">Historical trend — bi-annual survey rounds only</div>
+            <StackedBarTrend data={satisfactionTrend} />
+          </div>
         </div>
 
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">

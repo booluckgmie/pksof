@@ -85,7 +85,7 @@ export const factSeed: FactKpiResultSeed[] = [
   { kpiId: "KPI5", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Bi-annual survey — next in Q2" },
   { kpiId: "KPI6", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Baseline monitoring framework in progress" },
   { kpiId: "KPI7", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Initiatives planned to complete from Q3" },
-  { kpiId: "KPI8", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Initiatives planned to complete from Q2" },
+  { kpiId: "KPI8", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 6, ytdActual: 3, status: "not-met" },
   { kpiId: "KPI9", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 80.0, ytdActual: 88.7, status: "met" },
   { kpiId: "KPI10", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Programmes commence Q2 onward" },
   { kpiId: "KPI11", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 0.55, ytdActual: 0.82, status: "met" },

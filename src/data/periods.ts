@@ -1,5 +1,14 @@
 import type { Period, PeriodId } from "@/types";
 
+/**
+ * The Group's fiscal year-end month, 0-indexed (11 = December) — currently a calendar-year FY.
+ * Single source of truth for FY quarter boundaries below; change this one constant if the Group
+ * ever moves to a non-calendar fiscal year, rather than touching `periodDateRange` or the seeded
+ * quarter labels. Per client direction (Progress Meeting #1), this is an admin-settable config
+ * value in intent, not a hardcoded assumption — a full settings UI is out of scope for this pass.
+ */
+export const FISCAL_YEAR_END_MONTH = 11;
+
 export const periods: Period[] = [
   // FY2025 — closed financial year, kept for year-over-year reference.
   { id: "Q1FY25", label: "Q1 FY2025", fy: "FY2025", quarter: 1, cumulativeThreshold: 0.25, mofThreshold: 0.20, isCurrent: false, isOpenForEntry: false },
@@ -23,7 +32,8 @@ export const periodById = (id: string) => periods.find((p) => p.id === id)!;
 /** [start, end) calendar-quarter date range for a period, derived from its fy + quarter (FY = calendar year). */
 function periodDateRange(p: Period): [Date, Date] {
   const year = parseInt(p.fy.replace("FY", ""), 10);
-  const startMonth = (p.quarter - 1) * 3;
+  const fyStartMonth = (FISCAL_YEAR_END_MONTH + 1) % 12;
+  const startMonth = (fyStartMonth + (p.quarter - 1) * 3) % 12;
   const start = new Date(Date.UTC(year, startMonth, 1));
   const end = new Date(Date.UTC(year, startMonth + 3, 1));
   return [start, end];

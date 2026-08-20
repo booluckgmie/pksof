@@ -149,7 +149,7 @@ insert into fact_kpi_results (kpi_id, entity_id, period_id, ytd_target, ytd_actu
   ('KPI5', 'HQ','Q1FY26', null, null, 'not-measurable', 'Bi-annual survey — next in Q2'),
   ('KPI6', 'HQ','Q1FY26', null, null, 'not-measurable', 'Baseline monitoring framework in progress'),
   ('KPI7', 'HQ','Q1FY26', null, null, 'not-measurable', 'Initiatives planned to complete from Q3'),
-  ('KPI8', 'HQ','Q1FY26', null, null, 'not-measurable', 'Initiatives planned to complete from Q2'),
+  ('KPI8', 'HQ','Q1FY26', 6, 3, 'not-met', null),
   ('KPI9', 'HQ','Q1FY26', 80.0, 88.7, 'met', null),
   ('KPI10','HQ','Q1FY26', null, null, 'not-measurable', 'Programmes commence Q2 onward'),
   ('KPI11','HQ','Q1FY26', 0.55, 0.82, 'met', null),

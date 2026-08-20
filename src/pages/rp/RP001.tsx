@@ -3,7 +3,7 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatCard } from "@/components/pk/Misc";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { InfoTip } from "@/components/pk/InfoTip";
-import { DonutStat, BarTrend } from "@/components/pk/Charts";
+import { CategoryBar, BarTrend } from "@/components/pk/Charts";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -46,7 +46,7 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <span className="text-xs font-medium text-[hsl(var(--pk-ink-soft))]">Workforce composition — click for full breakdown</span>
             <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
           </div>
-          <DonutStat
+          <CategoryBar
             segments={[
               { label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" },
               { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" },
