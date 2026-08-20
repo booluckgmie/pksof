@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   LayoutGrid, TrendingUp, Landmark, ShieldCheck, Users, Workflow, GraduationCap, Handshake,
   Wallet, ClipboardList, FileText, Scale, ArrowLeftRight, User, IdCard, LogOut, PenLine, CheckSquare, Lock, X,
@@ -9,17 +8,16 @@ import { cpNav, fhNav, rpNav, screens, type ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { entities } from "@/data/entities";
 import { periods } from "@/data/periods";
-import { CommandPalette, SearchTrigger } from "@/components/layout/CommandPalette";
 
 const CP_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   CP001: LayoutGrid, CP002: ClipboardList, CP003: Landmark, CP004: ShieldCheck,
-  CP005: Users, CP006: Workflow, CP007: GraduationCap, CP008: Handshake,
+  CP005: Users, CP006: Workflow, CP007: GraduationCap, CP008: Handshake, CP009: BookUser,
 };
 const FH_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   PFH001: Wallet, PFH002: TrendingUp, PFH003: Scale, PFH004: FileText, PFH005: ArrowLeftRight,
 };
 const RP_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  RP001: Users, RP001A: IdCard, RP002: ClipboardList, RP003: TrendingUp, RP004: GraduationCap, RP005: BookUser,
+  RP001: Users, RP001A: IdCard, RP002: ClipboardList, RP003: TrendingUp, RP004: GraduationCap,
 };
 
 function NavTag({ id, icon: Icon, active, onClick }: { id: ScreenId; icon: React.ComponentType<{ className?: string }>; active: boolean; onClick: () => void }) {
@@ -60,6 +58,11 @@ function SidebarFilters({ current }: { current: ScreenId }) {
   const { entityId, setEntityId, periodId, setPeriodId, pillarLocked, entityName } = useSession();
   const fyGroups = Array.from(new Set(periods.map((p) => p.fy)));
   const onMain = current === "MAIN";
+  // Managed Entities have no data yet, so there's nothing real to pick — a dropdown of
+  // disabled options is just noise. Only render a real <select> once more than one entity
+  // actually has something behind it.
+  const selectableEntities = entities.filter((e) => e.id === "HQ");
+  const hasChoice = selectableEntities.length > 1;
 
   return (
     <div className="px-4 py-3 border-b border-white/10 flex flex-col gap-2.5 shrink-0">
@@ -75,19 +78,22 @@ function SidebarFilters({ current }: { current: ScreenId }) {
             <div className="text-sm font-medium text-white truncate">{entityName}</div>
             <p className="text-[10.5px] text-white/35 mt-1 leading-snug">Main shows the Group rollup — switch entity from within a perspective screen.</p>
           </>
-        ) : (
+        ) : hasChoice ? (
           <>
             <select
               value={entityId}
               onChange={(e) => setEntityId(e.target.value as never)}
               className="w-full bg-white/5 border border-white/10 rounded-md px-2 py-1.5 text-sm font-medium text-white outline-none cursor-pointer focus:border-white/30"
             >
-              {entities.map((e) => (
-                <option key={e.id} value={e.id} disabled={e.id !== "HQ"} className="text-[hsl(var(--pk-ink))]">
-                  {e.name}{e.id !== "HQ" ? " — no data yet" : ""}
-                </option>
+              {selectableEntities.map((e) => (
+                <option key={e.id} value={e.id} className="text-[hsl(var(--pk-ink))]">{e.name}</option>
               ))}
             </select>
+            <p className="text-[10.5px] text-white/35 mt-1 leading-snug">Managed Entities join once their own figures are seeded.</p>
+          </>
+        ) : (
+          <>
+            <div className="text-sm font-medium text-white truncate">{entityName}</div>
             <p className="text-[10.5px] text-white/35 mt-1 leading-snug">Managed Entities join once their own figures are seeded.</p>
           </>
         )}
@@ -125,7 +131,6 @@ export function Sidebar({
   onCloseMobile?: () => void;
 }) {
   const { role, roleLabel, userName, canEnterData, canVerify, logout, isRestrictedPillar, homeEntityName } = useSession();
-  const [paletteOpen, setPaletteOpen] = useState(false);
 
   /** Every in-sidebar navigation also dismisses the mobile drawer, so tapping a screen doesn't leave it open behind the page. */
   const navigate = (id: ScreenId) => {
@@ -163,9 +168,6 @@ export function Sidebar({
         </div>
 
         <SidebarFilters current={current} />
-
-        <SearchTrigger onOpen={() => setPaletteOpen(true)} />
-        <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} onNavigate={navigate} />
 
         <nav className="flex-1 overflow-y-auto px-0 pb-4">
           <div className="pt-3 px-2">

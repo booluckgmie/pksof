@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import {
   LayoutGrid, TrendingUp, Landmark, ShieldCheck, Users, Workflow, GraduationCap, Handshake,
-  Wallet, ClipboardList, FileText, Scale, ArrowLeftRight, IdCard, PenLine, CheckSquare, Search,
+  Wallet, ClipboardList, FileText, Scale, ArrowLeftRight, IdCard, PenLine, CheckSquare,
   Settings as SettingsIcon, BookUser,
 } from "lucide-react";
 import {
@@ -13,24 +13,11 @@ import { useSession } from "@/lib/session";
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   MAIN: LayoutGrid,
   CP001: LayoutGrid, CP002: ClipboardList, CP003: Landmark, CP004: ShieldCheck,
-  CP005: Users, CP006: Workflow, CP007: GraduationCap, CP008: Handshake,
+  CP005: Users, CP006: Workflow, CP007: GraduationCap, CP008: Handshake, CP009: BookUser,
   PFH001: Wallet, PFH002: TrendingUp, PFH003: Scale, PFH004: FileText, PFH005: ArrowLeftRight,
-  RP001: Users, RP001A: IdCard, RP002: ClipboardList, RP003: TrendingUp, RP004: GraduationCap, RP005: BookUser,
+  RP001: Users, RP001A: IdCard, RP002: ClipboardList, RP003: TrendingUp, RP004: GraduationCap,
   DATA_ENTRY: PenLine, VERIFY_PUBLISH: CheckSquare, SETTINGS: SettingsIcon,
 };
-
-export function SearchTrigger({ onOpen }: { onOpen: () => void }) {
-  return (
-    <button
-      onClick={onOpen}
-      className="mx-2 mt-3 flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 text-[12.5px] text-white/50 hover:text-white/80 hover:bg-white/10 transition-colors"
-    >
-      <Search className="h-3.5 w-3.5 shrink-0" />
-      <span className="flex-1 text-left">Search screens…</span>
-      <kbd className="font-mono-pk text-[10px] px-1 py-0.5 rounded border border-white/15 text-white/40">⌘K</kbd>
-    </button>
-  );
-}
 
 export function CommandPalette({
   open,

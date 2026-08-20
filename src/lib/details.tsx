@@ -499,7 +499,7 @@ export function useDetails() {
     });
   }, [metrics, entityId]);
 
-  /** People Development Programme entries for a period — edited in full via RP005, mapped onto
+  /** People Development Programme entries for a period — edited in full via CP009, mapped onto
    * detail_records the same way initiativeListFor() maps process/tech initiatives: `category`
    * holds the sub-area, `textNote` packs "start|end|status|detail" (pipe-delimited, same
    * convention as initiativeListFor's "status | nextAction"). */

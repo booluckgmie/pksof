@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
-import { InfoNote } from "@/components/pk/Misc";
-import { InitiativeStatusDot } from "@/components/pk/Misc";
+import { InfoNote, InitiativeStatusDot } from "@/components/pk/Misc";
+import { StatusChip } from "@/components/pk/StatusChip";
 import { useSession } from "@/lib/session";
+import { useWorkflow } from "@/lib/workflow";
 import { useDetails, PEOPLE_DEV_SUB_AREAS, type PeopleDevRecord, type PeopleDevSubArea } from "@/lib/details";
 import { upsertDetailRecord, deleteDetailRecord } from "@/lib/api/details";
 import type { InitiativeStatus } from "@/data/initiatives";
@@ -28,9 +29,11 @@ const BLANK = (subArea: PeopleDevSubArea): FormState => ({ id: null, subArea, pr
 let seq = 1;
 const newRecordId = () => `PDP-${Date.now().toString(36)}-${String(seq++).padStart(3, "0")}`;
 
-export function RP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
+export function CP009({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId, canEnterData } = useSession();
+  const { latestValue } = useWorkflow();
   const { peopleDevRecordsFor, refresh } = useDetails();
+  const kpi10 = latestValue("KPI10", entityId, periodId);
   const records = peopleDevRecordsFor(periodId);
   const [form, setForm] = useState<FormState | null>(null);
   const [saving, setSaving] = useState(false);
@@ -72,10 +75,18 @@ export function RP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="RP005" subtitle="Resource & People · Talent Management, Succession Management, Performance Management and Talent/Culture Engagement, by reporting period." onNavigate={onNavigate} />
+      <ScreenHeader id="CP009" subtitle="Organisational Capacity performance: People Development Programme. Weight 10.0%." onNavigate={onNavigate} />
+
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4 flex items-center justify-between">
+        <div>
+          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 10 · Weight 10.0%</div>
+          <div className="font-head font-semibold text-[hsl(var(--pk-ink))]">People Development Programme</div>
+        </div>
+        <StatusChip status={kpi10.status} />
+      </div>
 
       <InfoNote>
-        Feeds KPI 10 (People Development Programme) on Organisational Capacity. {canEnterData ? "Add, edit or remove entries below for the currently selected reporting period." : "Read-only for your role — Reporting Officer or System Administrator can edit."}
+        Talent Management, Succession Management, Performance Management and Talent/Culture Engagement, by reporting period. {canEnterData ? "Add, edit or remove entries below for the currently selected reporting period." : "Read-only for your role — Reporting Officer or System Administrator can edit."}
       </InfoNote>
 
       <div className="flex flex-col gap-4 mt-4">

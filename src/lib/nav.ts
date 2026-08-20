@@ -1,8 +1,8 @@
 export type ScreenId =
   | "MAIN"
-  | "CP001" | "CP002" | "CP003" | "CP004" | "CP005" | "CP006" | "CP007" | "CP008"
+  | "CP001" | "CP002" | "CP003" | "CP004" | "CP005" | "CP006" | "CP007" | "CP008" | "CP009"
   | "PFH001" | "PFH002" | "PFH003" | "PFH004" | "PFH005"
-  | "RP001" | "RP001A" | "RP002" | "RP003" | "RP004" | "RP005"
+  | "RP001" | "RP001A" | "RP002" | "RP003" | "RP004"
   | "DATA_ENTRY" | "VERIFY_PUBLISH" | "SETTINGS";
 
 export interface ScreenDef {
@@ -25,6 +25,7 @@ export const screens: Record<ScreenId, ScreenDef> = {
   CP006: { id: "CP006", code: "CP006", label: "Internal Business Process", level: "L2", group: "cp", parent: "CP001" },
   CP007: { id: "CP007", code: "CP007", label: "Organisational Capacity", level: "L2", group: "cp", parent: "CP001" },
   CP008: { id: "CP008", code: "CP008", label: "Bumiputera Empowerment", level: "L2", group: "cp", parent: "CP001" },
+  CP009: { id: "CP009", code: "CP009", label: "People Development Programme", level: "L2", group: "cp", parent: "CP001" },
 
   PFH001: { id: "PFH001", code: "PFH001", label: "Financial Health Overview", level: "L2", group: "fh", parent: "MAIN" },
   PFH002: { id: "PFH002", code: "PFH002", label: "Financial Results (QoQ)", level: "L3", group: "fh", parent: "PFH001" },
@@ -37,7 +38,6 @@ export const screens: Record<ScreenId, ScreenDef> = {
   RP002: { id: "RP002", code: "RP002", label: "Approved Headcount & KPI 10", level: "L3", group: "rp", parent: "RP001" },
   RP003: { id: "RP003", code: "RP003", label: "Turnover Rate & KPI 12", level: "L3", group: "rp", parent: "RP001" },
   RP004: { id: "RP004", code: "RP004", label: "Turnover Rate & KPI 13", level: "L3", group: "rp", parent: "RP001" },
-  RP005: { id: "RP005", code: "RP005", label: "People Development Programme", level: "L2", group: "rp", parent: "MAIN" },
 
   DATA_ENTRY: { id: "DATA_ENTRY", code: "ENTRY", label: "Data Entry", level: "L2", group: "gov", parent: "MAIN" },
   VERIFY_PUBLISH: { id: "VERIFY_PUBLISH", code: "VERIFY", label: "Verify & Publish", level: "L2", group: "gov", parent: "MAIN" },
@@ -60,6 +60,6 @@ export function screenLabel(id: ScreenId, entityName: string): string {
   return screens[id].label;
 }
 
-export const cpNav: ScreenId[] = ["CP001", "CP002", "CP003", "CP004", "CP005", "CP006", "CP007", "CP008"];
+export const cpNav: ScreenId[] = ["CP001", "CP002", "CP003", "CP004", "CP005", "CP006", "CP007", "CP008", "CP009"];
 export const fhNav: ScreenId[] = ["PFH001", "PFH002", "PFH003", "PFH004", "PFH005"];
-export const rpNav: ScreenId[] = ["RP001", "RP001A", "RP002", "RP003", "RP004", "RP005"];
+export const rpNav: ScreenId[] = ["RP001", "RP001A", "RP002", "RP003", "RP004"];

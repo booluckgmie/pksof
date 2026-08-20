@@ -67,12 +67,15 @@ publishable (anon) key — both are on the Supabase dashboard under Settings →
   Entry's "Monthly Financial Detail" section). KPI achievement scoring
   (`fact_kpi_results`/`submissions`) stays quarterly-only — that's the Group's actual assessment
   cadence, not something this widens. See `src/data/periods.ts`'s `monthPeriods`.
-- **People Development Programme (RP005)**: a new `detail_records` `record_type` value,
-  `'people_dev_programme'` — `category` holds the sub-area (Talent Management / Succession
-  Management / Performance Management / Talent-Culture Engagement), `text_note` packs
-  `start|end|status|detail`, same convention as `process_initiative`/`tech_initiative`. RP005 is
-  the first screen with real add/edit/delete UI for a `detail_records` dataset (previously all
-  ~15 of them were read-only, entered by writing rows to Supabase directly).
+- **People Development Programme (CP009)**: split out of CP007 (Organisational Capacity) into
+  its own Corporate Performance screen, same as Bumiputera Empowerment (CP008) is its own screen
+  rather than folded into another perspective — CP007 now shows only KPI9 (Recruitment Efficiency
+  Index). A new `detail_records` `record_type` value, `'people_dev_programme'` — `category` holds
+  the sub-area (Talent Management / Succession Management / Performance Management /
+  Talent-Culture Engagement), `text_note` packs `start|end|status|detail`, same convention as
+  `process_initiative`/`tech_initiative`. CP009 is the first screen with real add/edit/delete UI
+  for a `detail_records` dataset (previously all ~15 of them were read-only, entered by writing
+  rows to Supabase directly).
 
 ## 4. Security note — this app has no real login yet
 
@@ -109,6 +112,16 @@ ask ("remove entity names/metrics for other entities") needs a real scenario fir
 viewer role should see anonymized labels, and for *which* entities — before this does anything.
 Don't treat the CP004 masking code as a finished feature; it's scaffolding for whenever that
 scenario is defined.
+
+**Dashboards are now public; login is only required to write.** The old full-page Login screen
+is gone — `App.tsx` no longer gates rendering on `loggedIn`. Anyone who loads the site sees Main
+and every CP/FH/PFH/RP screen immediately, unauthenticated, with a "Login" button in the top-right
+(opens `LoginDialog` instead of navigating away). Only `DATA_ENTRY`, `VERIFY_PUBLISH`, and
+`SETTINGS` require a real sign-in (`LOGIN_REQUIRED_SCREENS` in `App.tsx`) — this doesn't weaken
+anything that was actually enforcing access before, since the old Login screen was a client-side
+role picker with no real auth behind it either (see the note above this section) — it just makes
+that fact honest instead of implying a login wall that wasn't backed by anything. Before this is
+a real production public/private split, the same "wire up Supabase Auth" caveat above applies.
 
 ## 5. Troubleshooting: "duplicate key value violates unique constraint" on `entities`
 

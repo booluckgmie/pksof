@@ -1,24 +1,21 @@
-import { ChevronRight } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
-import { InitiativeStatusDot } from "@/components/pk/Misc";
 import { InfoTip } from "@/components/pk/InfoTip";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
-import { useDetails, peopleDevProgrammes } from "@/lib/details";
+import { useDetails } from "@/lib/details";
 
 export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
   const { recruitmentIndexByPeriod } = useDetails();
   const kpi9 = latestValue("KPI9", entityId, periodId);
-  const kpi10 = latestValue("KPI10", entityId, periodId);
   const recruitmentIndex = recruitmentIndexByPeriod[periodId];
 
   return (
     <div>
-      <ScreenHeader id="CP007" subtitle="Organisational Capacity performance: recruitment efficiency and people development. Weight 20.0%." onNavigate={onNavigate} />
+      <ScreenHeader id="CP007" subtitle="Organisational Capacity performance: Recruitment Efficiency Index. Weight 10.0%." onNavigate={onNavigate} />
 
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
         <div className="flex items-center justify-between mb-3">
@@ -65,32 +62,6 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         ) : (
           <p className="text-[11.5px] text-[hsl(var(--pk-ink-faint))]">Component breakdown not tracked for this reporting period in the prototype.</p>
         )}
-      </div>
-
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 10 · Weight 10.0%</div>
-            <div className="font-head font-semibold text-[hsl(var(--pk-ink))]">People Development Programme</div>
-          </div>
-          <StatusChip status={kpi10.status} />
-        </div>
-        <div className="divide-y divide-[hsl(var(--pk-border))]">
-          {peopleDevProgrammes.map((p) => (
-            <div key={p.programme} className="flex items-center justify-between py-2 text-sm gap-3">
-              <span className="text-[hsl(var(--pk-ink-soft))]">{p.programme}</span>
-              <span className="text-[11px] text-[hsl(var(--pk-ink-faint))] shrink-0">{p.start} → {p.end}</span>
-              <InitiativeStatusDot status={p.status} />
-            </div>
-          ))}
-        </div>
-        <button
-          onClick={() => onNavigate("RP005")}
-          className="group flex items-center gap-1 text-[11.5px] font-medium text-[hsl(var(--pk-accent))] hover:opacity-75 transition-opacity mt-3"
-        >
-          Manage full programme detail by sub-area
-          <ChevronRight className="h-3.5 w-3.5" />
-        </button>
       </div>
     </div>
   );
