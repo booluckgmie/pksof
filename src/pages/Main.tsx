@@ -1,22 +1,54 @@
-import { LayoutGrid, Wallet, Users2, ChevronRight, PenLine } from "lucide-react";
+import { useState } from "react";
+import { LayoutGrid, Wallet, Users2, ChevronRight, ChevronDown, PenLine } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { Gauge } from "@/components/pk/Gauge";
 import { StatCard } from "@/components/pk/Misc";
 import { InfoNote } from "@/components/pk/Misc";
 import { NoDataState } from "@/components/pk/DataOrigin";
-import type { ScreenId } from "@/lib/nav";
+import { cpNav, fhNav, rpNav, screens, type ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { kpis } from "@/data/kpis";
-import { entities } from "@/data/entities";
 import { entitySnapshot } from "@/data/factSeed";
 import { periodById } from "@/data/periods";
+import { cn } from "@/lib/utils";
 
 const STATUS_TONE: Record<string, { rail: string; lt: string; label: string }> = {
   "on-track": { rail: "hsl(var(--pk-good))", lt: "hsl(var(--pk-good-lt))", label: "On track" },
   attention: { rail: "hsl(var(--pk-warn))", lt: "hsl(var(--pk-warn-lt))", label: "Attention" },
   "at-risk": { rail: "hsl(var(--pk-bad))", lt: "hsl(var(--pk-bad-lt))", label: "At risk" },
 };
+
+/** Collapsed by default so the Main screen stays compact as more sub-pages/wording get added —
+ * expand to jump straight into any L2/L3 screen under this pillar without going via its hub. */
+function SubpageDropdown({ ids, onNavigate }: { ids: ScreenId[]; onNavigate: (id: ScreenId) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-1 -mx-1">
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
+        className="flex items-center gap-1 px-1 py-1 text-[11px] text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] transition-colors"
+      >
+        <ChevronDown className={cn("h-3 w-3 transition-transform", open && "rotate-180")} />
+        {open ? "Hide sections" : `View ${ids.length} sections`}
+      </button>
+      {open && (
+        <div className="flex flex-col mt-0.5 rounded-md border border-[hsl(var(--pk-border))] overflow-hidden">
+          {ids.map((id) => (
+            <button
+              key={id}
+              onClick={(e) => { e.stopPropagation(); onNavigate(id); }}
+              className="flex items-center justify-between px-2.5 py-1.5 text-[12px] text-left text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))] hover:text-[hsl(var(--pk-ink))] transition-colors border-t border-[hsl(var(--pk-border))] first:border-t-0"
+            >
+              <span className="truncate">{screens[id].label}</span>
+              <ChevronRight className="h-3 w-3 shrink-0 text-[hsl(var(--pk-ink-faint))]" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId, isRestrictedPillar, entityName, canEnterData } = useSession();
@@ -37,13 +69,6 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   const groupSnap = entitySnapshot[entityId] ?? entitySnapshot.HQ;
   const groupTone = STATUS_TONE[groupSnap.status] ?? STATUS_TONE["on-track"];
-
-  const ranked = entities
-    .map((e) => ({ e, snap: entitySnapshot[e.id] }))
-    .sort((a, b) => b.snap.achievement - a.snap.achievement);
-  const best = ranked[0];
-  const worst = ranked[ranked.length - 1];
-  const offTrack = ranked.filter((r) => r.snap.status !== "on-track");
 
   return (
     <div>
@@ -98,49 +123,6 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </div>
       )}
 
-      {!isRestrictedPillar && (
-        <div className="flex mb-5 rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-hidden">
-          <div className="w-1 shrink-0" style={{ background: groupTone.rail }} />
-          <div className="p-4 sm:p-5 flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-3 flex-wrap mb-2">
-              <div className="text-[11px] uppercase tracking-[0.14em] text-[hsl(var(--pk-ink-faint))] font-semibold">What the numbers say</div>
-              <span
-                className="inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[11px] font-medium border"
-                style={{ background: `${groupTone.rail}1a`, color: groupTone.rail, borderColor: `${groupTone.rail}40` }}
-              >
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: groupTone.rail }} />
-                {isRestrictedPillar ? entityName : "Group"} {groupTone.label.toLowerCase()}
-              </span>
-            </div>
-            <p className="text-[14.5px] sm:text-[15px] leading-relaxed text-[hsl(var(--pk-ink-soft))]">
-              {isRestrictedPillar
-                ? `${entityName}'s pillar is scoped to KPI 3 sub-metric reporting for this phase of the engagement — see the note below for what's expected.`
-                : hasAnyData
-                  ? <>Group weighted achievement is <strong className="text-[hsl(var(--pk-ink))]">{overall.toFixed(1)}%</strong> for {period.label}, with <strong className="text-[hsl(var(--pk-ink))]">{met} of {kpis.length}</strong> KPIs met{notMet > 0 ? <> and <strong className="text-[hsl(var(--pk-ink))]">{notMet}</strong> not met</> : ""}{notMeasurable > 0 ? <>; {notMeasurable} not yet measurable this period</> : ""}.</>
-                  : <>No submissions have been published yet for {entityName} in {period.label} — switch to an earlier reporting period to see published figures.</>}
-            </p>
-            {!isRestrictedPillar && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-                <div className="border-l-2 pl-3" style={{ borderColor: STATUS_TONE[best.snap.status]?.rail }}>
-                  <div className="text-[10px] uppercase tracking-[0.1em] text-[hsl(var(--pk-ink-faint))]">Strongest entity</div>
-                  <div className="text-[13.5px] font-semibold text-[hsl(var(--pk-ink))]">{best.e.name}</div>
-                  <div className="tnum text-[11px] text-[hsl(var(--pk-ink-faint))]">{best.snap.achievement.toFixed(1)}%</div>
-                </div>
-                <div className="border-l-2 pl-3" style={{ borderColor: STATUS_TONE[worst.snap.status]?.rail }}>
-                  <div className="text-[10px] uppercase tracking-[0.1em] text-[hsl(var(--pk-ink-faint))]">Needs attention</div>
-                  <div className="text-[13.5px] font-semibold text-[hsl(var(--pk-ink))]">{worst.e.name}</div>
-                  <div className="tnum text-[11px] text-[hsl(var(--pk-ink-faint))]">{worst.snap.achievement.toFixed(1)}%</div>
-                </div>
-                <div className="border-l-2 pl-3" style={{ borderColor: "hsl(var(--pk-warn))" }}>
-                  <div className="text-[10px] uppercase tracking-[0.1em] text-[hsl(var(--pk-ink-faint))]">Below target</div>
-                  <div className="text-[13.5px] font-semibold text-[hsl(var(--pk-ink))]">{offTrack.length} of {entities.length} entities</div>
-                  <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] truncate">{offTrack.length ? offTrack.map((r) => r.e.name).join(", ") : "None — all on target"}</div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {entityId !== "HQ" && !isRestrictedPillar && (
         <InfoNote>
@@ -166,15 +148,18 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
-          <button onClick={() => onNavigate("CP001")} className="group rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 text-left hover:border-[hsl(var(--pk-accent))] hover:shadow-floating transition-all flex flex-col items-center">
-            <div className="w-full flex items-center justify-between mb-1">
-              <span className="flex items-center gap-2 font-head font-semibold text-[hsl(var(--pk-ink))]"><LayoutGrid className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Corporate Performance</span>
-              <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
-            </div>
-            <Gauge value={overall} cumulativeThreshold={period.cumulativeThreshold} mofThreshold={period.mofThreshold} size={180} />
-            <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] -mt-1">13 KPIs · 6 perspectives</div>
-          </button>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5 items-start">
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4">
+            <button onClick={() => onNavigate("CP001")} className="group w-full flex flex-col items-center text-left">
+              <div className="w-full flex items-center justify-between mb-1">
+                <span className="flex items-center gap-2 font-head font-semibold text-[hsl(var(--pk-ink))]"><LayoutGrid className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Corporate Performance</span>
+                <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
+              </div>
+              <Gauge value={overall} cumulativeThreshold={period.cumulativeThreshold} mofThreshold={period.mofThreshold} size={180} />
+              <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] -mt-1">13 KPIs · 6 perspectives</div>
+            </button>
+            <SubpageDropdown ids={cpNav} onNavigate={onNavigate} />
+          </div>
 
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4 flex flex-col gap-3">
             <button onClick={() => onNavigate("PFH001")} className="group flex items-center justify-between">
@@ -185,7 +170,11 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               <StatCard label="PBT (KPI 1)" value={kpi1.ytdActual !== null ? `RM ${kpi1.ytdActual.toFixed(1)}m` : "—"} tone={kpi1.status === "met" ? "good" : kpi1.status === "not-met" ? "bad" : "default"} />
               <StatCard label="Cost-to-Income" value={kpi2.ytdActual !== null ? `${kpi2.ytdActual.toFixed(1)}%` : "—"} tone={kpi2.status === "met" ? "good" : kpi2.status === "not-met" ? "bad" : "default"} />
             </div>
-            <button onClick={() => onNavigate("RP001")} className="group flex items-center justify-between mt-1">
+            <SubpageDropdown ids={fhNav} onNavigate={onNavigate} />
+          </div>
+
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4 flex flex-col gap-3">
+            <button onClick={() => onNavigate("RP001")} className="group flex items-center justify-between">
               <span className="flex items-center gap-2 font-head font-semibold text-[hsl(var(--pk-ink))]"><Users2 className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Resource &amp; People</span>
               <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
             </button>
@@ -193,6 +182,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               <StatCard label="Recruitment Index" value={kpi9.ytdActual !== null ? `${kpi9.ytdActual.toFixed(1)}%` : "—"} tone={kpi9.status === "met" ? "good" : "default"} />
               <StatCard label="Bumiputera Comp." value={kpi12.ytdActual !== null ? `${kpi12.ytdActual.toFixed(1)}%` : "—"} tone={kpi12.status === "met" ? "good" : "default"} />
             </div>
+            <SubpageDropdown ids={rpNav} onNavigate={onNavigate} />
           </div>
         </div>
       )}
