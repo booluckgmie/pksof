@@ -1,6 +1,8 @@
+import { ChevronRight } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { InitiativeStatusDot } from "@/components/pk/Misc";
+import { InfoTip } from "@/components/pk/InfoTip";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -22,7 +24,12 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="flex items-center justify-between mb-3">
           <div>
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 9 · Weight 10.0%</div>
-            <div className="font-head font-semibold text-[hsl(var(--pk-ink))]">Recruitment Efficiency Index</div>
+            <div className="font-head font-semibold text-[hsl(var(--pk-ink))] inline-flex items-center gap-1.5">
+              Recruitment Efficiency Index
+              <InfoTip title="Recruitment Efficiency Index">
+                Sum of four weighted components — Time to Hire, MRF Fulfilment, Quality of Hire, Offer Acceptance. Each component's score is out of 5 (or a ratio), multiplied by its own weight.
+              </InfoTip>
+            </div>
           </div>
           <div className="text-right">
             <div className="tnum font-head text-2xl font-semibold">{kpi9.ytdActual !== null ? `${kpi9.ytdActual.toFixed(1)}%` : "—"}</div>
@@ -77,6 +84,13 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </div>
           ))}
         </div>
+        <button
+          onClick={() => onNavigate("RP005")}
+          className="group flex items-center gap-1 text-[11.5px] font-medium text-[hsl(var(--pk-accent))] hover:opacity-75 transition-opacity mt-3"
+        >
+          Manage full programme detail by sub-area
+          <ChevronRight className="h-3.5 w-3.5" />
+        </button>
       </div>
     </div>
   );

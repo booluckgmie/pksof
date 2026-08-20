@@ -2,8 +2,8 @@ import { Lock, ChevronRight } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { InfoTip } from "@/components/pk/InfoTip";
-import { pillarRowClass } from "@/components/pk/PillarGate";
 import { cn } from "@/lib/utils";
+import { anonymizedEntityLabel } from "@/lib/anonymize";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -53,7 +53,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Managed Entities Performance Summary</div>
         {isRestrictedPillar && (
           <span className="flex items-center gap-1.5 text-[11px] text-[hsl(var(--pk-ink-faint))]">
-            <Lock className="h-3 w-3" />Only {homeEntityName} is visible to your pillar
+            <Lock className="h-3 w-3" />Other entities' names and figures are hidden from your pillar
           </span>
         )}
       </div>
@@ -70,7 +70,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </tr>
           </thead>
           <tbody>
-            {managedEntityRatings.map((r) => {
+            {managedEntityRatings.map((r, i) => {
               const restricted = isRestrictedPillar && r.entity !== homeEntityName;
               const target = entities.find((e) => e.name === r.entity);
               const clickable = !restricted && !!target;
@@ -80,18 +80,18 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                   onClick={clickable ? () => { setEntityId(target.id); onNavigate("MAIN"); } : undefined}
                   className={cn("border-t border-[hsl(var(--pk-border))]", clickable && "cursor-pointer hover:bg-[hsl(var(--pk-surface-2))]")}
                 >
-                  <td className={cn("px-3 py-2 font-medium text-[hsl(var(--pk-ink))]", pillarRowClass(restricted))}>
+                  <td className="px-3 py-2 font-medium text-[hsl(var(--pk-ink))]">
                     <span className="inline-flex items-center gap-1.5">
-                      {r.entity}
+                      {restricted ? anonymizedEntityLabel(i) : r.entity}
                       {restricted && <Lock className="h-3 w-3 text-[hsl(var(--pk-ink-faint))]" />}
                       {clickable && <ChevronRight className="h-3 w-3 text-[hsl(var(--pk-ink-faint))]" />}
                     </span>
                   </td>
-                  <td className={cn("px-3 py-2 text-right tnum text-[hsl(var(--pk-good))]", pillarRowClass(restricted))}>{r.met}</td>
-                  <td className={cn("px-3 py-2 text-right tnum text-[hsl(var(--pk-bad))]", pillarRowClass(restricted))}>{r.notMet}</td>
-                  <td className={cn("px-3 py-2 text-right tnum text-[hsl(var(--pk-pending))]", pillarRowClass(restricted))}>{r.notMeasured}</td>
-                  <td className={cn("px-3 py-2 text-right tnum font-semibold", pillarRowClass(restricted))}>{r.achievement}%</td>
-                  <td className={cn("px-3 py-2", pillarRowClass(restricted))}><StatusChip status={r.status === "On track" ? "met" : "warn"} label={r.status} /></td>
+                  <td className="px-3 py-2 text-right tnum text-[hsl(var(--pk-good))]">{restricted ? "—" : r.met}</td>
+                  <td className="px-3 py-2 text-right tnum text-[hsl(var(--pk-bad))]">{restricted ? "—" : r.notMet}</td>
+                  <td className="px-3 py-2 text-right tnum text-[hsl(var(--pk-pending))]">{restricted ? "—" : r.notMeasured}</td>
+                  <td className="px-3 py-2 text-right tnum font-semibold">{restricted ? "—" : `${r.achievement}%`}</td>
+                  <td className="px-3 py-2">{restricted ? <span className="text-[hsl(var(--pk-ink-faint))]">—</span> : <StatusChip status={r.status === "On track" ? "met" : "warn"} label={r.status} />}</td>
                 </tr>
               );
             })}

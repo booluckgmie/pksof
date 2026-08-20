@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { fetchDetailMetrics, fetchDetailRecords, type DetailMetricRow, type DetailRecordRow } from "@/lib/api/details";
 import { useSession } from "@/lib/session";
-import { periods } from "@/data/periods";
+import { periods, monthsForQuarter, type MonthPeriodId } from "@/data/periods";
 import type { EntityId, PeriodId } from "@/types";
 import type { InitiativeStatus } from "@/data/initiatives";
 
@@ -54,8 +54,8 @@ function useDetailsRaw(): DetailsContextValue {
 // ── Shared helpers ──────────────────────────────────────────────────────────
 
 /** Periods that have at least one row for a given metric/record key, for this entity. */
-function periodsWithData(rows: { entityId: EntityId; periodId: PeriodId }[], entityId: EntityId, matches: (r: { entityId: EntityId; periodId: PeriodId }) => boolean): Set<PeriodId> {
-  const set = new Set<PeriodId>();
+function periodsWithData(rows: { entityId: EntityId; periodId: PeriodId | MonthPeriodId }[], entityId: EntityId, matches: (r: { entityId: EntityId; periodId: PeriodId | MonthPeriodId }) => boolean): Set<PeriodId | MonthPeriodId> {
+  const set = new Set<PeriodId | MonthPeriodId>();
   for (const r of rows) {
     if (r.entityId === entityId && matches(r)) set.add(r.periodId);
   }
@@ -65,7 +65,7 @@ function periodsWithData(rows: { entityId: EntityId; periodId: PeriodId }[], ent
 /** Nothing submitted yet for `periodId`? Fall back to the nearest earlier period that has data,
  * so browsing an unreported quarter shows the last known state instead of going blank/zero —
  * same continuity the static prototype data had, now driven by whatever's actually been entered. */
-function resolvePeriod(periodId: PeriodId, available: Set<PeriodId>): PeriodId | null {
+function resolvePeriod(periodId: PeriodId, available: Set<PeriodId | MonthPeriodId>): PeriodId | null {
   const idx = periods.findIndex((p) => p.id === periodId);
   for (let i = idx; i >= 0; i--) {
     if (available.has(periods[i].id)) return periods[i].id;
@@ -75,7 +75,7 @@ function resolvePeriod(periodId: PeriodId, available: Set<PeriodId>): PeriodId |
 
 /** For flat/snapshot datasets that aren't period-selector-reactive (financial statements,
  * initiative lists, compliance tables) — use whichever period has the most recent submission. */
-function latestPeriodWithData(available: Set<PeriodId>): PeriodId | null {
+function latestPeriodWithData(available: Set<PeriodId | MonthPeriodId>): PeriodId | null {
   for (let i = periods.length - 1; i >= 0; i--) {
     if (available.has(periods[i].id)) return periods[i].id;
   }
@@ -145,6 +145,25 @@ export const peopleDevProgrammes = [
     detail: "Phase 2A (retiring within 5 years) to Individual Development Plan stage; Phase 2B (all other positions) to Successor Evaluation stage.",
   },
 ];
+
+/** The 4 sub-areas the client asked People Development Programme entries to be grouped under. */
+export const PEOPLE_DEV_SUB_AREAS = [
+  "Talent Management",
+  "Succession Management",
+  "Performance Management",
+  "Talent/Culture Engagement",
+] as const;
+export type PeopleDevSubArea = (typeof PEOPLE_DEV_SUB_AREAS)[number];
+
+export interface PeopleDevRecord {
+  id: string;
+  subArea: PeopleDevSubArea;
+  programme: string;
+  start: string;
+  end: string;
+  status: InitiativeStatus;
+  detail: string;
+}
 
 export function useDetails() {
   const { metrics, records, loading, refresh } = useDetailsRaw();
@@ -330,6 +349,18 @@ export function useDetails() {
       });
   }, [metrics, entityId]);
 
+  /** Monthly resolution for the same "financial_trend" metric quarterlyTrend reads — see
+   * src/data/periods.ts's monthPeriods. Returns null (not 0) for a month with no row yet, so the
+   * UI can show "not entered" distinctly from an actual zero. */
+  function monthlyTrendFor(quarterId: PeriodId) {
+    const rows = metricRows("financial_trend");
+    return monthsForQuarter(quarterId).map((m) => {
+      const forMonth = rows.filter((r) => r.periodId === m.id);
+      const get = (dim: string) => forMonth.find((r) => r.dimension === dim)?.value ?? null;
+      return { period: m.label, revenue: get("revenue"), pbt: get("pbt"), cir: get("cir"), netMargin: get("net_margin") };
+    });
+  }
+
   const actualVsBudget = useMemo(() => {
     const rows = metricRows("actual_vs_budget");
     const eff = latestPeriodWithData(periodsWithData(rows, entityId, () => true));
@@ -468,14 +499,34 @@ export function useDetails() {
     });
   }, [metrics, entityId]);
 
+  /** People Development Programme entries for a period — edited in full via RP005, mapped onto
+   * detail_records the same way initiativeListFor() maps process/tech initiatives: `category`
+   * holds the sub-area, `textNote` packs "start|end|status|detail" (pipe-delimited, same
+   * convention as initiativeListFor's "status | nextAction"). */
+  function peopleDevRecordsFor(periodId: PeriodId): PeopleDevRecord[] {
+    return recordRows("people_dev_programme")
+      .filter((r) => r.periodId === periodId)
+      .map((r) => {
+        const [start = "", end = "", status = "Planned", ...rest] = (r.textNote ?? "").split("|");
+        return {
+          id: r.id,
+          subArea: (PEOPLE_DEV_SUB_AREAS as readonly string[]).includes(r.category ?? "") ? (r.category as PeopleDevSubArea) : PEOPLE_DEV_SUB_AREAS[0],
+          programme: r.label,
+          start, end,
+          status: status as InitiativeStatus,
+          detail: rest.join("|"),
+        };
+      });
+  }
+
   return {
     loading, refresh, getMetricValue,
     headcountSummaryByPeriod, headcountTrend, genderBreakdownByPeriod,
     gradeBreakdownFor, ageBreakdownFor, ageGenderBreakdownFor, averageAgeByPeriod,
     gradeGenderCrossTabFor, departmentHeadcountFor, recruitmentIndexByPeriod,
     resignedByPeriod, turnoverTrend, bumiputeraTrainingByPeriod,
-    quarterlyTrend, actualVsBudget, varianceCommentary, balanceSheet, relatedPartyTransactions,
+    quarterlyTrend, monthlyTrendFor, actualVsBudget, varianceCommentary, balanceSheet, relatedPartyTransactions,
     managedEntityRatings, clientSatisfaction, timeCharterCompliance, governanceIndex,
-    processInitiatives, techInitiatives, bumiputeraProcurement,
+    processInitiatives, techInitiatives, bumiputeraProcurement, peopleDevRecordsFor,
   };
 }

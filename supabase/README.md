@@ -8,7 +8,8 @@ Run it yourself:
 
 - **Supabase Dashboard**: open your project → SQL Editor → run, in order: `migrations/0001_init.sql`,
   `migrations/0002_tighten_write_policies.sql`, `migrations/0003_detail_data.sql`,
-  `migrations/0004_allow_pending_submission_edits.sql`, then `seed.sql`.
+  `migrations/0004_allow_pending_submission_edits.sql`, `migrations/0005_org_settings.sql`,
+  `migrations/0006_monthly_periods.sql`, then `seed.sql`.
 - **Supabase CLI** (alternative): `supabase db push` after linking the project, or run each
   file in order with `psql "$DATABASE_URL" -f <file>`.
 
@@ -56,6 +57,22 @@ publishable (anon) key — both are on the Supabase dashboard under Settings →
   handful of genuinely-fixed reference constants (`industryBenchmark`, `priorYearTrained`, the
   People Development programme catalog in `src/lib/details.tsx`) that are organisational
   metadata rather than quarterly-reported figures.
+- **Org-wide settings (`org_settings`, `0005`)**: currently just the fiscal year-end month —
+  admin-editable from the Settings screen (System Administrator role only), read app-wide via
+  `src/lib/orgSettings.tsx`'s `OrgSettingsProvider`. Falls back to `FISCAL_YEAR_END_MONTH` in
+  `src/data/periods.ts` if Supabase isn't reachable.
+- **Monthly periods (`0006`)**: adds `granularity`/`parent_period_id` columns to `periods` and 36
+  month-level rows (one per quarter, 2025–2027), purely so `detail_metrics` can carry
+  month-resolution Financial Trend figures (PFH002's Quarterly/Monthly toggle, entered via Data
+  Entry's "Monthly Financial Detail" section). KPI achievement scoring
+  (`fact_kpi_results`/`submissions`) stays quarterly-only — that's the Group's actual assessment
+  cadence, not something this widens. See `src/data/periods.ts`'s `monthPeriods`.
+- **People Development Programme (RP005)**: a new `detail_records` `record_type` value,
+  `'people_dev_programme'` — `category` holds the sub-area (Talent Management / Succession
+  Management / Performance Management / Talent-Culture Engagement), `text_note` packs
+  `start|end|status|detail`, same convention as `process_initiative`/`tech_initiative`. RP005 is
+  the first screen with real add/edit/delete UI for a `detail_records` dataset (previously all
+  ~15 of them were read-only, entered by writing rows to Supabase directly).
 
 ## 4. Security note — this app has no real login yet
 
@@ -82,6 +99,16 @@ role has `can_verify` can update `submissions.status`.
 approval-trail check to enforce the way there is for KPI facts, since building a second
 maker-checker queue for ~15 more datasets was out of scope for this pass. Same production
 caveat applies, doubly so: tie writes to a signed-in, role-checked user before this is real.
+
+**Entity-name/figure anonymization — still an open decision, not yet real.** CP004's Managed
+Entities table masks other-entity names/figures (`anonymizedEntityLabel` in `src/lib/anonymize.ts`)
+behind `isRestrictedPillar`, but that flag also fully blocks a restricted-pillar login from
+reaching CP004 at all (`App.tsx`'s `HQ_ONLY_GROUPS` check) — so today, nobody who can load CP004
+ever sees a masked row; the code path exists but is currently unreachable. The client's actual
+ask ("remove entity names/metrics for other entities") needs a real scenario first — *which*
+viewer role should see anonymized labels, and for *which* entities — before this does anything.
+Don't treat the CP004 masking code as a finished feature; it's scaffolding for whenever that
+scenario is defined.
 
 ## 5. Troubleshooting: "duplicate key value violates unique constraint" on `entities`
 

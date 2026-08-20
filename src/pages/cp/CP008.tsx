@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
-import { CategoryBar } from "@/components/pk/Charts";
+import { CategoryBar, LineTrend } from "@/components/pk/Charts";
+import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
 import { kpiById } from "@/data/kpis";
+import { periods } from "@/data/periods";
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -28,6 +30,15 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("composition");
 
   const procTotal = bumiputeraProcurement.reduce((s, r) => s + r.ytdActual, 0);
+
+  const fullCompositionTrend = periods
+    .map((p) => {
+      const s = headcountSummaryByPeriod[p.id];
+      const total = s.bumiputera + s.nonBumiputera;
+      return { label: p.label.replace("FY20", "FY"), value: total > 0 ? (s.bumiputera / total) * 100 : null };
+    })
+    .filter((d): d is { label: string; value: number } => d.value !== null);
+  const { duration: compDuration, setDuration: setCompDuration, filtered: compositionTrend } = useDurationFilter(fullCompositionTrend);
 
   return (
     <div>
@@ -64,6 +75,16 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             ]}
           />
           <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">Target {kpi12.ytdTarget}% · Actual {kpi12.ytdActual?.toFixed(1)}%</div>
+
+          {compositionTrend.length > 1 && (
+            <div className="mt-4 pt-4 border-t border-[hsl(var(--pk-border))]">
+              <div className="flex items-center justify-between flex-wrap gap-1.5 mb-1.5">
+                <div className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Composition trend by quarter</div>
+                <DurationFilterBar duration={compDuration} onChange={setCompDuration} total={fullCompositionTrend.length} label="" />
+              </div>
+              <LineTrend data={compositionTrend} unit="%" />
+            </div>
+          )}
         </div>
       )}
 

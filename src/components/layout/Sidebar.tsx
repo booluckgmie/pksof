@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   LayoutGrid, TrendingUp, Landmark, ShieldCheck, Users, Workflow, GraduationCap, Handshake,
   Wallet, ClipboardList, FileText, Scale, ArrowLeftRight, User, IdCard, LogOut, PenLine, CheckSquare, Lock, X,
+  Settings as SettingsIcon, BookUser,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { cpNav, fhNav, rpNav, screens, type ScreenId } from "@/lib/nav";
@@ -18,7 +19,7 @@ const FH_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   PFH001: Wallet, PFH002: TrendingUp, PFH003: Scale, PFH004: FileText, PFH005: ArrowLeftRight,
 };
 const RP_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  RP001: Users, RP001A: IdCard, RP002: ClipboardList, RP003: TrendingUp, RP004: GraduationCap,
+  RP001: Users, RP001A: IdCard, RP002: ClipboardList, RP003: TrendingUp, RP004: GraduationCap, RP005: BookUser,
 };
 
 function NavTag({ id, icon: Icon, active, onClick }: { id: ScreenId; icon: React.ComponentType<{ className?: string }>; active: boolean; onClick: () => void }) {
@@ -123,7 +124,7 @@ export function Sidebar({
   mobileOpen?: boolean;
   onCloseMobile?: () => void;
 }) {
-  const { roleLabel, userName, canEnterData, canVerify, logout, isRestrictedPillar, homeEntityName } = useSession();
+  const { role, roleLabel, userName, canEnterData, canVerify, logout, isRestrictedPillar, homeEntityName } = useSession();
   const [paletteOpen, setPaletteOpen] = useState(false);
 
   /** Every in-sidebar navigation also dismisses the mobile drawer, so tapping a screen doesn't leave it open behind the page. */
@@ -193,12 +194,13 @@ export function Sidebar({
             </>
           )}
 
-          {(canEnterData || canVerify) && (
+          {(canEnterData || canVerify || role === "admin") && (
             <>
               <GroupLabel>Data Governance</GroupLabel>
               <div className="flex flex-col gap-1 px-2">
                 {canEnterData && <NavTag id="DATA_ENTRY" icon={PenLine} active={current === "DATA_ENTRY"} onClick={() => navigate("DATA_ENTRY")} />}
                 {canVerify && <NavTag id="VERIFY_PUBLISH" icon={CheckSquare} active={current === "VERIFY_PUBLISH"} onClick={() => navigate("VERIFY_PUBLISH")} />}
+                {role === "admin" && <NavTag id="SETTINGS" icon={SettingsIcon} active={current === "SETTINGS"} onClick={() => navigate("SETTINGS")} />}
               </div>
             </>
           )}

@@ -2,8 +2,8 @@ export type ScreenId =
   | "MAIN"
   | "CP001" | "CP002" | "CP003" | "CP004" | "CP005" | "CP006" | "CP007" | "CP008"
   | "PFH001" | "PFH002" | "PFH003" | "PFH004" | "PFH005"
-  | "RP001" | "RP001A" | "RP002" | "RP003" | "RP004"
-  | "DATA_ENTRY" | "VERIFY_PUBLISH";
+  | "RP001" | "RP001A" | "RP002" | "RP003" | "RP004" | "RP005"
+  | "DATA_ENTRY" | "VERIFY_PUBLISH" | "SETTINGS";
 
 export interface ScreenDef {
   id: ScreenId;
@@ -37,9 +37,11 @@ export const screens: Record<ScreenId, ScreenDef> = {
   RP002: { id: "RP002", code: "RP002", label: "Approved Headcount & KPI 10", level: "L3", group: "rp", parent: "RP001" },
   RP003: { id: "RP003", code: "RP003", label: "Turnover Rate & KPI 12", level: "L3", group: "rp", parent: "RP001" },
   RP004: { id: "RP004", code: "RP004", label: "Turnover Rate & KPI 13", level: "L3", group: "rp", parent: "RP001" },
+  RP005: { id: "RP005", code: "RP005", label: "People Development Programme", level: "L2", group: "rp", parent: "MAIN" },
 
   DATA_ENTRY: { id: "DATA_ENTRY", code: "ENTRY", label: "Data Entry", level: "L2", group: "gov", parent: "MAIN" },
   VERIFY_PUBLISH: { id: "VERIFY_PUBLISH", code: "VERIFY", label: "Verify & Publish", level: "L2", group: "gov", parent: "MAIN" },
+  SETTINGS: { id: "SETTINGS", code: "SETTINGS", label: "Settings", level: "L2", group: "gov", parent: "MAIN" },
 };
 
 export function breadcrumbTrail(id: ScreenId): ScreenDef[] {
@@ -60,4 +62,4 @@ export function screenLabel(id: ScreenId, entityName: string): string {
 
 export const cpNav: ScreenId[] = ["CP001", "CP002", "CP003", "CP004", "CP005", "CP006", "CP007", "CP008"];
 export const fhNav: ScreenId[] = ["PFH001", "PFH002", "PFH003", "PFH004", "PFH005"];
-export const rpNav: ScreenId[] = ["RP001", "RP001A", "RP002", "RP003", "RP004"];
+export const rpNav: ScreenId[] = ["RP001", "RP001A", "RP002", "RP003", "RP004", "RP005"];

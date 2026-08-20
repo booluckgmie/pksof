@@ -10,7 +10,7 @@ import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
 import { perspectives } from "@/data/perspectives";
 import { kpisByPerspective, kpiById, type KpiExt } from "@/data/kpis";
-import { periods } from "@/data/periods";
+import { periods, monthsForQuarter, type MonthPeriodId } from "@/data/periods";
 import { cn } from "@/lib/utils";
 import { parseKpiTemplate, parseDetailTemplate, type ParsedKpiRow, type ParsedDetailMetric } from "@/lib/excelTemplate";
 import { upsertDetailMetric } from "@/lib/api/details";
@@ -231,6 +231,11 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
   const [submittingParsed, setSubmittingParsed] = useState(false);
   const [editingSubId, setEditingSubId] = useState<string | null>(null);
   const [editingSubValue, setEditingSubValue] = useState("");
+  const [monthlyPeriodIdOverride, setMonthlyPeriodIdOverride] = useState<MonthPeriodId | null>(null);
+  const [monthlyEntries, setMonthlyEntries] = useState<Record<string, string>>({});
+  const [savingMonthly, setSavingMonthly] = useState(false);
+  const monthOptions = monthsForQuarter(periodId);
+  const selectedMonth = monthOptions.find((m) => m.id === monthlyPeriodIdOverride) ?? monthOptions[0];
 
   const fieldKey = (f: DetailField) => `${f.metricKey}::${f.dimension}::${f.dimension2 ?? ""}`;
 
@@ -266,6 +271,39 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
       setDetailEntries({});
     }
     if (invalid > 0) toast.error(`${invalid} value${invalid > 1 ? "s" : ""} skipped — must be numeric.`);
+  };
+
+  const MONTHLY_FIELDS = [
+    { dim: "revenue", label: "Revenue", unit: "RM Million" },
+    { dim: "pbt", label: "Profit Before Tax", unit: "RM Million" },
+    { dim: "cir", label: "Cost-to-Income Ratio", unit: "%" },
+    { dim: "net_margin", label: "Net Profit Margin", unit: "%" },
+  ];
+
+  const handleSaveMonthly = async () => {
+    const rows = Object.entries(monthlyEntries).filter(([, v]) => v.trim() !== "");
+    if (rows.length === 0) {
+      toast.error("Enter at least one monthly figure before saving.");
+      return;
+    }
+    setSavingMonthly(true);
+    let saved = 0;
+    for (const [dim, raw] of rows) {
+      const value = Number(raw);
+      if (Number.isNaN(value)) continue;
+      try {
+        await upsertDetailMetric({ entityId, periodId: selectedMonth.id, metricKey: "financial_trend", dimension: dim, value });
+        saved++;
+      } catch (err) {
+        toast.error(`Couldn't save ${dim}`, { description: err instanceof Error ? err.message : String(err) });
+      }
+    }
+    await refresh();
+    setSavingMonthly(false);
+    if (saved > 0) {
+      toast.success(`Saved ${saved} monthly figure${saved > 1 ? "s" : ""}`, { description: selectedMonth.label });
+      setMonthlyEntries({});
+    }
   };
 
   const mySubmissions = useMemo(
@@ -575,6 +613,47 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
               </button>
             </div>
             <InfoNote>Unlike the KPI scorecard, these figures save directly and appear on the dashboards immediately — there's no checker queue behind supporting data. Covers every parameter in the Excel template's Workforce Summary, Financial Trend, Financial Detail and All Other Detail Data sheets — fill in only what changed this quarter. Not yet covered here: the deposit/placement schedule, receivables aging by named client, and the monthly forecast — those need a different, multi-row entry form and are tracked separately.</InfoNote>
+
+            <div className="pt-2 border-t border-[hsl(var(--pk-border))] flex flex-col gap-3">
+              <div>
+                <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold">Monthly Financial Detail (optional)</div>
+                <p className="text-[12px] text-[hsl(var(--pk-ink-faint))] mt-0.5">
+                  Supplements the quarterly figures above with month-level Revenue/PBT/CIR/Net Margin, feeding PFH002's Quarterly/Monthly toggle.
+                  Doesn't affect KPI scoring, which stays quarterly.
+                </p>
+              </div>
+              <label className="flex flex-col gap-1 max-w-[220px]">
+                <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Month</span>
+                <select
+                  value={selectedMonth.id}
+                  onChange={(e) => setMonthlyPeriodIdOverride(e.target.value as MonthPeriodId)}
+                  className="rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-sm bg-[hsl(var(--pk-surface))] outline-none"
+                >
+                  {monthOptions.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                </select>
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                {MONTHLY_FIELDS.map((f) => (
+                  <label key={f.dim} className="flex flex-col gap-1">
+                    <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">{f.label} · {f.unit}</span>
+                    <input
+                      value={monthlyEntries[f.dim] ?? ""}
+                      onChange={(e) => setMonthlyEntries((prev) => ({ ...prev, [f.dim]: e.target.value }))}
+                      type="number"
+                      step="any"
+                      className="rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-sm bg-[hsl(var(--pk-surface))] outline-none tnum"
+                    />
+                  </label>
+                ))}
+              </div>
+              <button
+                onClick={handleSaveMonthly}
+                disabled={savingMonthly}
+                className="self-start inline-flex items-center justify-center gap-2 rounded-md border border-[hsl(var(--pk-border))] text-[hsl(var(--pk-ink))] font-medium text-[12.5px] px-3.5 py-2 hover:bg-[hsl(var(--pk-surface-2))] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Send className="h-3.5 w-3.5" />{savingMonthly ? "Saving…" : `Save for ${selectedMonth.label}`}
+              </button>
+            </div>
           </div>
         ) : (
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5 flex flex-col gap-4 h-fit">

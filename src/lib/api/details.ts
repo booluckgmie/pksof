@@ -1,9 +1,11 @@
 import { getSupabase } from "@/lib/supabase";
 import type { EntityId, PeriodId } from "@/types";
+import type { MonthPeriodId } from "@/data/periods";
 
 export interface DetailMetricRow {
   entityId: EntityId;
-  periodId: PeriodId;
+  /** Usually a quarter, but Financial Trend rows can also carry a MonthPeriodId — see periods.ts. */
+  periodId: PeriodId | MonthPeriodId;
   metricKey: string;
   dimension: string;
   dimension2: string;
@@ -50,7 +52,7 @@ interface RecordDbRow {
 function toMetric(row: MetricDbRow): DetailMetricRow {
   return {
     entityId: row.entity_id as EntityId,
-    periodId: row.period_id as PeriodId,
+    periodId: row.period_id as PeriodId | MonthPeriodId,
     metricKey: row.metric_key,
     dimension: row.dimension,
     dimension2: row.dimension2,
@@ -89,7 +91,7 @@ export async function fetchDetailRecords(): Promise<DetailRecordRow[]> {
 
 export async function upsertDetailMetric(input: {
   entityId: EntityId;
-  periodId: PeriodId;
+  periodId: PeriodId | MonthPeriodId;
   metricKey: string;
   dimension: string;
   dimension2?: string;
@@ -106,6 +108,11 @@ export async function upsertDetailMetric(input: {
     note: input.note ?? null,
     updated_at: new Date().toISOString(),
   });
+  if (error) throw error;
+}
+
+export async function deleteDetailRecord(id: string): Promise<void> {
+  const { error } = await getSupabase().from("detail_records").delete().eq("id", id);
   if (error) throw error;
 }
 

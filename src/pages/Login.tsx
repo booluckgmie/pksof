@@ -1,22 +1,24 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ShieldCheck, KeyRound, Building2 } from "lucide-react";
 import { useSession } from "@/lib/session";
+import { useOrgSettings } from "@/lib/orgSettings";
 import { roleDefs } from "@/lib/roles";
 import { entities } from "@/data/entities";
 import { resolveCurrentPeriodId } from "@/data/periods";
 import type { EntityId, Role } from "@/types";
 
-/** The period whose calendar quarter contains today — new sign-ins land on it by default. */
-const latestPeriodId = resolveCurrentPeriodId();
-
 export function Login() {
   const { login } = useSession();
+  const { fiscalYearEndMonth } = useOrgSettings();
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("exec");
   const [homeEntity, setHomeEntity] = useState<EntityId>("HQ");
 
   const roleDef = roleDefs.find((r) => r.id === role)!;
+  // The period whose calendar quarter contains today, per the live (admin-editable) fiscal
+  // year-end — new sign-ins land on it by default.
+  const latestPeriodId = useMemo(() => resolveCurrentPeriodId(new Date(), fiscalYearEndMonth), [fiscalYearEndMonth]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

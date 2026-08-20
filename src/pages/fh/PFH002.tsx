@@ -1,15 +1,26 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { FhTabs } from "@/components/pk/FhTabs";
 import { BarTrend, LineTrend } from "@/components/pk/Charts";
 import { InfoNote } from "@/components/pk/Misc";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import type { ScreenId } from "@/lib/nav";
+import { useSession } from "@/lib/session";
 import { useDetails } from "@/lib/details";
+import { periods } from "@/data/periods";
+import type { PeriodId } from "@/types";
+import { cn } from "@/lib/utils";
 
 export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { quarterlyTrend: fullTrend } = useDetails();
+  const { periodId: sessionPeriodId } = useSession();
+  const { quarterlyTrend: fullTrend, monthlyTrendFor } = useDetails();
   const { duration, setDuration, filtered: quarterlyTrend } = useDurationFilter(fullTrend);
+  const [granularity, setGranularity] = useState<"quarterly" | "monthly">("quarterly");
+  const [monthQuarter, setMonthQuarter] = useState<PeriodId>(sessionPeriodId);
+  const monthlyRaw = monthlyTrendFor(monthQuarter);
+  const monthlyEnteredCount = monthlyRaw.filter((m) => m.pbt !== null || m.netMargin !== null).length;
+  const monthlyPbt = monthlyRaw.filter((m) => m.pbt !== null).map((m) => ({ label: m.period, value: m.pbt as number }));
+  const monthlyMargin = monthlyRaw.filter((m) => m.netMargin !== null).map((m) => ({ label: m.period, value: m.netMargin as number }));
   const rows = [
     { section: "INCOME METRICS", metric: "Revenue (RM Million)", values: quarterlyTrend.map((q) => q.revenue) },
     { section: "PROFIT METRICS", metric: "Profit Before Tax (RM Million)", values: quarterlyTrend.map((q) => q.pbt) },
@@ -22,17 +33,62 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <ScreenHeader id="PFH002" subtitle="Quarter-on-quarter profitability, cost efficiency and operational financial metrics." onNavigate={onNavigate} />
       <FhTabs current="PFH002" onNavigate={onNavigate} />
 
-      <DurationFilterBar duration={duration} onChange={setDuration} total={fullTrend.length} className="mb-3" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">PBT quarter-on-quarter trend</div>
-          <BarTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.pbt }))} unit="m" />
-        </div>
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Net Profit Margin trend</div>
-          <LineTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.netMargin }))} unit="%" />
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+        <DurationFilterBar duration={duration} onChange={setDuration} total={fullTrend.length} />
+        <div className="flex items-center gap-1.5">
+          {(["quarterly", "monthly"] as const).map((g) => (
+            <button
+              key={g}
+              onClick={() => setGranularity(g)}
+              className={cn(
+                "text-[11px] px-2.5 py-1 rounded-md border transition-colors capitalize",
+                granularity === g
+                  ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] border-[hsl(var(--pk-accent))]"
+                  : "border-[hsl(var(--pk-border))] text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))]"
+              )}
+            >
+              {g}
+            </button>
+          ))}
+          {granularity === "monthly" && (
+            <select
+              value={monthQuarter}
+              onChange={(e) => setMonthQuarter(e.target.value as PeriodId)}
+              className="text-[11px] rounded-md border border-[hsl(var(--pk-border))] px-2 py-1 bg-[hsl(var(--pk-surface))] outline-none"
+            >
+              {periods.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+            </select>
+          )}
         </div>
       </div>
+
+      {granularity === "quarterly" ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">PBT quarter-on-quarter trend</div>
+            <BarTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.pbt }))} unit="m" />
+          </div>
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Net Profit Margin trend</div>
+            <LineTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.netMargin }))} unit="%" />
+          </div>
+        </div>
+      ) : monthlyEnteredCount === 0 ? (
+        <div className="rounded-lg border border-dashed border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-6 text-center mb-5">
+          <p className="text-[12.5px] text-[hsl(var(--pk-ink-faint))]">No monthly figures entered yet for {periods.find((p) => p.id === monthQuarter)?.label} — add them from Data Entry's "Monthly Financial Detail" section.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">PBT by month — {periods.find((p) => p.id === monthQuarter)?.label}</div>
+            <BarTrend data={monthlyPbt} unit="m" />
+          </div>
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Net Profit Margin by month — {periods.find((p) => p.id === monthQuarter)?.label}</div>
+            <LineTrend data={monthlyMargin} unit="%" />
+          </div>
+        </div>
+      )}
 
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
         <table className="w-full text-sm min-w-[640px]">
@@ -59,7 +115,7 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </tbody>
         </table>
       </div>
-      <InfoNote>Trends display a minimum of five reporting periods. Monetary values in RM Million to one decimal. Upload template only — Finance Department, monthly.</InfoNote>
+      <InfoNote>Trends display a minimum of five reporting periods. Monetary values in RM Million to one decimal. The comparison table below stays quarterly — KPI achievement scoring is quarterly-only by design; the Quarterly/Monthly toggle above only affects the two trend charts.</InfoNote>
     </div>
   );
 }

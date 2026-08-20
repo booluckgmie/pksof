@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import {
   LayoutGrid, TrendingUp, Landmark, ShieldCheck, Users, Workflow, GraduationCap, Handshake,
   Wallet, ClipboardList, FileText, Scale, ArrowLeftRight, IdCard, PenLine, CheckSquare, Search,
+  Settings as SettingsIcon, BookUser,
 } from "lucide-react";
 import {
   CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator,
@@ -14,8 +15,8 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   CP001: LayoutGrid, CP002: ClipboardList, CP003: Landmark, CP004: ShieldCheck,
   CP005: Users, CP006: Workflow, CP007: GraduationCap, CP008: Handshake,
   PFH001: Wallet, PFH002: TrendingUp, PFH003: Scale, PFH004: FileText, PFH005: ArrowLeftRight,
-  RP001: Users, RP001A: IdCard, RP002: ClipboardList, RP003: TrendingUp, RP004: GraduationCap,
-  DATA_ENTRY: PenLine, VERIFY_PUBLISH: CheckSquare,
+  RP001: Users, RP001A: IdCard, RP002: ClipboardList, RP003: TrendingUp, RP004: GraduationCap, RP005: BookUser,
+  DATA_ENTRY: PenLine, VERIFY_PUBLISH: CheckSquare, SETTINGS: SettingsIcon,
 };
 
 export function SearchTrigger({ onOpen }: { onOpen: () => void }) {
@@ -40,7 +41,7 @@ export function CommandPalette({
   onOpenChange: (open: boolean) => void;
   onNavigate: (id: ScreenId) => void;
 }) {
-  const { isRestrictedPillar, canEnterData, canVerify } = useSession();
+  const { isRestrictedPillar, canEnterData, canVerify, role } = useSession();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -86,12 +87,13 @@ export function CommandPalette({
             <CommandGroup heading="Resource & People">{rpNav.map(item)}</CommandGroup>
           </>
         )}
-        {(canEnterData || canVerify) && (
+        {(canEnterData || canVerify || role === "admin") && (
           <>
             <CommandSeparator />
             <CommandGroup heading="Data Governance">
               {canEnterData && item("DATA_ENTRY")}
               {canVerify && item("VERIFY_PUBLISH")}
+              {role === "admin" && item("SETTINGS")}
             </CommandGroup>
           </>
         )}
