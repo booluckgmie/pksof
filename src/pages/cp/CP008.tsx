@@ -62,7 +62,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       {tab === "composition" && (
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 max-w-md">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 max-w-2xl">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 12 · Weight 1.67%</div>
             <StatusChip status={kpi12.status} />
@@ -89,34 +89,43 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       )}
 
       {tab === "procurement" && (
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 max-w-md">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 max-w-2xl">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 11 · Weight 1.67%</div>
             <StatusChip status={kpi11.status} />
           </div>
           <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Procurement</div>
-          <div className="tnum font-head text-2xl font-semibold mb-3">RM {procTotal.toFixed(2)}m</div>
-          <div className="divide-y divide-[hsl(var(--pk-border))]">
-            {bumiputeraProcurement.map((d) => (
-              <div key={d.dept} className="flex items-center justify-between py-1.5 text-xs">
-                <span className="text-[hsl(var(--pk-ink-soft))]">{d.dept}</span>
-                <span className="tnum">{d.ytdActual.toFixed(2)} / {d.fyTarget.toFixed(2)}</span>
-              </div>
-            ))}
+          <div className="tnum font-head text-2xl font-semibold mb-4">RM {procTotal.toFixed(2)}m</div>
+          <div className="flex flex-col gap-3">
+            {bumiputeraProcurement.map((d) => {
+              const pct = d.fyTarget > 0 ? Math.min(100, (d.ytdActual / d.fyTarget) * 100) : 0;
+              return (
+                <div key={d.dept}>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-[hsl(var(--pk-ink-soft))]">{d.dept}</span>
+                    <span className="tnum text-[hsl(var(--pk-ink-faint))]">RM {d.ytdActual.toFixed(2)}m / {d.fyTarget.toFixed(2)}m · {pct.toFixed(0)}%</span>
+                  </div>
+                  <div className="h-2 rounded bg-[hsl(var(--pk-surface-2))]">
+                    <div className="h-full rounded bg-[hsl(var(--pk-accent))]" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
 
       {tab === "training" && (
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 max-w-md">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 max-w-2xl">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weight 1.66%</div>
             <StatusChip status={kpi13.status} />
           </div>
           <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Training</div>
-          <div className="grid grid-cols-2 gap-2 text-center">
+          <div className="grid grid-cols-3 gap-2 text-center">
             <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.poolIdentified}</div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">Pool identified</div></div>
             <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.attendedOne}</div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">Attended 1 programme</div></div>
+            <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.attendedTwoPlus}</div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">Attended 2+ programmes</div></div>
           </div>
           <p className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-3">Annual target {kpi13Target} staff{bumiputeraTraining.attendedOne === 0 ? " · training not yet commenced this financial year." : ` · stage: ${bumiputeraTraining.stage}.`}</p>
         </div>

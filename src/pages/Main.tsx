@@ -9,6 +9,7 @@ import { cpNav, fhNav, rpNav, screens, type ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { kpis } from "@/data/kpis";
+import { entities } from "@/data/entities";
 import { entitySnapshot } from "@/data/factSeed";
 import { periodById } from "@/data/periods";
 import { cn } from "@/lib/utils";
@@ -70,6 +71,14 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const groupSnap = entitySnapshot[entityId] ?? entitySnapshot.HQ;
   const groupTone = STATUS_TONE[groupSnap.status] ?? STATUS_TONE["on-track"];
 
+  // Main shows at most 3 entities — the Group's own scorecard plus its top 2 by achievement,
+  // rather than every entity in the portfolio. Figures are illustrative until each entity's
+  // BRS is signed off (see the InfoNote below).
+  const topEntities = entities
+    .map((e) => ({ e, snap: entitySnapshot[e.id] }))
+    .sort((a, b) => (a.e.id === "HQ" ? -1 : b.e.id === "HQ" ? 1 : b.snap.achievement - a.snap.achievement))
+    .slice(0, 3);
+
   return (
     <div>
       <ScreenHeader
@@ -123,6 +132,26 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </div>
       )}
 
+      {!isRestrictedPillar && (
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-5">
+          <div className="text-[11px] uppercase tracking-[0.12em] text-[hsl(var(--pk-ink-faint))] font-semibold mb-2.5">Entity Snapshot</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            {topEntities.map(({ e, snap }) => {
+              const tone = STATUS_TONE[snap.status] ?? STATUS_TONE["on-track"];
+              return (
+                <div key={e.id} className="rounded-md border border-[hsl(var(--pk-border))] px-3.5 py-3">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-[12.5px] font-semibold text-[hsl(var(--pk-ink))] truncate">{e.name}</span>
+                    <span className="h-2 w-2 rounded-full shrink-0" style={{ background: tone.lt }} />
+                  </div>
+                  <div className="tnum text-xl font-semibold text-[hsl(var(--pk-ink))]">{snap.achievement.toFixed(1)}%</div>
+                  <div className="text-[11px]" style={{ color: tone.rail }}>{tone.label}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {entityId !== "HQ" && !isRestrictedPillar && (
         <InfoNote>

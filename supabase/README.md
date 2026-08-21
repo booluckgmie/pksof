@@ -9,7 +9,7 @@ Run it yourself:
 - **Supabase Dashboard**: open your project → SQL Editor → run, in order: `migrations/0001_init.sql`,
   `migrations/0002_tighten_write_policies.sql`, `migrations/0003_detail_data.sql`,
   `migrations/0004_allow_pending_submission_edits.sql`, `migrations/0005_org_settings.sql`,
-  `migrations/0006_monthly_periods.sql`, then `seed.sql`.
+  `migrations/0006_monthly_periods.sql`, `migrations/0007_kpi_fy_targets.sql`, then `seed.sql`.
 - **Supabase CLI** (alternative): `supabase db push` after linking the project, or run each
   file in order with `psql "$DATABASE_URL" -f <file>`.
 
@@ -63,10 +63,20 @@ publishable (anon) key — both are on the Supabase dashboard under Settings →
   `src/data/periods.ts` if Supabase isn't reachable.
 - **Monthly periods (`0006`)**: adds `granularity`/`parent_period_id` columns to `periods` and 36
   month-level rows (one per quarter, 2025–2027), purely so `detail_metrics` can carry
-  month-resolution Financial Trend figures (PFH002's Quarterly/Monthly toggle, entered via Data
-  Entry's "Monthly Financial Detail" section). KPI achievement scoring
-  (`fact_kpi_results`/`submissions`) stays quarterly-only — that's the Group's actual assessment
-  cadence, not something this widens. See `src/data/periods.ts`'s `monthPeriods`.
+  month-resolution Financial Trend figures (PFH002's Quarterly/Monthly toggle). KPI achievement
+  scoring (`fact_kpi_results`/`submissions`) stays quarterly-only — that's the Group's actual
+  assessment cadence, not something this widens. See `src/data/periods.ts`'s `monthPeriods`.
+  **Entry path removed**: Data Entry's web form (including the "Monthly Financial Detail"
+  mini-form that used to write these) was removed per client request — Data Entry is now
+  Excel-template-upload only, and the template doesn't have a monthly sheet yet, so monthly
+  figures currently need a direct Supabase write until that's added.
+- **KPI FY targets (`kpi_fy_targets`, `0007`)**: per-(kpi_id, fy) override of each KPI's full-year
+  target, admin-editable from the Settings screen's "KPI Targets" table. Falls back to the static
+  `fyTarget` in `src/data/kpis.ts` when no override exists for a given FY. Read via
+  `src/lib/kpiTargets.tsx`'s `KpiTargetsProvider`; `src/lib/workflow.tsx`'s `latestValue()` swaps
+  it in wherever it previously read `kpiById(id).fyTarget` directly, so achievement scoring
+  reflects the live per-FY target automatically. KPI metadata otherwise (name/weight/unit/
+  direction) stays static — only the target resets year to year in practice.
 - **People Development Programme (CP009)**: split out of CP007 (Organisational Capacity) into
   its own Corporate Performance screen, same as Bumiputera Empowerment (CP008) is its own screen
   rather than folded into another perspective — CP007 now shows only KPI9 (Recruitment Efficiency
@@ -98,10 +108,11 @@ Supabase Auth, tie `app_users.id` to `auth.uid()`, and add policies so a submiss
 `submitted_by` / a review's `reviewed_by` must match the signed-in user, and only users whose
 role has `can_verify` can update `submissions.status`.
 
-`detail_metrics`/`detail_records` (0003) are open write (`with check (true)`) — there's no
-approval-trail check to enforce the way there is for KPI facts, since building a second
-maker-checker queue for ~15 more datasets was out of scope for this pass. Same production
-caveat applies, doubly so: tie writes to a signed-in, role-checked user before this is real.
+`detail_metrics`/`detail_records` (0003), `org_settings` (0005) and `kpi_fy_targets` (0007) are
+all open write (`with check (true)`) — there's no approval-trail check to enforce the way there
+is for KPI facts, since building a second maker-checker queue for these datasets was out of scope
+for this pass. Same production caveat applies, doubly so: tie writes to a signed-in, role-checked
+user before this is real.
 
 **Entity-name/figure anonymization — still an open decision, not yet real.** CP004's Managed
 Entities table masks other-entity names/figures (`anonymizedEntityLabel` in `src/lib/anonymize.ts`)
@@ -122,6 +133,13 @@ anything that was actually enforcing access before, since the old Login screen w
 role picker with no real auth behind it either (see the note above this section) — it just makes
 that fact honest instead of implying a login wall that wasn't backed by anything. Before this is
 a real production public/private split, the same "wire up Supabase Auth" caveat above applies.
+
+The sign-in dialog's role list is further trimmed to roles that can actually write (Reporting
+Officer, Dept Head, PMO & Administrator, System Administrator) — Board & Directors and Executive
+Management were dropped since they're read-only and read access is already open to everyone.
+Signed-in "normal" roles (Reporting Officer, Dept Head) get a slim sidebar (Main + their own
+Data Governance items); the full CP/FH/RP screen menu is shown only to "admin" roles (System
+Administrator, PMO & Administrator) — see `isAdminTier` in `src/components/layout/Sidebar.tsx`.
 
 ## 5. Troubleshooting: "duplicate key value violates unique constraint" on `entities`
 

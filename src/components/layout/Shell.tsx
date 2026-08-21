@@ -38,6 +38,8 @@ export function Shell({
                 <Menu className="h-5 w-5" />
               </button>
             )}
+          </div>
+          <div className="flex items-center gap-2.5 shrink-0">
             <button
               onClick={() => setPaletteOpen(true)}
               className="flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-[12px] text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
@@ -46,24 +48,24 @@ export function Shell({
               <span className="hidden sm:inline">Search screens…</span>
               <kbd className="hidden sm:inline font-mono-pk text-[10px] px-1 rounded border border-[hsl(var(--pk-border))]">⌘K</kbd>
             </button>
+            {loggedIn ? (
+              <button
+                onClick={logout}
+                className="flex items-center gap-1.5 text-[12px] text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] transition-colors"
+                title="Sign out"
+              >
+                <span className="hidden sm:inline truncate max-w-[160px]">{userName} · {roleLabel}</span>
+                <LogOut className="h-4 w-4 shrink-0" />
+              </button>
+            ) : (
+              <button
+                onClick={onOpenLogin}
+                className="flex items-center gap-1.5 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] text-[12.5px] font-medium px-3 py-1.5 hover:opacity-90 transition-opacity"
+              >
+                <LogIn className="h-3.5 w-3.5" />Login
+              </button>
+            )}
           </div>
-          {loggedIn ? (
-            <button
-              onClick={logout}
-              className="shrink-0 flex items-center gap-1.5 text-[12px] text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] transition-colors"
-              title="Sign out"
-            >
-              <span className="hidden sm:inline truncate max-w-[160px]">{userName} · {roleLabel}</span>
-              <LogOut className="h-4 w-4 shrink-0" />
-            </button>
-          ) : (
-            <button
-              onClick={onOpenLogin}
-              className="shrink-0 flex items-center gap-1.5 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] text-[12.5px] font-medium px-3 py-1.5 hover:opacity-90 transition-opacity"
-            >
-              <LogIn className="h-3.5 w-3.5" />Login
-            </button>
-          )}
         </div>
         <main id="screen-content" className="flex-1 px-3.5 sm:px-6 py-4 sm:py-6 max-w-[1180px] w-full mx-auto bg-[hsl(var(--pk-paper))]">{children}</main>
       </div>

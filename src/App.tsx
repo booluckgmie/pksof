@@ -4,6 +4,7 @@ import { SessionProvider, useSession } from "@/lib/session";
 import { WorkflowProvider } from "@/lib/workflow";
 import { DetailsProvider } from "@/lib/details";
 import { OrgSettingsProvider } from "@/lib/orgSettings";
+import { KpiTargetsProvider } from "@/lib/kpiTargets";
 import { Shell } from "@/components/layout/Shell";
 import { LoginDialog } from "@/components/layout/LoginDialog";
 import { Main } from "@/pages/Main";
@@ -100,14 +101,16 @@ function AuthedApp() {
 function App() {
   return (
     <OrgSettingsProvider>
-      <SessionProvider>
-        <WorkflowProvider>
-          <DetailsProvider>
-            <AuthedApp />
-            <Toaster position="bottom-right" richColors />
-          </DetailsProvider>
-        </WorkflowProvider>
-      </SessionProvider>
+      <KpiTargetsProvider>
+        <SessionProvider>
+          <WorkflowProvider>
+            <DetailsProvider>
+              <AuthedApp />
+              <Toaster position="bottom-right" richColors />
+            </DetailsProvider>
+          </WorkflowProvider>
+        </SessionProvider>
+      </KpiTargetsProvider>
     </OrgSettingsProvider>
   );
 }

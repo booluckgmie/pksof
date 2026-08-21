@@ -8,13 +8,19 @@ import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
+import { useKpiTargets } from "@/lib/kpiTargets";
+import { periodById } from "@/data/periods";
 
 export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
   const { latestValue } = useWorkflow();
   const { quarterlyTrend: fullTrend } = useDetails();
+  const { getFyTarget } = useKpiTargets();
   const kpi1 = latestValue("KPI1", entityId, periodId);
   const kpi2 = latestValue("KPI2", entityId, periodId);
+  const fy = periodById(periodId).fy;
+  const kpi1FyTarget = getFyTarget("KPI1", fy);
+  const kpi2FyTarget = getFyTarget("KPI2", fy);
   const { duration, setDuration, filtered: quarterlyTrend } = useDurationFilter(fullTrend);
 
   return (
@@ -36,7 +42,7 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <StatusChip status={kpi1.status} />
           </div>
           <div className="grid grid-cols-3 gap-2 my-3 text-center">
-            <div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">FY Target</div><div className="tnum font-semibold">RM 100.0m</div></div>
+            <div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">FY Target</div><div className="tnum font-semibold">RM {kpi1FyTarget.toFixed(1)}m</div></div>
             <div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">YTD Target</div><div className="tnum font-semibold">{kpi1.ytdTarget !== null ? `RM ${kpi1.ytdTarget.toFixed(1)}m` : "—"}</div></div>
             <div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">YTD Actual</div><div className="tnum font-semibold text-[hsl(var(--pk-good))]">{kpi1.ytdActual !== null ? `RM ${kpi1.ytdActual.toFixed(1)}m` : "—"}</div></div>
           </div>
@@ -56,7 +62,7 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <StatusChip status={kpi2.status} />
           </div>
           <div className="grid grid-cols-3 gap-2 my-3 text-center">
-            <div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">FY Target</div><div className="tnum font-semibold">58.0%</div></div>
+            <div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">FY Target</div><div className="tnum font-semibold">{kpi2FyTarget.toFixed(1)}%</div></div>
             <div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">YTD Target</div><div className="tnum font-semibold">{kpi2.ytdTarget !== null ? `${kpi2.ytdTarget.toFixed(1)}%` : "—"}</div></div>
             <div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">YTD Actual</div><div className="tnum font-semibold text-[hsl(var(--pk-good))]">{kpi2.ytdActual !== null ? `${kpi2.ytdActual.toFixed(1)}%` : "—"}</div></div>
           </div>

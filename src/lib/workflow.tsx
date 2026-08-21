@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { toast } from "sonner";
 import type { EntityId, FactKpiResultSeed, KpiStatus, PeriodId, Submission, SubmissionSource } from "@/types";
 import { kpiById, kpiStatus, weightedAchievement } from "@/data/kpis";
+import { periodById } from "@/data/periods";
+import { useKpiTargets } from "@/lib/kpiTargets";
 import { fetchFactResults, upsertFactResult } from "@/lib/api/facts";
 import { fetchSubmissions, insertSubmission, updateSubmissionStatus, updateSubmissionValue } from "@/lib/api/submissions";
 
@@ -49,9 +51,17 @@ const newSubmissionId = () => `SUB-${Date.now().toString(36)}-${String(seq++).pa
  * on failure so a dropped connection doesn't silently lose someone's submission.
  */
 export function WorkflowProvider({ children }: { children: ReactNode }) {
+  const { getFyTarget } = useKpiTargets();
   const [facts, setFacts] = useState<FactKpiResultSeed[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
+
+  /** KpiExt with fyTarget swapped for the live, admin-editable per-FY value (falls back to the
+   * static kpis.ts constant if no override exists) — see src/lib/kpiTargets.tsx. */
+  const withLiveTarget = (kpiId: string, periodId: PeriodId) => {
+    const k = kpiById(kpiId);
+    return { ...k, fyTarget: getFyTarget(kpiId, periodById(periodId).fy) };
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -98,7 +108,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
     updateSubmissionStatus({ id, status: "published", reviewedBy, reviewNote })
       .then(() => {
         if (!target) return;
-        const k = kpiById(target.kpiId);
+        const k = withLiveTarget(target.kpiId, target.periodId);
         const seed = facts.find((f) => f.kpiId === target.kpiId && f.entityId === target.entityId && f.periodId === target.periodId);
         const ytdTarget = seed?.ytdTarget ?? k.fyTarget;
         const status = kpiStatus(k, target.value, ytdTarget);
@@ -151,7 +161,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
       .filter((s) => s.kpiId === kpiId && s.entityId === entityId && s.periodId === periodId && s.status === "published")
       .sort((a, b) => (b.reviewedAt ?? "").localeCompare(a.reviewedAt ?? ""));
 
-    const k = kpiById(kpiId);
+    const k = withLiveTarget(kpiId, periodId);
 
     if (published.length > 0) {
       const v = published[0];

@@ -131,11 +131,17 @@ export function Sidebar({
   onCloseMobile?: () => void;
 }) {
   const { role, roleLabel, userName, canEnterData, canVerify, logout, isRestrictedPillar, homeEntityName } = useSession();
+  // "Main/admin users" get the full perspective submenu; "normal" upload/verify roles get a
+  // slim sidebar (Main + their own Data Governance items) — they can still reach every screen
+  // as a guest would, via Main's own subpage dropdowns, without the full tree taking up space.
+  const isAdminTier = role === "admin" || role === "checker";
 
-  /** Every in-sidebar navigation also dismisses the mobile drawer, so tapping a screen doesn't leave it open behind the page. */
+  // Navigating does NOT auto-close the sidebar — Shell now mounts/unmounts the whole sidebar
+  // for its persistent show/hide toggle, and treating every nav click as a "close" would hide
+  // it after the very first click. Closing is an explicit action: the X button or backdrop tap
+  // below, or the hamburger toggle in Shell's topbar.
   const navigate = (id: ScreenId) => {
     onNavigate(id);
-    onCloseMobile?.();
   };
 
   return (
@@ -183,7 +189,7 @@ export function Sidebar({
                 {`Corporate Performance, Financial Health and Resource & People are Group HQ's own dashboards — not part of ${homeEntityName}'s pillar. ${homeEntityName}'s own modules are scoped for a later phase of this engagement.`}
               </p>
             </div>
-          ) : (
+          ) : isAdminTier ? (
             <>
               <GroupLabel>Corporate Performance</GroupLabel>
               <TagRow ids={cpNav} icons={CP_ICONS} current={current} onNavigate={navigate} />
@@ -194,6 +200,12 @@ export function Sidebar({
               <GroupLabel>Resource &amp; People</GroupLabel>
               <TagRow ids={rpNav} icons={RP_ICONS} current={current} onNavigate={navigate} />
             </>
+          ) : (
+            <div className="mx-2 mt-4 rounded-md border border-white/10 bg-white/5 px-2.5 py-2.5">
+              <p className="text-[11.5px] text-white/55 leading-snug">
+                The full screen menu is available to System Administrator and PMO & Administrator roles. You can still open any dashboard screen without signing in — sign out to browse them.
+              </p>
+            </div>
           )}
 
           {(canEnterData || canVerify || role === "admin") && (

@@ -101,8 +101,8 @@ const FINANCIAL_TREND_MAP: Record<string, { metricKey: string; dimension: string
  * PBT, balance sheet line-item detail, and receivables aging — everything identified as missing
  * against the client's own Q1 2026 MEC report deck that's a single-value-per-period figure (the
  * deposit/placement schedule and named-client receivables aging are multi-row datasets that need
- * a different entry mechanism, not covered here). Keys match DataEntry.tsx's DETAIL_FIELDS
- * exactly — same metricKey/dimension pairs, same section groupings.
+ * a different entry mechanism, not covered here). Same metricKey/dimension pairs used throughout
+ * src/lib/details.tsx's reshaping functions.
  */
 const FINANCIAL_DETAIL_MAP: Record<string, { metricKey: string; dimension: string }> = {
   "management fee — danaharta (investment activities)": { metricKey: "revenue_by_source", dimension: "danaharta_mgmt_fee" },
