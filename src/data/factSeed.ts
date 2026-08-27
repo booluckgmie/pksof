@@ -92,9 +92,9 @@ export const factSeed: FactKpiResultSeed[] = [
   { kpiId: "KPI8", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 6, ytdActual: 3, status: "not-met" },
   { kpiId: "KPI9", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 80.0, ytdActual: 88.7, status: "met" },
   { kpiId: "KPI10", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Programmes commence Q2 onward" },
-  { kpiId: "KPI11", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 0.55, ytdActual: 0.82, status: "met" },
-  { kpiId: "KPI12", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 70.0, ytdActual: 90.7, status: "met" },
-  { kpiId: "KPI13", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Training commences Q2 onward" },
+  { kpiId: "KPI11", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 0.625, ytdActual: 1.03, status: "met" },
+  { kpiId: "KPI12", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 70.0, ytdActual: 92.4, status: "met" },
+  { kpiId: "KPI13", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Progress reporting only in Q1 — formal measurement from Q2" },
 ];
 
 /** Simple whole-of-entity snapshot for the Main Screen strip — dummy figures. */

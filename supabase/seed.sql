@@ -183,11 +183,11 @@ insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimensi
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'headcount_summary', 'non_bumiputera', '', 25, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'headcount_summary', 'approved_headcount', '', 231, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'headcount_summary', 'filled_position', '', 217, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'headcount_summary', 'total_employees', '', 219, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'headcount_summary', 'bumiputera', '', 199, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'headcount_summary', 'non_bumiputera', '', 20, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'headcount_summary', 'total_employees', '', 225, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'headcount_summary', 'bumiputera', '', 208, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'headcount_summary', 'non_bumiputera', '', 17, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'headcount_summary', 'approved_headcount', '', 231, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'headcount_summary', 'filled_position', '', 219, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'headcount_summary', 'filled_position', '', 225, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'gender_breakdown', 'male', '', 110, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'gender_breakdown', 'female', '', 98, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q2FY25', 'gender_breakdown', 'male', '', 112, null);
@@ -494,10 +494,10 @@ insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimensi
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'bumiputera_training', 'attended_one', '', 132, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'bumiputera_training', 'attended_two_plus', '', 18, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'bumiputera_training', 'stage', '', null, 'Completed');
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_training', 'pool_identified', '', 140, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_training', 'attended_one', '', 0, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_training', 'attended_two_plus', '', 0, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_training', 'stage', '', null, 'Not yet commenced');
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_training', 'pool_identified', '', 152, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_training', 'attended_one', '', 33, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_training', 'attended_two_plus', '', 1, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_training', 'stage', '', null, 'Progress reporting only in Q1 — formal measurement from Q2');
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'financial_trend', 'revenue', '', 30.2, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'financial_trend', 'pbt', '', 19.8, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'financial_trend', 'cir', '', 61.4, null);
@@ -579,11 +579,11 @@ insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimensi
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'managed_entity_ratings', 'GovCo', 'not_measured', 2, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'managed_entity_ratings', 'GovCo', 'achievement', 63, 'Attention');
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_procurement', 'Administration & Security', 'fy_target', 0.25, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_procurement', 'Administration & Security', 'ytd_actual', 0.11, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_procurement', 'Administration & Security', 'ytd_actual', 0.130303, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_procurement', 'Corporate Communications', 'fy_target', 0.25, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_procurement', 'Corporate Communications', 'ytd_actual', 0.06, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_procurement', 'Information Technology', 'fy_target', 1.7, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_procurement', 'Information Technology', 'ytd_actual', 0.65, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_procurement', 'Corporate Communications', 'ytd_actual', 0.063298, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_procurement', 'Information Technology', 'fy_target', 2.0, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'bumiputera_procurement', 'Information Technology', 'ytd_actual', 0.833101, null);
 
 insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0001', 'HQ', 'Q1FY26', 'process_initiative', 'eGLS Refresh Project', 'Q1-Q4', null, null, 'In Progress | Finalise design documents; development in progress', null);
 insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0002', 'HQ', 'Q1FY26', 'process_initiative', 'Migration to New Email System', 'Q1-Q3', null, null, 'In Progress | Submit draft Future State Report in Apr', null);
