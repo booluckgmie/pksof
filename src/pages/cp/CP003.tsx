@@ -9,10 +9,11 @@ import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
 import { useKpiTargets } from "@/lib/kpiTargets";
-import { periodById } from "@/data/periods";
+import { periodById, periods } from "@/data/periods";
+import { cn } from "@/lib/utils";
 
 export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId } = useSession();
+  const { entityId, periodId, setPeriodId } = useSession();
   const { latestValue } = useWorkflow();
   const { quarterlyTrend: fullTrend } = useDetails();
   const { getFyTarget } = useKpiTargets();
@@ -26,6 +27,26 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   return (
     <div>
       <ScreenHeader id="CP003" subtitle="Financial Perspective performance against approved targets for the year. Weight 25.0% · 2 KPIs." onNavigate={onNavigate} />
+
+      <div className="mb-3">
+        <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mb-1.5">Reporting period — sets the FY/YTD figures below</div>
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+          {periods.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => setPeriodId(p.id)}
+              className={cn(
+                "shrink-0 text-[11px] px-2.5 py-1 rounded-full border whitespace-nowrap transition-colors",
+                periodId === p.id
+                  ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] border-[hsl(var(--pk-accent))]"
+                  : "border-[hsl(var(--pk-border))] text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))]"
+              )}
+            >
+              {p.label.replace(" FY", " '")}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <DurationFilterBar duration={duration} onChange={setDuration} total={fullTrend.length} className="mb-4" />
 
