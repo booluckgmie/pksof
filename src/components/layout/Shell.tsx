@@ -2,7 +2,6 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Menu, Search, LogIn, LogOut, LayoutGrid } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CommandPalette } from "@/components/layout/CommandPalette";
-import { Breadcrumb } from "@/components/pk/Misc";
 import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import { screens, type ScreenId } from "@/lib/nav";
@@ -117,11 +116,6 @@ export function Shell({
               </button>
             )}
             <BrandHome current={current} onNavigate={onNavigate} />
-            {current !== "MAIN" && (
-              <div className="hidden md:block min-w-0 pl-2.5 ml-1 border-l border-[hsl(var(--pk-border))]">
-                <Breadcrumb current={current} onNavigate={onNavigate} />
-              </div>
-            )}
           </div>
           <PillarNav current={current} onNavigate={onNavigate} isRestrictedPillar={isRestrictedPillar} />
           <div className="flex items-center gap-2.5 shrink-0">
