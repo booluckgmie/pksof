@@ -30,6 +30,7 @@ import { DataEntry } from "@/pages/workflow/DataEntry";
 import { VerifyPublish } from "@/pages/workflow/VerifyPublish";
 import { Settings } from "@/pages/workflow/Settings";
 import { CP009 } from "@/pages/cp/CP009";
+import { Glossary } from "@/pages/Glossary";
 import { screens, type ScreenId } from "@/lib/nav";
 import { Toaster } from "@/components/ui/sonner";
 import { ScreenErrorBoundary } from "@/components/pk/ScreenErrorBoundary";
@@ -42,6 +43,7 @@ const SCREEN_MAP: Record<ScreenId, React.ComponentType<{ onNavigate: (id: Screen
   DATA_ENTRY: DataEntry,
   VERIFY_PUBLISH: VerifyPublish,
   SETTINGS: Settings,
+  GLOSSARY: Glossary,
 };
 
 /** Group HQ's own dashboards — off-limits to a login scoped to a Managed Entity pillar. */

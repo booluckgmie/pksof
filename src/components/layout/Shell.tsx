@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Menu, Search, LogIn, User, LayoutGrid } from "lucide-react";
+import { Menu, Search, LogIn, User, LayoutGrid, BookOpen } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { useSession } from "@/lib/session";
@@ -119,6 +119,13 @@ export function Shell({
           </div>
           <PillarNav current={current} onNavigate={onNavigate} isRestrictedPillar={isRestrictedPillar} />
           <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              onClick={() => onNavigate("GLOSSARY")}
+              title="Glossary"
+              className="shrink-0 h-8 w-8 flex items-center justify-center rounded-md text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
+            >
+              <BookOpen className="h-4 w-4" />
+            </button>
             <button
               onClick={() => setPaletteOpen(true)}
               className="flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-[12px] text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors"

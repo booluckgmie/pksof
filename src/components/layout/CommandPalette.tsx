@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import {
   LayoutGrid, TrendingUp, Landmark, ShieldCheck, Users, Workflow, GraduationCap, Handshake,
   Wallet, ClipboardList, FileText, Scale, ArrowLeftRight, IdCard, PenLine, CheckSquare,
-  Settings as SettingsIcon, BookUser,
+  Settings as SettingsIcon, BookUser, BookOpen,
 } from "lucide-react";
 import {
   CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator,
@@ -17,6 +17,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   PFH001: Wallet, PFH002: TrendingUp, PFH003: Scale, PFH004: FileText, PFH005: ArrowLeftRight,
   RP001: Users, RP001A: IdCard, RP002: ClipboardList, RP003: TrendingUp, RP004: GraduationCap,
   DATA_ENTRY: PenLine, VERIFY_PUBLISH: CheckSquare, SETTINGS: SettingsIcon,
+  GLOSSARY: BookOpen,
 };
 
 export function CommandPalette({
@@ -64,6 +65,8 @@ export function CommandPalette({
       <CommandList>
         <CommandEmpty>No screen matches.</CommandEmpty>
         <CommandGroup heading="Main">{item("MAIN")}</CommandGroup>
+        <CommandSeparator />
+        <CommandGroup heading="Reference">{item("GLOSSARY")}</CommandGroup>
         {!isRestrictedPillar && (
           <>
             <CommandSeparator />

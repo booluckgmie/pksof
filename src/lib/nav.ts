@@ -3,14 +3,15 @@ export type ScreenId =
   | "CP001" | "CP002" | "CP003" | "CP004" | "CP005" | "CP006" | "CP007" | "CP008" | "CP009"
   | "PFH001" | "PFH002" | "PFH003" | "PFH004" | "PFH005"
   | "RP001" | "RP001A" | "RP002" | "RP003" | "RP004"
-  | "DATA_ENTRY" | "VERIFY_PUBLISH" | "SETTINGS";
+  | "DATA_ENTRY" | "VERIFY_PUBLISH" | "SETTINGS"
+  | "GLOSSARY";
 
 export interface ScreenDef {
   id: ScreenId;
   code: string;
   label: string;
   level: "L0" | "L1" | "L2" | "L3";
-  group: "main" | "cp" | "fh" | "rp" | "gov";
+  group: "main" | "cp" | "fh" | "rp" | "gov" | "ref";
   parent?: ScreenId;
 }
 
@@ -42,6 +43,8 @@ export const screens: Record<ScreenId, ScreenDef> = {
   DATA_ENTRY: { id: "DATA_ENTRY", code: "ENTRY", label: "Data Entry", level: "L2", group: "gov", parent: "MAIN" },
   VERIFY_PUBLISH: { id: "VERIFY_PUBLISH", code: "VERIFY", label: "Verify & Publish", level: "L2", group: "gov", parent: "MAIN" },
   SETTINGS: { id: "SETTINGS", code: "SETTINGS", label: "Settings", level: "L2", group: "gov", parent: "MAIN" },
+
+  GLOSSARY: { id: "GLOSSARY", code: "REF001", label: "Glossary", level: "L1", group: "ref", parent: "MAIN" },
 };
 
 export function breadcrumbTrail(id: ScreenId): ScreenDef[] {

@@ -1,7 +1,7 @@
 import {
   LayoutGrid, TrendingUp, Landmark, ShieldCheck, Users, Workflow, GraduationCap, Handshake,
   Wallet, ClipboardList, FileText, Scale, ArrowLeftRight, User, IdCard, LogOut, PenLine, CheckSquare, Lock, X,
-  Settings as SettingsIcon, BookUser,
+  Settings as SettingsIcon, BookUser, BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { cpNav, fhNav, rpNav, screens, type ScreenId } from "@/lib/nav";
@@ -218,6 +218,11 @@ export function Sidebar({
               </div>
             </>
           )}
+
+          <GroupLabel>Reference</GroupLabel>
+          <div className="flex flex-col gap-1 px-2">
+            <NavTag id="GLOSSARY" icon={BookOpen} active={current === "GLOSSARY"} onClick={() => navigate("GLOSSARY")} />
+          </div>
         </nav>
 
         <div className="border-t border-white/10 p-3 flex items-center gap-2.5">
