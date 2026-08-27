@@ -1,12 +1,16 @@
+import { useState } from "react";
+import { LayoutList, GanttChartSquare } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatCard, InitiativeStatusDot } from "@/components/pk/Misc";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { InfoTip } from "@/components/pk/InfoTip";
+import { MonthTimeline } from "@/components/pk/GanttChart";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails, peopleDevProgrammes } from "@/lib/details";
 import { periodById } from "@/data/periods";
+import { cn } from "@/lib/utils";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-2">{children}</div>;
@@ -21,6 +25,7 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const departmentHeadcount = departmentHeadcountFor(periodId);
   const vacant = headcountSummary.approvedHeadcount - headcountSummary.filledPosition;
   const period = periodById(periodId);
+  const [view, setView] = useState<"cards" | "timeline">("cards");
 
   return (
     <div>
@@ -53,7 +58,23 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </div>
       </div>
 
-      <SectionLabel>Section B — KPI 10: People Development Programme</SectionLabel>
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+        <SectionLabel>Section B — KPI 10: People Development Programme</SectionLabel>
+        <div className="flex items-center gap-1 border border-[hsl(var(--pk-border))] rounded-lg p-1 bg-[hsl(var(--pk-surface))]">
+          <button
+            onClick={() => setView("cards")}
+            className={cn("flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12px] font-medium transition-colors", view === "cards" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}
+          >
+            <LayoutList className="h-3.5 w-3.5" />Cards
+          </button>
+          <button
+            onClick={() => setView("timeline")}
+            className={cn("flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12px] font-medium transition-colors", view === "timeline" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}
+          >
+            <GanttChartSquare className="h-3.5 w-3.5" />Timeline
+          </button>
+        </div>
+      </div>
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
         <div className="flex items-center justify-between mb-1">
           <div>
@@ -67,20 +88,24 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             ? `${period.label} completion ${kpi10.ytdActual.toFixed(1)}% against an annual target of ${kpi10.ytdTarget?.toFixed(1) ?? "—"}%.`
             : `Not measured in ${period.label} — progress reporting only. Annual target 100.0%.`} Four programme streams under monitoring.
         </p>
-        <div className="divide-y divide-[hsl(var(--pk-border))]">
-          {peopleDevProgrammes.map((p) => (
-            <div key={p.programme} className="py-2.5">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-sm font-medium text-[hsl(var(--pk-ink))]">{p.programme}</span>
-                <InitiativeStatusDot status={p.status} />
+        {view === "cards" ? (
+          <div className="divide-y divide-[hsl(var(--pk-border))]">
+            {peopleDevProgrammes.map((p) => (
+              <div key={p.programme} className="py-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-medium text-[hsl(var(--pk-ink))]">{p.programme}</span>
+                  <InitiativeStatusDot status={p.status} />
+                </div>
+                <div className="flex items-start justify-between gap-3 mt-0.5">
+                  <p className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] leading-snug">{p.detail}</p>
+                  <span className="text-[11px] text-[hsl(var(--pk-ink-faint))] shrink-0 whitespace-nowrap">{p.start} → {p.end}</span>
+                </div>
               </div>
-              <div className="flex items-start justify-between gap-3 mt-0.5">
-                <p className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] leading-snug">{p.detail}</p>
-                <span className="text-[11px] text-[hsl(var(--pk-ink-faint))] shrink-0 whitespace-nowrap">{p.start} → {p.end}</span>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <MonthTimeline rows={peopleDevProgrammes.map((p) => ({ name: p.programme, start: p.start, end: p.end, status: p.status }))} />
+        )}
       </div>
     </div>
   );

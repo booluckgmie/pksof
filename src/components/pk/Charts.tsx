@@ -82,7 +82,15 @@ export function GroupedBarTrend({
   );
 }
 
-export function LineTrend({ data, unit = "", color = "hsl(var(--pk-navy))" }: { data: Point[]; unit?: string; color?: string }) {
+export function LineTrend({
+  data, unit = "", color = "hsl(var(--pk-navy))", referenceLine,
+}: {
+  data: Point[];
+  unit?: string;
+  color?: string;
+  /** A constant horizontal comparison line (e.g. an industry benchmark) drawn behind the trend. */
+  referenceLine?: { value: number; label: string };
+}) {
   if (data.length === 0) {
     return (
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Line trend chart — no data yet">
@@ -91,8 +99,9 @@ export function LineTrend({ data, unit = "", color = "hsl(var(--pk-navy))" }: { 
       </svg>
     );
   }
-  const max = Math.max(...data.map((d) => d.value)) * 1.15;
-  const min = Math.min(0, Math.min(...data.map((d) => d.value)) * 0.9);
+  const values = data.map((d) => d.value).concat(referenceLine ? [referenceLine.value] : []);
+  const max = Math.max(...values) * 1.15;
+  const min = Math.min(0, Math.min(...values) * 0.9);
   const range = max - min || 1;
   const step = (W - PAD * 2) / (data.length - 1 || 1);
   const pts = data.map((d, i) => ({
@@ -101,10 +110,21 @@ export function LineTrend({ data, unit = "", color = "hsl(var(--pk-navy))" }: { 
   }));
   const path = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
   const area = `${path} L ${pts[pts.length - 1].x} ${H - 24} L ${pts[0].x} ${H - 24} Z`;
+  const refY = referenceLine ? H - 24 - ((H - 44) * (referenceLine.value - min)) / range : null;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Line trend chart">
       <line x1={PAD} y1={H - 24} x2={W - 6} y2={H - 24} stroke="hsl(var(--pk-border))" strokeWidth={1} />
+      {referenceLine && refY !== null && (
+        <g>
+          <line x1={PAD} y1={refY} x2={W - 6} y2={refY} stroke="hsl(var(--pk-warn))" strokeWidth={1.25} strokeDasharray="4 3">
+            <title>{referenceLine.label}: {referenceLine.value.toFixed(1)}{unit}</title>
+          </line>
+          <text x={W - 6} y={refY - 4} textAnchor="end" fontSize={9} fontWeight={600} className="fill-[hsl(var(--pk-warn))]">
+            {referenceLine.label} {referenceLine.value.toFixed(1)}{unit}
+          </text>
+        </g>
+      )}
       <path d={area} fill={color} opacity={0.08} />
       <path d={path} fill="none" stroke={color} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
       {pts.map((p, i) => (
@@ -230,6 +250,35 @@ export function CategoryBar({
           );
         })}
       </svg>
+    </div>
+  );
+}
+
+/** A single segmented bar (not one row per category) — for a two/three-way split where
+ * CategoryBar's stacked full-width rows take up more room than the comparison needs. */
+export function SplitBar({ segments }: { segments: { label: string; value: number; color: string }[] }) {
+  const total = segments.reduce((s, x) => s + x.value, 0) || 1;
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[hsl(var(--pk-ink-faint))] mb-2">
+        {segments.map((s) => (
+          <span key={s.label} className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-sm shrink-0" style={{ background: s.color }} />
+            {s.label}
+            <span className="tnum font-semibold text-[hsl(var(--pk-ink))]">{s.value}</span>
+            <span className="tnum">({((s.value / total) * 100).toFixed(1)}%)</span>
+          </span>
+        ))}
+      </div>
+      <div className="flex h-3 w-full rounded-full overflow-hidden">
+        {segments.map((s) => (
+          <div
+            key={s.label}
+            style={{ width: `${(s.value / total) * 100}%`, background: s.color }}
+            title={`${s.label}: ${s.value} (${((s.value / total) * 100).toFixed(1)}%)`}
+          />
+        ))}
+      </div>
     </div>
   );
 }

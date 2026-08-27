@@ -1,6 +1,7 @@
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatCard } from "@/components/pk/Misc";
-import { CategoryBar, GroupedBarTrend } from "@/components/pk/Charts";
+import { SplitBar, GroupedBarTrend } from "@/components/pk/Charts";
+import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useDetails } from "@/lib/details";
@@ -9,19 +10,41 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-2">{children}</div>;
 }
 
-const AGE_BAR_COLORS = ["hsl(var(--pk-accent))", "hsl(var(--pk-navy))", "hsl(var(--pk-warn))", "hsl(var(--pk-pending))"];
+/** Heat-shaded cell per age band — darker/more saturated fill for a larger headcount, so the
+ * concentration reads at a glance without a separate legend or an "average age" figure. */
+function AgeHeatmap({ data, total }: { data: { band: string; count: number }[]; total: number }) {
+  const max = Math.max(...data.map((d) => d.count), 1);
+  return (
+    <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${data.length}, minmax(0, 1fr))` }}>
+      {data.map((d) => {
+        const intensity = d.count / max;
+        const dark = intensity > 0.55;
+        return (
+          <div
+            key={d.band}
+            className="rounded-md px-2 py-3.5 text-center"
+            style={{ background: `hsl(var(--pk-accent) / ${(0.12 + intensity * 0.78).toFixed(2)})` }}
+          >
+            <div className={cn("text-[10px] uppercase tracking-wide", dark ? "text-white/75" : "text-[hsl(var(--pk-ink-faint))]")}>{d.band}</div>
+            <div className={cn("tnum font-head text-lg font-semibold mt-0.5", dark ? "text-white" : "text-[hsl(var(--pk-ink))]")}>{d.count}</div>
+            <div className={cn("text-[10px] mt-0.5", dark ? "text-white/65" : "text-[hsl(var(--pk-ink-faint))]")}>{total > 0 ? `${((d.count / total) * 100).toFixed(0)}%` : "—"}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { periodId } = useSession();
   const {
-    genderBreakdownByPeriod, ageGenderBreakdownFor, averageAgeByPeriod, gradeGenderCrossTabFor,
+    genderBreakdownByPeriod, ageGenderBreakdownFor, gradeGenderCrossTabFor,
     gradeBreakdownFor, ageBreakdownFor, headcountSummaryByPeriod,
   } = useDetails();
   const genderBreakdown = genderBreakdownByPeriod[periodId];
   const gradeBreakdown = gradeBreakdownFor(periodId);
   const ageBreakdown = ageBreakdownFor(periodId);
   const ageGenderBreakdown = ageGenderBreakdownFor(periodId);
-  const averageAge = averageAgeByPeriod[periodId];
   const gradeGenderCrossTab = gradeGenderCrossTabFor(periodId);
   const headcountSummary = headcountSummaryByPeriod[periodId];
 
@@ -31,7 +54,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <SectionLabel>Section A — Breakdown by Gender</SectionLabel>
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-5">
-        <CategoryBar segments={[{ label: "Male", value: genderBreakdown.male, color: "hsl(var(--pk-navy))" }, { label: "Female", value: genderBreakdown.female, color: "hsl(var(--pk-accent))" }]} />
+        <SplitBar segments={[{ label: "Male", value: genderBreakdown.male, color: "hsl(var(--pk-navy))" }, { label: "Female", value: genderBreakdown.female, color: "hsl(var(--pk-accent))" }]} />
         <p className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">Gender is a mandatory HRMS field — no blanks permitted. Male + Female reconciles to Total Employees ({headcountSummary.totalEmployees}).</p>
       </div>
 
@@ -55,11 +78,8 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           />
         </div>
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Age Profile — by band</div>
-            <div className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Average age <span className="tnum font-semibold text-[hsl(var(--pk-ink))]">{averageAge}</span> years</div>
-          </div>
-          <CategoryBar segments={ageBreakdown.map((a, i) => ({ label: a.band, value: a.count, color: AGE_BAR_COLORS[i] }))} />
+          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Age Profile — by band</div>
+          <AgeHeatmap data={ageBreakdown} total={headcountSummary.totalEmployees} />
           <p className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-3">Source: HRMS</p>
         </div>
       </div>

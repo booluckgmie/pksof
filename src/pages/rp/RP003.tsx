@@ -35,7 +35,11 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))]">Turnover trend by quarter vs industry benchmark</div>
             <DurationFilterBar duration={duration} onChange={setDuration} total={fullTurnoverTrend.length} label="" />
           </div>
-          <LineTrend data={turnoverTrend.map((t) => ({ label: t.period.replace(" FY", " '"), value: t.rate }))} unit="%" />
+          <LineTrend
+            data={turnoverTrend.map((t) => ({ label: t.period.replace(" FY", " '"), value: t.rate }))}
+            unit="%"
+            referenceLine={{ value: industryBenchmark, label: "Industry benchmark" }}
+          />
         </div>
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
