@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { screens, screenLabel, type ScreenId } from "@/lib/nav";
+import { screens, screenLabel, breadcrumbTrail, type ScreenId } from "@/lib/nav";
 import { Breadcrumb, ExportMenu, LevelPill, NotificationsBell, RefreshButton } from "@/components/pk/Misc";
 import { useWorkflow } from "@/lib/workflow";
 import { useSession } from "@/lib/session";
@@ -20,12 +20,15 @@ export function ScreenHeader({
   const s = screens[id];
   const { pending } = useWorkflow();
   const { entityName } = useSession();
+  // A single-item trail (Main only, today) just repeats the H1 below it — skip that row's
+  // wording entirely rather than show a breadcrumb of one.
+  const showBreadcrumb = breadcrumbTrail(id).length > 1;
 
   return (
     <div className="flex flex-col gap-3 pb-4 mb-5 border-b border-[hsl(var(--pk-border))]">
       <div className="flex items-center justify-between gap-3">
-        <Breadcrumb current={id} onNavigate={onNavigate} />
-        <div className="flex items-center gap-2">
+        {showBreadcrumb && <Breadcrumb current={id} onNavigate={onNavigate} />}
+        <div className="flex items-center gap-2 ml-auto">
           <span className="hidden sm:inline text-[11px] text-[hsl(var(--pk-ink-faint))]">Last updated {lastUpdated}</span>
           <RefreshButton />
           <ExportMenu screenId={id} />

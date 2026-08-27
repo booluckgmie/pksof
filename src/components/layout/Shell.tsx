@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Menu, Search, LogIn, LogOut, LayoutGrid } from "lucide-react";
+import { Menu, Search, LogIn, User, LayoutGrid } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { useSession } from "@/lib/session";
@@ -130,11 +130,10 @@ export function Shell({
             {loggedIn ? (
               <button
                 onClick={logout}
-                className="flex items-center gap-1.5 text-[12px] text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] transition-colors"
-                title="Sign out"
+                className="h-8 w-8 shrink-0 rounded-full bg-[hsl(var(--pk-navy))] flex items-center justify-center text-white/85 hover:opacity-90 transition-opacity"
+                title={`${userName} · ${roleLabel} — sign out`}
               >
-                <span className="hidden sm:inline truncate max-w-[160px]">{userName} · {roleLabel}</span>
-                <LogOut className="h-4 w-4 shrink-0" />
+                <User className="h-4 w-4" />
               </button>
             ) : (
               <button
