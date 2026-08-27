@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Lock } from "lucide-react";
 import { SessionProvider, useSession } from "@/lib/session";
 import { WorkflowProvider } from "@/lib/workflow";
@@ -49,14 +49,48 @@ const HQ_ONLY_GROUPS = new Set(["cp", "fh", "rp"]);
 /** Requires a real sign-in — browsing every other screen doesn't. */
 const LOGIN_REQUIRED_SCREENS = new Set<ScreenId>(["DATA_ENTRY", "VERIFY_PUBLISH", "SETTINGS"]);
 
+function isScreenId(v: string | null): v is ScreenId {
+  return !!v && Object.prototype.hasOwnProperty.call(screens, v);
+}
+
+/** Main has no `?screen=` param at all — a bare root URL should stay a clean root URL. */
+function readScreenFromUrl(): ScreenId {
+  const s = new URLSearchParams(window.location.search).get("screen");
+  return isScreenId(s) ? s : "MAIN";
+}
+
 function AuthedApp() {
   const { loggedIn, isRestrictedPillar, homeEntityName, role } = useSession();
-  const [screen, setScreen] = useState<ScreenId>("MAIN");
+  const [screen, setScreen] = useState<ScreenId>(() => readScreenFromUrl());
   const [loginOpen, setLoginOpen] = useState(false);
+  const prevLoggedIn = useRef(loggedIn);
+
+  // Every navigation updates the address bar so the browser's Back/Forward buttons move between
+  // screens, and any screen can be copied out of the address bar as a link straight back to it.
+  const navigate = (id: ScreenId, opts?: { replace?: boolean }) => {
+    const changed = id !== screen;
+    setScreen(id);
+    if (!changed && !opts?.replace) return;
+    const url = new URL(window.location.href);
+    if (id === "MAIN") url.searchParams.delete("screen");
+    else url.searchParams.set("screen", id);
+    if (opts?.replace) window.history.replaceState({ screen: id }, "", url);
+    else window.history.pushState({ screen: id }, "", url);
+  };
+
+  // Back/Forward doesn't re-run navigate() — it moves the URL directly, so read it back into state.
+  useEffect(() => {
+    const onPopState = () => setScreen(readScreenFromUrl());
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   // Sign-in and sign-out both land back on Main — never carries a gated screen across the switch.
+  // Guarded to actual transitions (not the initial mount) so a deep link isn't reset on load.
   useEffect(() => {
-    setScreen("MAIN");
+    if (prevLoggedIn.current !== loggedIn) navigate("MAIN", { replace: true });
+    prevLoggedIn.current = loggedIn;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loggedIn]);
 
   const loginRequired = LOGIN_REQUIRED_SCREENS.has(screen) && !loggedIn;
@@ -65,7 +99,7 @@ function AuthedApp() {
   const Screen = SCREEN_MAP[screen];
 
   return (
-    <Shell current={screen} onNavigate={setScreen} onOpenLogin={() => setLoginOpen(true)}>
+    <Shell current={screen} onNavigate={navigate} onOpenLogin={() => setLoginOpen(true)}>
       {blocked ? (
         <div className="flex flex-col items-center justify-center text-center gap-3 rounded-lg border border-dashed border-[hsl(var(--pk-border))] py-16 px-6">
           <div className="h-10 w-10 rounded-full bg-[hsl(var(--pk-surface-2))] flex items-center justify-center">
@@ -82,15 +116,15 @@ function AuthedApp() {
                 : `This dashboard belongs to Group HQ's own scorecard. Your login is scoped to ${homeEntityName} and can't view it.`}
           </p>
           <button
-            onClick={() => (loginRequired ? setLoginOpen(true) : setScreen("MAIN"))}
+            onClick={() => (loginRequired ? setLoginOpen(true) : navigate("MAIN"))}
             className="mt-1 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] text-xs font-medium px-3 py-1.5 hover:opacity-90 transition-opacity"
           >
             {loginRequired ? "Sign in" : "Back to Main Screen"}
           </button>
         </div>
       ) : (
-        <ScreenErrorBoundary key={screen} onReset={() => setScreen("MAIN")}>
-          <Screen onNavigate={setScreen} />
+        <ScreenErrorBoundary key={screen} onReset={() => navigate("MAIN")}>
+          <Screen onNavigate={navigate} />
         </ScreenErrorBoundary>
       )}
       <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
