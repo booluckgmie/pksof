@@ -85,7 +85,10 @@ publishable (anon) key — both are on the Supabase dashboard under Settings →
   Talent-Culture Engagement), `text_note` packs `start|end|status|detail`, same convention as
   `process_initiative`/`tech_initiative`. CP009 is the first screen with real add/edit/delete UI
   for a `detail_records` dataset (previously all ~15 of them were read-only, entered by writing
-  rows to Supabase directly).
+  rows to Supabase directly). `seed.sql` now carries the client's full Q1FY26 programme list
+  (SEED-0025 through SEED-0035, 11 rows across all four sub-areas) — the detail column packs both
+  the plan and the free-text progress note the client's source table showed as two separate
+  columns, since CP009 only has one `detail` field per entry.
 
 ## 4. Security note — this app has no real login yet
 
