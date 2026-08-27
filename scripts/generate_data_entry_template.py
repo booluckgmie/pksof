@@ -332,105 +332,151 @@ for name, rows in SHEETS.items():
     print(f"{name}: {n_data} data rows across {sum(1 for r in rows if r[0] == 'section')} sections")
 
 # ---------------------------------------------------------------------------
-# 3. Write the workbook
+# 3. Write one workbook per quarter — a separate file per reporting period,
+#    each carrying just that one quarter's column, matching how a real
+#    submission cycle works (one file per period, not one giant multi-quarter
+#    file). The 3-pillar sheet layout and row manifest are identical across
+#    every file; only which quarter column is present differs.
 # ---------------------------------------------------------------------------
 NAVY = "16324A"
 ACCENT = "0E8F5C"
 LIGHT = "EAF3EF"
 BORDER = Border(bottom=Side(style="thin", color="D9E2E8"))
 
-wb = openpyxl.Workbook()
-wb.remove(wb.active)
+# Where each section's figures actually render — filled preparer's own reference, not parsed.
+SCREEN_FOR = {
+    "KPI Scorecard": "Main · every CP/PFH/RP screen for that KPI's own perspective",
+    "Managed Entities Rating (KPI 3 support)": "CP004 Mandate & Governance — Managed Entities Performance Summary table",
+    "Governance Index (KPI 4 support)": "CP004 Mandate & Governance — Governance Index panel",
+    "Bumiputera Procurement (KPI 11 support, RM mil)": "CP008 Bumiputera Empowerment — Procurement tab",
+    "Bumiputera Training (KPI 13 support)": "CP008 Bumiputera Empowerment — Training tab",
+    "Financial Trend (RM mil / %)": "CP003 Financial Perspective (PBT/CIR charts) · PFH002 Financial Results QoQ",
+    "Actual vs Budget vs Prior Year (RM mil)": "PFH003 Actual vs Budget vs PY",
+    "Revenue by Source (RM mil)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
+    "Expense by Category (RM mil)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
+    "Administrative Expense Detail (RM '000)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
+    "Personnel Expense Detail (RM '000)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
+    "P&L Detail below PBT (RM mil)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
+    "Balance Sheet Trend (RM mil)": "PFH004 Assets & Liabilities — balance sheet trend chart",
+    "Balance Sheet Line Items (RM mil)": "PFH004 Assets & Liabilities — asset/liability breakdown",
+    "Receivables Aging (RM '000)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
+    "Headcount Summary": "RP001 Total Headcount · RP002 Approved Headcount · CP008 Composition tab · Main pillar snapshot",
+    "Gender Breakdown": "RP001A Staff Demographics — Section A",
+    "Grade Breakdown (5 approved bands)": "RP001A Staff Demographics — Section B",
+    "Age Breakdown (4 bands)": "RP001A Staff Demographics — Section C age heatmap",
+    "Age × Gender Breakdown": "RP001A Staff Demographics — Section C grouped bar chart",
+    "Department Headcount": "RP002 Approved Headcount & KPI 10 — Section A",
+    "Resignations": "RP003 / RP004 Turnover Rate trend",
+}
 
-instructions = wb.create_sheet("Instructions")
-instructions.sheet_view.showGridLines = False
-instructions.column_dimensions["A"].width = 100
-lines = [
-    ("Group Performance Dashboard — Quarterly Data Entry Template", 16, True, NAVY),
-    ("", 11, False, "000000"),
-    ("Three sheets, one per dashboard pillar: Corporate Performance, Financial Health, Resource & People.", 11, False, "333333"),
-    ("Each row is one figure the dashboard displays; each of the 5 columns is one reporting quarter.", 11, False, "333333"),
-    ("", 11, False, "000000"),
-    ("HOW TO USE", 12, True, NAVY),
-    ("1. Fill in or correct the shaded quarter columns — do not rename rows, sheets, or the quarter headers.", 11, False, "333333"),
-    ("2. Leave a cell blank if that figure genuinely wasn't measured that quarter (e.g. an annual KPI outside Q4).", 11, False, "333333"),
-    ("3. Upload the whole workbook from Data Entry — every quarter present in a column is written for that period in one pass.", 11, False, "333333"),
-    ("4. The KPI Scorecard section on 'Corporate Performance' routes through the checker queue; every other row saves directly.", 11, False, "333333"),
-    ("", 11, False, "000000"),
-    ("WHAT'S PRE-FILLED", 12, True, NAVY),
-    ("This copy already carries 5 quarters of dummy data (Q2 FY2025 → Q2 FY2026) so it's ready to test-upload as-is.", 11, False, "333333"),
-    ("Q1 FY2026 values match what's already seeded in the live dashboard; every other quarter is a plausible projection.", 11, False, "333333"),
-    ("Replace with real figures before using this for an actual reporting cycle.", 11, False, "333333"),
-    ("", 11, False, "000000"),
-    ("NOT COVERED HERE", 12, True, NAVY),
-    ("Initiative lists (Process/Tech/People Development Programme), related-party transactions, and the PBT/CIR", 11, False, "333333"),
-    ("drill-down breakdown stay entered directly in-app — they're free-form catalogs, not one number per quarter.", 11, False, "333333"),
-]
-for i, (text, size, bold, color) in enumerate(lines, start=1):
-    c = instructions.cell(row=i, column=1, value=text)
-    c.font = Font(name="Calibri", size=size, bold=bold, color=color)
-    c.alignment = Alignment(wrap_text=True, vertical="top")
 
-for sheet_name, rows in SHEETS.items():
-    ws = wb.create_sheet(sheet_name)
-    ws.sheet_view.showGridLines = False
-    ws.freeze_panes = "C4"
+def build_workbook(qi: int) -> openpyxl.Workbook:
+    """A single-quarter workbook — same 3 pillar sheets, one value column (QUARTER_LABELS[qi])."""
+    quarter_label = QUARTER_LABELS[qi]
+    wb = openpyxl.Workbook()
+    wb.remove(wb.active)
 
-    ws.merge_cells("A1:H1")
-    title = ws.cell(row=1, column=1, value=f"{sheet_name} — Quarterly Data Entry")
-    title.font = Font(name="Calibri", size=14, bold=True, color=NAVY)
+    instructions = wb.create_sheet("Instructions")
+    instructions.sheet_view.showGridLines = False
+    instructions.column_dimensions["A"].width = 100
+    lines = [
+        (f"Group Performance Dashboard — Data Entry Template · {quarter_label}", 16, True, NAVY),
+        ("", 11, False, "000000"),
+        ("Three sheets, one per dashboard pillar: Corporate Performance, Financial Health, Resource & People.", 11, False, "333333"),
+        (f"Each row is one figure the dashboard displays, for this one reporting period: {quarter_label}.", 11, False, "333333"),
+        ("", 11, False, "000000"),
+        ("HOW TO USE", 12, True, NAVY),
+        ("1. Fill in or correct the shaded value column — do not rename rows, sheets, or the quarter header.", 11, False, "333333"),
+        ("2. Leave a cell blank if that figure genuinely wasn't measured this quarter (e.g. an annual KPI outside Q4).", 11, False, "333333"),
+        ("3. Upload this file from Data Entry — the quarter it writes to is read from the column header, not a dropdown.", 11, False, "333333"),
+        ("4. The KPI Scorecard section on 'Corporate Performance' routes through the checker queue; every other row saves directly.", 11, False, "333333"),
+        ("", 11, False, "000000"),
+        ("WHAT'S PRE-FILLED", 12, True, NAVY),
+        (f"This copy already carries dummy data for {quarter_label} so it's ready to test-upload as-is.", 11, False, "333333"),
+        ("Q1 FY2026's copy matches what's already seeded in the live dashboard; every other quarter is a plausible projection.", 11, False, "333333"),
+        ("Replace with real figures before using this for an actual reporting cycle.", 11, False, "333333"),
+        ("", 11, False, "000000"),
+        ("NOT COVERED HERE", 12, True, NAVY),
+        ("Initiative lists (Process/Tech/People Development Programme), related-party transactions, and the PBT/CIR", 11, False, "333333"),
+        ("drill-down breakdown stay entered directly in-app — they're free-form catalogs, not one number per quarter.", 11, False, "333333"),
+    ]
+    for i, (text, size, bold, color) in enumerate(lines, start=1):
+        c = instructions.cell(row=i, column=1, value=text)
+        c.font = Font(name="Calibri", size=size, bold=bold, color=color)
+        c.alignment = Alignment(wrap_text=True, vertical="top")
 
-    header_row = 3
-    headers = ["Metric", "Sub / Category"] + QUARTER_LABELS + ["Note to checker"]
-    for ci, h in enumerate(headers, start=1):
-        c = ws.cell(row=header_row, column=ci, value=h)
-        c.font = Font(name="Calibri", size=10, bold=True, color="FFFFFF")
-        c.fill = PatternFill("solid", fgColor=NAVY)
-        c.alignment = Alignment(horizontal="center" if ci > 2 else "left", vertical="center", wrap_text=True)
+    for sheet_name, rows in SHEETS.items():
+        ws = wb.create_sheet(sheet_name)
+        ws.sheet_view.showGridLines = False
+        ws.freeze_panes = "C4"
 
-    r = header_row + 1
-    for entry in rows:
-        if entry[0] == "section":
-            ws.merge_cells(f"A{r}:H{r}")
-            c = ws.cell(row=r, column=1, value=entry[1].upper())
-            c.font = Font(name="Calibri", size=10.5, bold=True, color=ACCENT)
-            c.fill = PatternFill("solid", fgColor=LIGHT)
-            r += 1
-            continue
-        if entry[0] == "kpi":
-            _, kid, name, vals = entry
-            ws.cell(row=r, column=1, value=f"{kid} — {name}").font = Font(name="Calibri", size=10, bold=True)
-            ws.cell(row=r, column=2, value="YTD Actual")
-        elif entry[0] == "record":
-            _, record_type, label, category, display, vals = entry
-            ws.cell(row=r, column=1, value=display).font = Font(name="Calibri", size=10)
-            ws.cell(row=r, column=2, value=category or "—")
-        else:
-            _, metric_key, dim, dim2, display, vals = entry
-            ws.cell(row=r, column=1, value=display).font = Font(name="Calibri", size=10)
-            ws.cell(row=r, column=2, value=dim2 or "—")
+        ws.merge_cells("A1:E1")
+        title = ws.cell(row=1, column=1, value=f"{sheet_name} — {quarter_label}")
+        title.font = Font(name="Calibri", size=14, bold=True, color=NAVY)
 
-        for qi, v in enumerate(vals):
-            cell = ws.cell(row=r, column=3 + qi, value=v)
+        header_row = 3
+        headers = ["Metric", "Sub / Category", quarter_label, "Displayed on Dashboard", "Note to checker"]
+        for ci, h in enumerate(headers, start=1):
+            c = ws.cell(row=header_row, column=ci, value=h)
+            c.font = Font(name="Calibri", size=10, bold=True, color="FFFFFF")
+            c.fill = PatternFill("solid", fgColor=NAVY)
+            c.alignment = Alignment(horizontal="center" if ci > 2 else "left", vertical="center", wrap_text=True)
+
+        r = header_row + 1
+        current_screen = ""
+        for entry in rows:
+            if entry[0] == "section":
+                current_screen = SCREEN_FOR.get(entry[1], "")
+                ws.merge_cells(f"A{r}:E{r}")
+                c = ws.cell(row=r, column=1, value=entry[1].upper())
+                c.font = Font(name="Calibri", size=10.5, bold=True, color=ACCENT)
+                c.fill = PatternFill("solid", fgColor=LIGHT)
+                r += 1
+                continue
+            if entry[0] == "kpi":
+                _, kid, name, vals = entry
+                ws.cell(row=r, column=1, value=f"{kid} — {name}").font = Font(name="Calibri", size=10, bold=True)
+                ws.cell(row=r, column=2, value="YTD Actual")
+            elif entry[0] == "record":
+                _, record_type, label, category, display, vals = entry
+                ws.cell(row=r, column=1, value=display).font = Font(name="Calibri", size=10)
+                ws.cell(row=r, column=2, value=category or "—")
+            else:
+                _, metric_key, dim, dim2, display, vals = entry
+                ws.cell(row=r, column=1, value=display).font = Font(name="Calibri", size=10)
+                ws.cell(row=r, column=2, value=dim2 or "—")
+
+            v = vals[qi]
+            cell = ws.cell(row=r, column=3, value=v)
             cell.font = Font(name="Calibri", size=10, color="1B4D3E")
             cell.fill = PatternFill("solid", fgColor="FBFDFC")
-            cell.number_format = "#,##0.00" if any(isinstance(x, float) and x != int(x) for x in vals if x is not None) else "#,##0"
+            cell.number_format = "#,##0.00" if isinstance(v, float) and v != int(v) else "#,##0"
             cell.alignment = Alignment(horizontal="right")
             cell.border = BORDER
-        for ci in (1, 2, 8):
-            ws.cell(row=r, column=ci).border = BORDER
-        r += 1
 
-    widths = {1: 44, 2: 16, 3: 12, 4: 12, 5: 12, 6: 12, 7: 12, 8: 26}
-    for ci, w in widths.items():
-        ws.column_dimensions[get_column_letter(ci)].width = w
-    ws.row_dimensions[header_row].height = 30
+            remark = ws.cell(row=r, column=4, value=current_screen)
+            remark.font = Font(name="Calibri", size=8.5, italic=True, color="6B7B76")
+            remark.alignment = Alignment(wrap_text=True, vertical="center")
 
-wb._sheets.sort(key=lambda s: 0 if s.title == "Instructions" else 1)
+            for ci in (1, 2, 4, 5):
+                ws.cell(row=r, column=ci).border = BORDER
+            r += 1
+
+        widths = {1: 44, 2: 16, 3: 14, 4: 38, 5: 26}
+        for ci, w in widths.items():
+            ws.column_dimensions[get_column_letter(ci)].width = w
+        ws.row_dimensions[header_row].height = 30
+
+    wb._sheets.sort(key=lambda s: 0 if s.title == "Instructions" else 1)
+    return wb
+
+
 os.makedirs(OUT_DIR, exist_ok=True)
-out_path = os.path.join(OUT_DIR, "pksof_data_entry_template_5Q.xlsx")
-wb.save(out_path)
-print("Saved:", out_path)
+for qi, (qid, qlabel) in enumerate(zip(QUARTERS, QUARTER_LABELS)):
+    wb = build_workbook(qi)
+    out_path = os.path.join(OUT_DIR, f"pksof_data_entry_{qid}.xlsx")
+    wb.save(out_path)
+    print("Saved:", out_path)
 
 # ---------------------------------------------------------------------------
 # 4. Emit the identical row manifest as a TypeScript lookup table, so the parser

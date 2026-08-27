@@ -53,15 +53,25 @@ publishable (anon) key — both are on the Supabase dashboard under Settings →
   reads `balance_sheet`/`balance_sheet_lines`) — anyone who filled in that section of the old
   template had it silently vanish. The new template targets the real keys.
 
-## 3a. Data-entry template — 3 pillar sheets, 5 quarters, one upload
+## 3a. Data-entry template — 3 pillar sheets, one file per quarter
 
 `scripts/generate_data_entry_template.py` (run `python3 scripts/generate_data_entry_template.py`
-from the repo root, needs `pip install openpyxl`) generates the standard Data Entry workbook:
-one sheet per dashboard pillar — **Corporate Performance**, **Financial Health**,
-**Resource & People** — each a flat table of every figure that pillar's screens display, one row
-per figure and one column per reporting quarter (Q2 FY2025 → Q2 FY2026 by default, 5 columns).
-Uploading the file writes every quarter present in a column, not just one — Data Entry no longer
-asks which period to submit for first, since the file carries its own period columns.
+from the repo root, needs `pip install openpyxl`) generates one standard Data Entry workbook
+**per reporting quarter** — `scripts/output/pksof_data_entry_<QID>.xlsx` for each of
+Q2 FY2025 → Q2 FY2026 by default (5 files, matching a real submission cycle: one file per period,
+not one giant multi-quarter file). Every file shares the identical 3-pillar layout — one sheet
+per dashboard pillar (**Corporate Performance**, **Financial Health**, **Resource & People**),
+each a flat table of every figure that pillar's screens display, one row per figure — but carries
+only that single quarter's value column, headed with the exact period label (e.g. `Q2 FY2026`).
+Uploading a file writes to whichever quarter its own column header names — Data Entry no longer
+asks which period to submit for first, since each file carries its own period identity.
+
+Each sheet also carries a **"Displayed on Dashboard"** column: a plain-language note, filled in
+per section from the script's own `SCREEN_FOR` lookup, telling whoever is completing the sheet
+which actual screen/tab that row's figure feeds (e.g. "CP004 Mandate & Governance — Governance
+Index panel"), or that the row isn't surfaced anywhere yet. It's informational only — the parser
+in `src/lib/excelTemplate.ts` ignores that column entirely and keys off `(sheet, label, sub)` same
+as before, so this is purely a preparer-facing addition, not a schema change.
 
 The same script also regenerates `src/lib/templateFields.generated.ts`, the lookup table
 `src/lib/excelTemplate.ts`'s parser matches rows against — both are emitted from one Python
