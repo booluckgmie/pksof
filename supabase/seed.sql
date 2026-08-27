@@ -142,8 +142,8 @@ insert into fact_kpi_results (kpi_id, entity_id, period_id, ytd_target, ytd_actu
   ('KPI13','HQ','Q3FY25', 90,  100, 'met', null),
   ('KPI13','HQ','Q4FY25', 120, 132, 'met', null),
 
-  ('KPI1', 'HQ','Q1FY26', 23.2, 27.5, 'met', null),
-  ('KPI2', 'HQ','Q1FY26', 58.0, 44.2, 'met', null),
+  ('KPI1', 'HQ','Q1FY26', 24.7, 31.6, 'met', null),
+  ('KPI2', 'HQ','Q1FY26', 55.0, 40.6, 'met', null),
   ('KPI3', 'HQ','Q1FY26', 4.5,  4.2,  'not-met', null),
   ('KPI4', 'HQ','Q1FY26', null, null, 'not-measurable', 'Annual assessment scheduled Q4'),
   ('KPI5', 'HQ','Q1FY26', null, null, 'not-measurable', 'Bi-annual survey — next in Q2'),
@@ -152,8 +152,8 @@ insert into fact_kpi_results (kpi_id, entity_id, period_id, ytd_target, ytd_actu
   ('KPI8', 'HQ','Q1FY26', 6, 3, 'not-met', null),
   ('KPI9', 'HQ','Q1FY26', 80.0, 88.7, 'met', null),
   ('KPI10','HQ','Q1FY26', null, null, 'not-measurable', 'Programmes commence Q2 onward'),
-  ('KPI11','HQ','Q1FY26', 0.55, 0.82, 'met', null),
-  ('KPI12','HQ','Q1FY26', 70.0, 90.7, 'met', null),
+  ('KPI11','HQ','Q1FY26', 0.625, 1.03, 'met', null),
+  ('KPI12','HQ','Q1FY26', 70.0, 92.4, 'met', null),
   ('KPI13','HQ','Q1FY26', null, null, 'not-measurable', 'Training commences Q2 onward');
 
 

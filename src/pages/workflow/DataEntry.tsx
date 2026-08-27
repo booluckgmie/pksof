@@ -9,24 +9,23 @@ import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
 import { kpiById } from "@/data/kpis";
-import { periods } from "@/data/periods";
-import { parseKpiTemplate, parseDetailTemplate, type ParsedKpiRow, type ParsedDetailMetric } from "@/lib/excelTemplate";
-import { upsertDetailMetric } from "@/lib/api/details";
+import { periods, periodById } from "@/data/periods";
+import { parseWorkbook, type ParsedWorkbook } from "@/lib/excelTemplate";
+import { upsertDetailMetric, upsertDetailRecord } from "@/lib/api/details";
+
+const EMPTY_PARSED: ParsedWorkbook = { kpiRows: [], metricRows: [], recordRows: [], periodsFound: [], sheetsFound: [] };
+
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
 export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, userName } = useSession();
   const { submit, submissions, editSubmission } = useWorkflow();
   const { refresh } = useDetails();
 
-  const openPeriods = periods.filter((p) => p.isOpenForEntry);
-  const [periodId, setPeriodId] = useState(openPeriods[0]?.id ?? periods[0].id);
   const [fileName, setFileName] = useState<string | null>(null);
   const [parsing, setParsing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
-  const [parsed, setParsed] = useState<ParsedKpiRow[]>([]);
-  const [parsedDetail, setParsedDetail] = useState<ParsedDetailMetric[]>([]);
-  const [detailSheetsFound, setDetailSheetsFound] = useState<string[]>([]);
-  const [skippedNoValue, setSkippedNoValue] = useState(0);
+  const [parsed, setParsed] = useState<ParsedWorkbook>(EMPTY_PARSED);
   const [submittingParsed, setSubmittingParsed] = useState(false);
   const [editingSubId, setEditingSubId] = useState<string | null>(null);
   const [editingSubValue, setEditingSubValue] = useState("");
@@ -36,34 +35,19 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
     [submissions, userName, entityId]
   );
 
-  const handlePeriodChange = (id: string) => {
-    setPeriodId(id as typeof periodId);
-    setParsed([]);
-    setParsedDetail([]);
-    setDetailSheetsFound([]);
-    setFileName(null);
-  };
+  const totalRows = parsed.kpiRows.length + parsed.metricRows.length + parsed.recordRows.length;
 
   const handleFileChange = async (file: File | undefined) => {
     if (!file) return;
     setFileName(file.name);
     setParsing(true);
     setParseError(null);
-    setParsed([]);
-    setParsedDetail([]);
-    setDetailSheetsFound([]);
-    setSkippedNoValue(0);
+    setParsed(EMPTY_PARSED);
     try {
-      const [kpiResult, detailResult] = await Promise.all([
-        parseKpiTemplate(file).catch(() => ({ rows: [] as ParsedKpiRow[], skippedNoValue: 0 })),
-        parseDetailTemplate(file).catch(() => ({ rows: [] as ParsedDetailMetric[], sheetsFound: [] as string[] })),
-      ]);
-      setParsed(kpiResult.rows);
-      setSkippedNoValue(kpiResult.skippedNoValue);
-      setParsedDetail(detailResult.rows);
-      setDetailSheetsFound(detailResult.sheetsFound);
-      if (kpiResult.rows.length === 0 && detailResult.rows.length === 0) {
-        setParseError("Nothing recognized in this file — check it's built from the standard template (KPI Submission, Workforce Summary, Financial Trend, or All Other Detail Data sheets).");
+      const result = await parseWorkbook(file);
+      setParsed(result);
+      if (result.kpiRows.length === 0 && result.metricRows.length === 0 && result.recordRows.length === 0) {
+        setParseError("Nothing recognized in this file — check it's built from the standard 3-pillar template (Corporate Performance / Financial Health / Resource & People sheets) with quarter columns matching a real reporting period label.");
       }
     } catch (err) {
       setParseError(err instanceof Error ? err.message : "Couldn't read this file.");
@@ -73,34 +57,46 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
   };
 
   const handleSubmitParsed = async () => {
-    if (parsed.length === 0 && parsedDetail.length === 0) return;
+    if (totalRows === 0) return;
     setSubmittingParsed(true);
-    for (const row of parsed) {
-      submit({ kpiId: row.kpiId, entityId, periodId, value: row.value, note: row.note, source: "excel-upload", submittedBy: userName || "reporting.officer" });
+
+    for (const row of parsed.kpiRows) {
+      submit({ kpiId: row.kpiId, entityId, periodId: row.periodId, value: row.value, note: row.note, source: "excel-upload", submittedBy: userName || "reporting.officer" });
     }
+
     let detailSaved = 0;
-    for (const row of parsedDetail) {
+    for (const row of parsed.metricRows) {
       try {
-        await upsertDetailMetric({ entityId, periodId, metricKey: row.metricKey, dimension: row.dimension, dimension2: row.dimension2, value: row.value, note: row.note || null });
+        await upsertDetailMetric({ entityId, periodId: row.periodId, metricKey: row.metricKey, dimension: row.dimension, dimension2: row.dimension2, value: row.value });
         detailSaved++;
       } catch (err) {
         toast.error(`Couldn't save ${row.metricKey}/${row.dimension}`, { description: err instanceof Error ? err.message : String(err) });
       }
     }
+    for (const row of parsed.recordRows) {
+      try {
+        await upsertDetailRecord({
+          id: `TPL-${row.recordType}-${slug(row.label)}-${row.periodId}`,
+          entityId, periodId: row.periodId, recordType: row.recordType,
+          label: row.label, category: row.category || null, valueNum: row.value,
+        });
+        detailSaved++;
+      } catch (err) {
+        toast.error(`Couldn't save ${row.recordType}/${row.label}`, { description: err instanceof Error ? err.message : String(err) });
+      }
+    }
     if (detailSaved > 0) await refresh();
     setSubmittingParsed(false);
 
+    const periodLabels = parsed.periodsFound.map((id) => periodById(id).label).join(", ");
     const parts: string[] = [];
-    if (parsed.length > 0) parts.push(`${parsed.length} KPI update${parsed.length > 1 ? "s" : ""} routed to the checker queue`);
+    if (parsed.kpiRows.length > 0) parts.push(`${parsed.kpiRows.length} KPI update${parsed.kpiRows.length > 1 ? "s" : ""} routed to the checker queue`);
     if (detailSaved > 0) parts.push(`${detailSaved} detail figure${detailSaved > 1 ? "s" : ""} saved directly to the dashboards`);
     if (parts.length > 0) {
-      toast.success("Upload processed", { description: `${fileName} · ${periods.find((p) => p.id === periodId)?.label} — ${parts.join("; ")}.` });
+      toast.success("Upload processed", { description: `${fileName} · ${periodLabels} — ${parts.join("; ")}.` });
     }
     setFileName(null);
-    setParsed([]);
-    setParsedDetail([]);
-    setDetailSheetsFound([]);
-    setSkippedNoValue(0);
+    setParsed(EMPTY_PARSED);
   };
 
   const saveSubmissionEdit = (id: string, note: string) => {
@@ -116,30 +112,21 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
 
   return (
     <div>
-      <ScreenHeader id="DATA_ENTRY" subtitle="Upload the approved Excel template for the selected reporting period — KPI values and workforce/financial detail both feed from the same file." onNavigate={onNavigate} />
-
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-        <label className="flex items-center gap-2">
-          <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
-          <select value={periodId} onChange={(e) => handlePeriodChange(e.target.value)} className="rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-sm bg-transparent outline-none focus:border-[hsl(var(--pk-accent))]">
-            {openPeriods.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
-          </select>
-        </label>
-      </div>
+      <ScreenHeader id="DATA_ENTRY" subtitle="Upload the 3-pillar Excel template — each quarter column in the file is written to its own reporting period, in one pass." onNavigate={onNavigate} />
 
       <div className="mb-5">
         <InfoNote>
-          Skip <b>KPI4 (Governance Index)</b> and <b>KPI5 (External Client Satisfaction)</b> when they're not due —
-          per their formula notes, KPI4 is only assessed annually in Q4, and KPI5's survey is bi-annual. Leave those
-          rows blank in the template rather than entering a placeholder value; a blank KPI correctly shows as no data
-          instead of a fabricated figure.
+          The template carries its own reporting-period columns (Q2 FY2025 through Q2 FY2026 by default) —
+          there's no period to pick here first. Leave a cell blank for any quarter a figure genuinely wasn't
+          measured (e.g. <b>KPI4</b> outside Q4, or <b>KPI5</b>'s bi-annual survey outside Q2/Q4) rather than
+          entering a placeholder value.
         </InfoNote>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-5">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5 flex flex-col gap-4 h-fit">
           <div className="flex flex-col gap-2">
-            <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Completed Excel template — KPIs and/or workforce &amp; financial detail, {periods.find((p) => p.id === periodId)?.label}</span>
+            <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Completed 3-pillar Excel template</span>
             <label className="flex flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-[hsl(var(--pk-border))] py-6 cursor-pointer hover:border-[hsl(var(--pk-accent))] transition-colors">
               <UploadCloud className="h-5 w-5 text-[hsl(var(--pk-ink-faint))]" />
               <span className="text-xs text-[hsl(var(--pk-ink-faint))]">{parsing ? "Reading file…" : (fileName ?? "Click to choose a .xlsx file")}</span>
@@ -151,17 +138,26 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
             <div className="rounded-md border border-[hsl(var(--pk-bad))] bg-[hsl(var(--pk-bad-soft))] px-3 py-2 text-xs text-[hsl(var(--pk-bad))]">{parseError}</div>
           )}
 
-          {parsed.length > 0 && (
+          {parsed.periodsFound.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mr-1">Periods found</span>
+              {parsed.periodsFound.map((id) => (
+                <span key={id} className="text-[11px] font-medium rounded-full px-2 py-0.5 bg-[hsl(var(--pk-navy-soft))] text-[hsl(var(--pk-navy))]">{periodById(id).label}</span>
+              ))}
+            </div>
+          )}
+
+          {parsed.kpiRows.length > 0 && (
             <div className="flex flex-col gap-2">
               <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
-                KPI Submission — {parsed.length} value{parsed.length > 1 ? "s" : ""}{skippedNoValue > 0 ? ` · ${skippedNoValue} left blank (not due)` : ""}
+                KPI Scorecard — {parsed.kpiRows.length} value{parsed.kpiRows.length > 1 ? "s" : ""} across {parsed.periodsFound.length} period{parsed.periodsFound.length > 1 ? "s" : ""}
               </span>
               <div className="rounded-md border border-[hsl(var(--pk-border))] divide-y divide-[hsl(var(--pk-border))] max-h-48 overflow-y-auto">
-                {parsed.map((row) => {
+                {parsed.kpiRows.map((row, i) => {
                   const k = kpiById(row.kpiId);
                   return (
-                    <div key={row.kpiId} className="flex items-center justify-between gap-2 px-3 py-1.5 text-sm">
-                      <span className="text-[hsl(var(--pk-ink))]">KPI {row.kpiNo} — {k.name}</span>
+                    <div key={`${row.kpiId}-${row.periodId}-${i}`} className="flex items-center justify-between gap-2 px-3 py-1.5 text-sm">
+                      <span className="text-[hsl(var(--pk-ink))]">KPI {row.kpiNo} — {k.name} <span className="text-[hsl(var(--pk-ink-faint))]">· {periodById(row.periodId).label}</span></span>
                       <span className="tnum font-medium">{row.value}{k.unit === "%" ? "%" : ""}</span>
                     </div>
                   );
@@ -170,15 +166,21 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
             </div>
           )}
 
-          {parsedDetail.length > 0 && (
+          {(parsed.metricRows.length > 0 || parsed.recordRows.length > 0) && (
             <div className="flex flex-col gap-2">
               <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
-                {detailSheetsFound.join(", ")} — {parsedDetail.length} value{parsedDetail.length > 1 ? "s" : ""}
+                {parsed.sheetsFound.join(", ")} — {parsed.metricRows.length + parsed.recordRows.length} detail figure{parsed.metricRows.length + parsed.recordRows.length > 1 ? "s" : ""}
               </span>
               <div className="rounded-md border border-[hsl(var(--pk-border))] divide-y divide-[hsl(var(--pk-border))] max-h-48 overflow-y-auto">
-                {parsedDetail.map((row, i) => (
-                  <div key={`${row.metricKey}-${row.dimension}-${row.dimension2}-${i}`} className="flex items-center justify-between gap-2 px-3 py-1.5 text-sm">
-                    <span className="text-[hsl(var(--pk-ink))]">{row.metricKey} / {row.dimension}{row.dimension2 ? ` / ${row.dimension2}` : ""}</span>
+                {parsed.metricRows.map((row, i) => (
+                  <div key={`m-${i}`} className="flex items-center justify-between gap-2 px-3 py-1.5 text-sm">
+                    <span className="text-[hsl(var(--pk-ink))]">{row.metricKey} / {row.dimension}{row.dimension2 ? ` / ${row.dimension2}` : ""} <span className="text-[hsl(var(--pk-ink-faint))]">· {periodById(row.periodId).label}</span></span>
+                    <span className="tnum font-medium">{row.value}</span>
+                  </div>
+                ))}
+                {parsed.recordRows.map((row, i) => (
+                  <div key={`r-${i}`} className="flex items-center justify-between gap-2 px-3 py-1.5 text-sm">
+                    <span className="text-[hsl(var(--pk-ink))]">{row.recordType} / {row.label} <span className="text-[hsl(var(--pk-ink-faint))]">· {periodById(row.periodId).label}</span></span>
                     <span className="tnum font-medium">{row.value}</span>
                   </div>
                 ))}
@@ -188,12 +190,12 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
 
           <button
             onClick={handleSubmitParsed}
-            disabled={(parsed.length === 0 && parsedDetail.length === 0) || submittingParsed}
+            disabled={totalRows === 0 || submittingParsed}
             className="mt-1 inline-flex items-center justify-center gap-2 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] font-medium text-sm py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <Send className="h-4 w-4" />{submittingParsed ? "Submitting…" : `Submit ${parsed.length + parsedDetail.length} extracted value${parsed.length + parsedDetail.length === 1 ? "" : "s"}`}
+            <Send className="h-4 w-4" />{submittingParsed ? "Submitting…" : `Submit ${totalRows} extracted value${totalRows === 1 ? "" : "s"}`}
           </button>
-          <InfoNote>Parsed entirely in your browser — the file itself isn't uploaded anywhere. KPI values go through the checker queue; workforce/financial detail values save directly to the dashboards. Sheets recognized: KPI Submission, Workforce Summary, Financial Trend, Financial Detail, All Other Detail Data — include any subset. Monthly-resolution financial figures (feeding PFH002's Quarterly/Monthly toggle) aren't in the template yet — until that's added, they need a direct Supabase write.</InfoNote>
+          <InfoNote>Parsed entirely in your browser — the file itself isn't uploaded anywhere. KPI values go through the checker queue; everything else saves directly to the dashboards. Sheets recognized: Corporate Performance, Financial Health, Resource & People. Initiative catalogs, related-party transactions, and the PBT/CIR breakdown drill-down aren't in this template — those stay entered directly in-app. Monthly-resolution financial figures (feeding PFH002's Quarterly/Monthly toggle) also aren't covered yet.</InfoNote>
         </div>
 
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 h-fit">

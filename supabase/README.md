@@ -38,22 +38,48 @@ publishable (anon) key — both are on the Supabase dashboard under Settings →
   this data (see the security note below) — writes from Data Entry's "Workforce & Financial
   Snapshot" tab or an Excel upload save immediately.
 - **Entry-only, no display yet**: `revenue_by_source`, `expense_by_category`,
-  `admin_expense_detail`, `personnel_expense_detail`, `pl_detail`, `balance_sheet_detail`, and
-  `receivables_aging` — 90 line-item figures added to close the gap between the dashboard and
-  the client's own Q1 2026 MEC report deck (revenue by counterparty, admin/personnel expense
-  breakdowns, P&L items below PBT, a fuller balance sheet, receivables aging buckets). Both
-  Data Entry's web form ("Workforce, Financial & Other Detail" tab) and the Excel template's new
-  "Financial Detail" sheet write these — `upsertDetailMetric`/`parseDetailTemplate` handle them
-  exactly like any other `detail_metrics` row — but `src/lib/details.tsx` doesn't reshape them
-  into chart data yet, so nothing renders on a dashboard screen from these fields today. See the
-  metricKey/dimension pairs in `DataEntry.tsx`'s `DETAIL_FIELDS` (search "Revenue by Source"
-  onward) before building the display side, so the shape matches what's already being entered.
-  Deliberately left out of this pass: the deposit/placement schedule and receivables aging by
-  named client. Both are multi-row datasets that belong in `detail_records` (like
-  `related_party_txn`/initiatives), and no entry UI exists yet for *any* `detail_records`
-  dataset — those currently only get populated by writing rows to Supabase directly. Also left
-  out: the monthly forecast schedule, a forward-budgeting artifact, a different kind of thing
-  from the quarterly actuals this app reports.
+  `admin_expense_detail`, `personnel_expense_detail`, `pl_detail`, and `receivables_aging` —
+  line-item figures added to close the gap between the dashboard and the client's own Q1 2026
+  MEC report deck (revenue by counterparty, admin/personnel expense breakdowns, P&L items below
+  PBT, receivables aging buckets). The 3-pillar Excel template (below) writes these exactly like
+  any other `detail_metrics` row, but `src/lib/details.tsx` doesn't reshape them into chart data
+  yet, so nothing renders on a dashboard screen from these fields today. Deliberately left out of
+  this pass: the deposit/placement schedule and receivables aging by named client — both are
+  multi-row datasets that belong in `detail_records` (like `related_party_txn`/initiatives), and
+  no entry UI exists for those. Also left out: the monthly forecast schedule, a forward-budgeting
+  artifact, a different kind of thing from the quarterly actuals this app reports.
+  **Fixed in this pass**: the old template wrote balance-sheet line items to a metric key,
+  `balance_sheet_detail`, that `details.tsx`'s `balanceSheet` reshaping never actually read (it
+  reads `balance_sheet`/`balance_sheet_lines`) — anyone who filled in that section of the old
+  template had it silently vanish. The new template targets the real keys.
+
+## 3a. Data-entry template — 3 pillar sheets, 5 quarters, one upload
+
+`scripts/generate_data_entry_template.py` (run `python3 scripts/generate_data_entry_template.py`
+from the repo root, needs `pip install openpyxl`) generates the standard Data Entry workbook:
+one sheet per dashboard pillar — **Corporate Performance**, **Financial Health**,
+**Resource & People** — each a flat table of every figure that pillar's screens display, one row
+per figure and one column per reporting quarter (Q2 FY2025 → Q2 FY2026 by default, 5 columns).
+Uploading the file writes every quarter present in a column, not just one — Data Entry no longer
+asks which period to submit for first, since the file carries its own period columns.
+
+The same script also regenerates `src/lib/templateFields.generated.ts`, the lookup table
+`src/lib/excelTemplate.ts`'s parser matches rows against — both are emitted from one Python
+manifest in the script, so the template and the parser that reads it back can never drift out of
+sync the way the old per-sheet `*_MAP` constants eventually could.
+
+Anchor values for the Q1 FY2026 column are pulled live from this file's own `fact_kpi_results`/
+`detail_metrics` inserts wherever that quarter is already seeded; every other cell is a
+deterministic, smooth projection around that anchor (or a plausible fabricated base, for the
+metric keys documented above as never having been seeded at all). Not covered by this template —
+still entered directly in-app, since they're free-form catalogs rather than one number per
+quarter: process/tech initiatives, People Development Programme (CP009), related-party
+transactions, and CP003's PBT/CIR drill-down breakdown (`financial_breakdown`).
+
+**Also fixed while auditing this**: `fact_kpi_results`'s Q1 FY2026 rows for KPI1, KPI2, KPI11 and
+KPI12 still had this session's earlier, pre-correction figures (see CP003's metric-strip commit
+and the Bumiputera Empowerment data-fix commit) — only `src/data/factSeed.ts`, the client-side
+fallback, had been updated. Both now agree.
 - **Still static** (`src/data/*.ts`): entities, perspectives, KPI definitions, periods, and a
   handful of genuinely-fixed reference constants (`industryBenchmark`, `priorYearTrained`, the
   People Development programme catalog in `src/lib/details.tsx`) that are organisational

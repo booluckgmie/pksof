@@ -21,6 +21,9 @@ bundle.html
 .env
 .env.local
 
+# Generated Excel templates — regenerate with scripts/generate_data_entry_template.py
+scripts/output/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
