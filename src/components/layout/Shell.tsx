@@ -1,9 +1,38 @@
 import { useState, type ReactNode } from "react";
-import { Menu, Search, LogIn, LogOut } from "lucide-react";
+import { Menu, Search, LogIn, LogOut, LayoutGrid } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CommandPalette } from "@/components/layout/CommandPalette";
+import { Breadcrumb } from "@/components/pk/Misc";
 import { useSession } from "@/lib/session";
+import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
+
+/** Always-visible brand mark, doubles as the "back to overview" affordance — the sidebar's
+ * own Group HQ mark only exists once logged in, so guests browsing the public dashboards had
+ * no persistent way back to Main other than a breadcrumb buried in each screen's content. */
+function BrandHome({ current, onNavigate }: { current: ScreenId; onNavigate: (id: ScreenId) => void }) {
+  const onMain = current === "MAIN";
+  return (
+    <button
+      onClick={() => onNavigate("MAIN")}
+      title="Back to Main Screen"
+      className={cn(
+        "flex items-center gap-2 shrink-0 rounded-md pl-1.5 pr-2.5 py-1 -ml-1.5 transition-colors",
+        onMain ? "cursor-default" : "hover:bg-[hsl(var(--pk-surface-2))]"
+      )}
+    >
+      <span className="h-7 w-7 shrink-0 rounded-md bg-[hsl(var(--pk-navy))] flex items-center justify-center">
+        <LayoutGrid className="h-3.5 w-3.5 text-[hsl(var(--pk-accent-lt))]" />
+      </span>
+      <span className="leading-tight text-left">
+        <span className="block font-head font-semibold text-[13.5px] tracking-tight text-[hsl(var(--pk-ink))]">
+          Group <span className="text-[hsl(var(--pk-accent))]">HQ</span>
+        </span>
+        <span className="hidden sm:block text-[10px] text-[hsl(var(--pk-ink-faint))] -mt-0.5">Performance Dashboard</span>
+      </span>
+    </button>
+  );
+}
 
 export function Shell({
   current,
@@ -37,6 +66,12 @@ export function Shell({
               >
                 <Menu className="h-5 w-5" />
               </button>
+            )}
+            <BrandHome current={current} onNavigate={onNavigate} />
+            {current !== "MAIN" && (
+              <div className="hidden md:block min-w-0 pl-2.5 ml-1 border-l border-[hsl(var(--pk-border))]">
+                <Breadcrumb current={current} onNavigate={onNavigate} />
+              </div>
             )}
           </div>
           <div className="flex items-center gap-2.5 shrink-0">
