@@ -470,6 +470,25 @@ export function useDetails() {
     return rows.filter((r) => r.periodId === eff).map((r) => ({ item: r.label, target: r.valueNum ?? 0, note: r.textNote ?? "" }));
   }, [records, entityId]);
 
+  /** Drill-down line items behind a headline KPI card (PBT's income-statement breakdown, CIR's
+   * cost breakdown) — category distinguishes which breakdown a row belongs to. valueNum = FY
+   * target, valueNum2 = YTD actual, textNote packs YTD target as a plain number string (CIR's
+   * rows leave target fields null — that breakdown only ever showed an actual-figures column). */
+  function financialBreakdownFor(category: string) {
+    const rows = recordRows("financial_breakdown").filter((r) => r.category === category);
+    const eff = latestPeriodWithData(periodsWithData(rows, entityId, () => true));
+    return rows
+      .filter((r) => r.periodId === eff)
+      .map((r) => ({
+        label: r.label,
+        fyTarget: r.valueNum,
+        ytdTarget: r.textNote ? Number(r.textNote) : null,
+        ytdActual: r.valueNum2 ?? 0,
+      }));
+  }
+  const pbtBreakdown = useMemo(() => financialBreakdownFor("PBT"), [records, entityId]);
+  const cirBreakdown = useMemo(() => financialBreakdownFor("CIR"), [records, entityId]);
+
   function initiativeListFor(recordType: string): Initiative[] {
     const rows = recordRows(recordType);
     const eff = latestPeriodWithData(periodsWithData(rows, entityId, () => true));
@@ -528,5 +547,6 @@ export function useDetails() {
     quarterlyTrend, monthlyTrendFor, actualVsBudget, varianceCommentary, balanceSheet, relatedPartyTransactions,
     managedEntityRatings, clientSatisfaction, timeCharterCompliance, governanceIndex,
     processInitiatives, techInitiatives, bumiputeraProcurement, peopleDevRecordsFor,
+    pbtBreakdown, cirBreakdown,
   };
 }

@@ -7,8 +7,8 @@ export interface KpiExt extends Kpi {
 }
 
 export const kpis: KpiExt[] = [
-  { id: "KPI1", no: 1, name: "Profit Before Tax (PBT)", perspective: "FIN", weight: 0.125, unit: "RM mil", fyTarget: 100.0, direction: "higher", formulaNote: "YTD Actual ÷ FY Target × Weight", dataOwner: "Finance" },
-  { id: "KPI2", no: 2, name: "Cost-to-Income Ratio", perspective: "FIN", weight: 0.125, unit: "%", fyTarget: 58.0, direction: "lower", formulaNote: "FY Target ÷ YTD Actual × Weight (capped)", dataOwner: "Finance" },
+  { id: "KPI1", no: 1, name: "Profit Before Tax (PBT)", perspective: "FIN", weight: 0.125, unit: "RM mil", fyTarget: 106.2, direction: "higher", formulaNote: "YTD Actual ÷ FY Target × Weight", dataOwner: "Finance" },
+  { id: "KPI2", no: 2, name: "Cost-to-Income Ratio", perspective: "FIN", weight: 0.125, unit: "%", fyTarget: 55.0, direction: "lower", formulaNote: "FY Target ÷ YTD Actual × Weight (capped)", dataOwner: "Finance" },
   { id: "KPI3", no: 3, name: "Managed Entities Rating", perspective: "MG", weight: 0.075, unit: "rating /5", fyTarget: 4.5, direction: "higher", formulaNote: "YTD Actual ÷ FY Target × Weight", dataOwner: "Strategy & Performance" },
   { id: "KPI4", no: 4, name: "Governance Index", perspective: "MG", weight: 0.075, unit: "%", fyTarget: 100.0, direction: "higher", formulaNote: "5-component index, annual assessment in Q4", dataOwner: "Risk & Compliance" },
   { id: "KPI5", no: 5, name: "External Client Satisfaction", perspective: "CUST", weight: 0.075, unit: "rating /5", fyTarget: 4.7, direction: "higher", formulaNote: "Bi-annual survey", dataOwner: "Corporate Communications" },

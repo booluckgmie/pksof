@@ -78,8 +78,8 @@ export const factSeed: FactKpiResultSeed[] = [
   { kpiId: "KPI13", entityId: "HQ", periodId: "Q4FY25", ytdTarget: 120, ytdActual: 132, status: "met" },
 
   // ── FY2026 (current) ───────────────────────────────────────────────
-  { kpiId: "KPI1", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 23.2, ytdActual: 27.5, status: "met" },
-  { kpiId: "KPI2", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 58.0, ytdActual: 44.2, status: "met" },
+  { kpiId: "KPI1", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 24.7, ytdActual: 31.6, status: "met" },
+  { kpiId: "KPI2", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 55.0, ytdActual: 40.6, status: "met" },
   { kpiId: "KPI3", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 4.5, ytdActual: 4.2, status: "not-met" },
   { kpiId: "KPI4", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Annual assessment scheduled Q4" },
   { kpiId: "KPI5", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Bi-annual survey — next in Q2" },

@@ -90,6 +90,18 @@ publishable (anon) key — both are on the Supabase dashboard under Settings →
   (SEED-0025 through SEED-0035, 11 rows across all four sub-areas) — the detail column packs both
   the plan and the free-text progress note the client's source table showed as two separate
   columns, since CP009 only has one `detail` field per entry.
+- **CP003 drill-down breakdown (`financial_breakdown`, new)**: clicking KPI1 (PBT) or KPI2
+  (Cost-to-Income Ratio)'s trend chart reveals a line-item breakdown table — `category` is
+  `'PBT'` or `'CIR'`, `value_num`/`value_num2` hold FY target/YTD actual, `text_note` packs YTD
+  target as a plain number string (CIR's rows leave both null — that breakdown only ever showed
+  a single actual-figures column in the client's source report, no per-line targets). This is a
+  separate, hand-seeded dataset (SEED-0036 through SEED-0048) matching the client's reference
+  figures exactly — it is **not** wired to the `revenue_by_source`/`expense_by_category`/
+  `pl_detail` entry-only fields documented above; reshaping those into a target/actual/variance
+  table would need per-line-item targets the entry schema doesn't carry today. Also: KPI1's FY
+  target moved from a placeholder RM100.0m to the client's real RM106.2m, KPI2's from 58.0% to
+  55.0%, and both KPIs' Q1FY26 YTD target/actual were corrected to match (`src/data/kpis.ts`,
+  `src/data/factSeed.ts`).
 
 ## 4. Security note — this app has no real login yet
 
