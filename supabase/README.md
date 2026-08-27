@@ -10,7 +10,8 @@ Run it yourself:
   `migrations/0002_tighten_write_policies.sql`, `migrations/0003_detail_data.sql`,
   `migrations/0004_allow_pending_submission_edits.sql`, `migrations/0005_org_settings.sql`,
   `migrations/0006_monthly_periods.sql`, `migrations/0007_kpi_fy_targets.sql`,
-  `migrations/0008_allow_published_edits.sql`, then `seed.sql`.
+  `migrations/0008_allow_published_edits.sql`, `migrations/0009_widen_detail_record_id.sql`,
+  then `seed.sql`.
 - **Supabase CLI** (alternative): `supabase db push` after linking the project, or run each
   file in order with `psql "$DATABASE_URL" -f <file>`.
 
@@ -176,6 +177,14 @@ all open write (`with check (true)`) — there's no approval-trail check to enfo
 is for KPI facts, since building a second maker-checker queue for these datasets was out of scope
 for this pass. Same production caveat applies, doubly so: tie writes to a signed-in, role-checked
 user before this is real.
+
+**`0009_widen_detail_record_id.sql`** fixes a real bug, not a policy change: `detail_records.id`
+was `varchar(40)`, sized back when ids were short hand-picked strings like `INIT-001`. The 3-pillar
+Excel template's upload path derives a deterministic id per row instead — `TPL-<record_type>-
+<slugified label>-<period_id>` — so re-uploading the same file updates the same row rather than
+duplicating it. For longer labels (governance_index's checklist items in particular) that id runs
+past 40 characters, so every one of those rows silently failed to save on upload with a
+"value too long for type character varying(40)" error until this ran. Widened to `varchar(160)`.
 
 **Entity-name/figure anonymization — still an open decision, not yet real.** CP004's Managed
 Entities table masks other-entity names/figures (`anonymizedEntityLabel` in `src/lib/anonymize.ts`)

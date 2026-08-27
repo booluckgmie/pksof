@@ -17,6 +17,14 @@ const EMPTY_PARSED: ParsedWorkbook = { kpiRows: [], metricRows: [], recordRows: 
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
+function errMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === "object" && "message" in err && typeof (err as { message: unknown }).message === "string") {
+    return (err as { message: string }).message;
+  }
+  return String(err);
+}
+
 export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, userName } = useSession();
   const { submit, submissions, editSubmission } = useWorkflow();
@@ -27,6 +35,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
   const [parseError, setParseError] = useState<string | null>(null);
   const [parsed, setParsed] = useState<ParsedWorkbook>(EMPTY_PARSED);
   const [submittingParsed, setSubmittingParsed] = useState(false);
+  const [submitProgress, setSubmitProgress] = useState({ done: 0, total: 0 });
   const [editingSubId, setEditingSubId] = useState<string | null>(null);
   const [editingSubValue, setEditingSubValue] = useState("");
 
@@ -59,9 +68,11 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
   const handleSubmitParsed = async () => {
     if (totalRows === 0) return;
     setSubmittingParsed(true);
+    setSubmitProgress({ done: 0, total: totalRows });
 
     for (const row of parsed.kpiRows) {
       submit({ kpiId: row.kpiId, entityId, periodId: row.periodId, value: row.value, note: row.note, source: "excel-upload", submittedBy: userName || "reporting.officer" });
+      setSubmitProgress((p) => ({ ...p, done: p.done + 1 }));
     }
 
     let detailSaved = 0;
@@ -70,8 +81,9 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
         await upsertDetailMetric({ entityId, periodId: row.periodId, metricKey: row.metricKey, dimension: row.dimension, dimension2: row.dimension2, value: row.value });
         detailSaved++;
       } catch (err) {
-        toast.error(`Couldn't save ${row.metricKey}/${row.dimension}`, { description: err instanceof Error ? err.message : String(err) });
+        toast.error(`Couldn't save ${row.metricKey}/${row.dimension}`, { description: errMessage(err) });
       }
+      setSubmitProgress((p) => ({ ...p, done: p.done + 1 }));
     }
     for (const row of parsed.recordRows) {
       try {
@@ -82,8 +94,9 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
         });
         detailSaved++;
       } catch (err) {
-        toast.error(`Couldn't save ${row.recordType}/${row.label}`, { description: err instanceof Error ? err.message : String(err) });
+        toast.error(`Couldn't save ${row.recordType}/${row.label}`, { description: errMessage(err) });
       }
+      setSubmitProgress((p) => ({ ...p, done: p.done + 1 }));
     }
     if (detailSaved > 0) await refresh();
     setSubmittingParsed(false);
@@ -195,6 +208,19 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
           >
             <Send className="h-4 w-4" />{submittingParsed ? "Submitting…" : `Submit ${totalRows} extracted value${totalRows === 1 ? "" : "s"}`}
           </button>
+          {submittingParsed && (
+            <div className="flex flex-col gap-1">
+              <div className="h-1.5 w-full rounded-full bg-[hsl(var(--pk-border))] overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-[hsl(var(--pk-accent))] transition-[width] duration-200 ease-out"
+                  style={{ width: `${submitProgress.total > 0 ? Math.round((submitProgress.done / submitProgress.total) * 100) : 0}%` }}
+                />
+              </div>
+              <span className="text-[11px] text-[hsl(var(--pk-ink-faint))] tnum">
+                {submitProgress.done} / {submitProgress.total} saved ({submitProgress.total > 0 ? Math.round((submitProgress.done / submitProgress.total) * 100) : 0}%)
+              </span>
+            </div>
+          )}
           <InfoNote>Parsed entirely in your browser — the file itself isn't uploaded anywhere. KPI values go through the checker queue; everything else saves directly to the dashboards. Sheets recognized: Corporate Performance, Financial Health, Resource & People. Initiative catalogs, related-party transactions, and the PBT/CIR breakdown drill-down aren't in this template — those stay entered directly in-app. Monthly-resolution financial figures (feeding PFH002's Quarterly/Monthly toggle) also aren't covered yet.</InfoNote>
         </div>
 
