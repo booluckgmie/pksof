@@ -9,7 +9,8 @@ Run it yourself:
 - **Supabase Dashboard**: open your project → SQL Editor → run, in order: `migrations/0001_init.sql`,
   `migrations/0002_tighten_write_policies.sql`, `migrations/0003_detail_data.sql`,
   `migrations/0004_allow_pending_submission_edits.sql`, `migrations/0005_org_settings.sql`,
-  `migrations/0006_monthly_periods.sql`, `migrations/0007_kpi_fy_targets.sql`, then `seed.sql`.
+  `migrations/0006_monthly_periods.sql`, `migrations/0007_kpi_fy_targets.sql`,
+  `migrations/0008_allow_published_edits.sql`, then `seed.sql`.
 - **Supabase CLI** (alternative): `supabase db push` after linking the project, or run each
   file in order with `psql "$DATABASE_URL" -f <file>`.
 
@@ -102,9 +103,20 @@ could write straight to the tables via the REST API, skipping the app's maker-ch
 entirely — Supabase's own security advisor flags exactly this. `0002_tighten_write_policies.sql`
 closes that without real auth by enforcing the state machine at the database level instead:
 a submission can only be inserted as `submitted`, can only move from `submitted` to
-`published`/`rejected` (never edited again after review), and `fact_kpi_results` can only be
-written for a kpi/entity/period/value that has a matching `published` row in `submissions` — so
-a figure can't be forged on the dashboard without a real approval trail behind it.
+`published`/`rejected`, and `fact_kpi_results` can only be written for a kpi/entity/period/value
+that has a matching `published` row in `submissions` — so a figure can't be forged on the
+dashboard without a real approval trail behind it.
+
+**`0008_allow_published_edits.sql` narrows that guarantee, by explicit client request.** A
+published submission's value/note can now be edited directly from Data Entry's "Recent
+submissions" panel — `latestValue()` in `src/lib/workflow.tsx` prefers a matching `published`
+submission over `fact_kpi_results`, so the edit shows up immediately; `editSubmission()` also
+re-upserts `fact_kpi_results` to match, so the two tables don't drift. The trade-off: a published
+figure can now change with no re-approval and no visible record that it was ever different —
+the "never edited again after review" guarantee above now only holds for the `submitted →
+published/rejected` transition itself, not for a published row afterward. Also: `periods.ts` now
+has `isOpenForEntry: true` for every period (was previously just the current quarter), so Data
+Entry's period picker can target any past period too, not only the in-progress one.
 
 That's still not identity-based, though. **Before this goes anywhere near production**: wire up
 Supabase Auth, tie `app_users.id` to `auth.uid()`, and add policies so a submission's

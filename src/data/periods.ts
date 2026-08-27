@@ -10,22 +10,26 @@ import type { Period, PeriodId } from "@/types";
  */
 export const FISCAL_YEAR_END_MONTH = 11;
 
+// isOpenForEntry is true for every period, by client request — Data Entry's period picker
+// lists all of them so a past (even closed/published) period can be corrected directly, not
+// just the current in-progress quarter. See supabase/README.md's security note for what this
+// trades away.
 export const periods: Period[] = [
   // FY2025 — closed financial year, kept for year-over-year reference.
-  { id: "Q1FY25", label: "Q1 FY2025", fy: "FY2025", quarter: 1, cumulativeThreshold: 0.25, mofThreshold: 0.20, isCurrent: false, isOpenForEntry: false },
-  { id: "Q2FY25", label: "Q2 FY2025", fy: "FY2025", quarter: 2, cumulativeThreshold: 0.50, mofThreshold: 0.40, isCurrent: false, isOpenForEntry: false },
-  { id: "Q3FY25", label: "Q3 FY2025", fy: "FY2025", quarter: 3, cumulativeThreshold: 0.75, mofThreshold: 0.60, isCurrent: false, isOpenForEntry: false },
-  { id: "Q4FY25", label: "Q4 FY2025", fy: "FY2025", quarter: 4, cumulativeThreshold: 1.00, mofThreshold: 0.80, isCurrent: false, isOpenForEntry: false },
+  { id: "Q1FY25", label: "Q1 FY2025", fy: "FY2025", quarter: 1, cumulativeThreshold: 0.25, mofThreshold: 0.20, isCurrent: false, isOpenForEntry: true },
+  { id: "Q2FY25", label: "Q2 FY2025", fy: "FY2025", quarter: 2, cumulativeThreshold: 0.50, mofThreshold: 0.40, isCurrent: false, isOpenForEntry: true },
+  { id: "Q3FY25", label: "Q3 FY2025", fy: "FY2025", quarter: 3, cumulativeThreshold: 0.75, mofThreshold: 0.60, isCurrent: false, isOpenForEntry: true },
+  { id: "Q4FY25", label: "Q4 FY2025", fy: "FY2025", quarter: 4, cumulativeThreshold: 1.00, mofThreshold: 0.80, isCurrent: false, isOpenForEntry: true },
   // FY2026 — current financial year.
-  { id: "Q1FY26", label: "Q1 FY2026", fy: "FY2026", quarter: 1, cumulativeThreshold: 0.25, mofThreshold: 0.20, isCurrent: false, isOpenForEntry: false },
+  { id: "Q1FY26", label: "Q1 FY2026", fy: "FY2026", quarter: 1, cumulativeThreshold: 0.25, mofThreshold: 0.20, isCurrent: false, isOpenForEntry: true },
   { id: "Q2FY26", label: "Q2 FY2026", fy: "FY2026", quarter: 2, cumulativeThreshold: 0.50, mofThreshold: 0.40, isCurrent: true, isOpenForEntry: true },
-  { id: "Q3FY26", label: "Q3 FY2026", fy: "FY2026", quarter: 3, cumulativeThreshold: 0.75, mofThreshold: 0.60, isCurrent: false, isOpenForEntry: false },
-  { id: "Q4FY26", label: "Q4 FY2026", fy: "FY2026", quarter: 4, cumulativeThreshold: 1.00, mofThreshold: 0.80, isCurrent: false, isOpenForEntry: false },
-  // FY2027 — future financial year, not yet open for entry.
-  { id: "Q1FY27", label: "Q1 FY2027", fy: "FY2027", quarter: 1, cumulativeThreshold: 0.25, mofThreshold: 0.20, isCurrent: false, isOpenForEntry: false },
-  { id: "Q2FY27", label: "Q2 FY2027", fy: "FY2027", quarter: 2, cumulativeThreshold: 0.50, mofThreshold: 0.40, isCurrent: false, isOpenForEntry: false },
-  { id: "Q3FY27", label: "Q3 FY2027", fy: "FY2027", quarter: 3, cumulativeThreshold: 0.75, mofThreshold: 0.60, isCurrent: false, isOpenForEntry: false },
-  { id: "Q4FY27", label: "Q4 FY2027", fy: "FY2027", quarter: 4, cumulativeThreshold: 1.00, mofThreshold: 0.80, isCurrent: false, isOpenForEntry: false },
+  { id: "Q3FY26", label: "Q3 FY2026", fy: "FY2026", quarter: 3, cumulativeThreshold: 0.75, mofThreshold: 0.60, isCurrent: false, isOpenForEntry: true },
+  { id: "Q4FY26", label: "Q4 FY2026", fy: "FY2026", quarter: 4, cumulativeThreshold: 1.00, mofThreshold: 0.80, isCurrent: false, isOpenForEntry: true },
+  // FY2027 — future financial year.
+  { id: "Q1FY27", label: "Q1 FY2027", fy: "FY2027", quarter: 1, cumulativeThreshold: 0.25, mofThreshold: 0.20, isCurrent: false, isOpenForEntry: true },
+  { id: "Q2FY27", label: "Q2 FY2027", fy: "FY2027", quarter: 2, cumulativeThreshold: 0.50, mofThreshold: 0.40, isCurrent: false, isOpenForEntry: true },
+  { id: "Q3FY27", label: "Q3 FY2027", fy: "FY2027", quarter: 3, cumulativeThreshold: 0.75, mofThreshold: 0.60, isCurrent: false, isOpenForEntry: true },
+  { id: "Q4FY27", label: "Q4 FY2027", fy: "FY2027", quarter: 4, cumulativeThreshold: 1.00, mofThreshold: 0.80, isCurrent: false, isOpenForEntry: true },
 ];
 
 export const periodById = (id: string) => periods.find((p) => p.id === id)!;

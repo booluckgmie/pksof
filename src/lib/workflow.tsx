@@ -136,11 +136,29 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
   const editSubmission: WorkflowContextValue["editSubmission"] = (id, value, note) => {
     const previous = submissions.find((s) => s.id === id);
     setSubmissions((prev) => prev.map((s) => (s.id === id ? { ...s, value, note } : s)));
-    updateSubmissionValue({ id, value, note }).catch((err: Error) => {
-      console.error("Failed to update submission", err);
-      toast.error("Edit wasn't saved", { description: err.message });
-      if (previous) setSubmissions((prev) => prev.map((s) => (s.id === id ? previous : s)));
-    });
+    updateSubmissionValue({ id, value, note })
+      .then(() => {
+        // Editing an already-published submission's value would otherwise leave
+        // fact_kpi_results (the table facts/exports actually read once nothing is published)
+        // silently stale — re-sync it the same way approveOne() does on first publish.
+        if (!previous || previous.status !== "published") return;
+        const k = withLiveTarget(previous.kpiId, previous.periodId);
+        const seed = facts.find((f) => f.kpiId === previous.kpiId && f.entityId === previous.entityId && f.periodId === previous.periodId);
+        const ytdTarget = seed?.ytdTarget ?? k.fyTarget;
+        const status = kpiStatus(k, value, ytdTarget);
+        return upsertFactResult({ kpiId: previous.kpiId, entityId: previous.entityId, periodId: previous.periodId, ytdActual: value, ytdTarget, status }).then(() => {
+          setFacts((prev) => {
+            const next = prev.filter((f) => !(f.kpiId === previous.kpiId && f.entityId === previous.entityId && f.periodId === previous.periodId));
+            next.push({ kpiId: previous.kpiId, entityId: previous.entityId, periodId: previous.periodId, ytdTarget, ytdActual: value, status });
+            return next;
+          });
+        });
+      })
+      .catch((err: Error) => {
+        console.error("Failed to update submission", err);
+        toast.error("Edit wasn't saved", { description: err.message });
+        if (previous) setSubmissions((prev) => prev.map((s) => (s.id === id ? previous : s)));
+      });
   };
 
   const reject: WorkflowContextValue["reject"] = (id, reviewedBy, reviewNote) => {

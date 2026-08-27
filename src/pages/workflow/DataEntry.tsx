@@ -211,11 +211,11 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
                       <span className="text-sm font-medium text-[hsl(var(--pk-ink))]">{k.name}</span>
                       <div className="flex items-center gap-1.5">
                         <WorkflowChip status={s.status} />
-                        {s.status === "submitted" && !editing && (
+                        {(s.status === "submitted" || s.status === "published") && !editing && (
                           <button
                             onClick={() => { setEditingSubId(s.id); setEditingSubValue(String(s.value)); }}
                             className="text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-accent))] transition-colors"
-                            title="Edit before it's reviewed"
+                            title={s.status === "published" ? "Edit this published figure directly" : "Edit before it's reviewed"}
                           >
                             <PenLine className="h-3 w-3" />
                           </button>
