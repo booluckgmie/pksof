@@ -45,9 +45,9 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     <div>
       <ScreenHeader id="CP006" subtitle="Internal Business Process performance with strategic initiative tracking. Weight 20.0% · 2 KPIs." onNavigate={onNavigate} />
       <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-[hsl(var(--pk-ink-soft))]">KPI 7 Process Improvements <StatusChip status={kpi7.status} className="ml-1" /></span>
-          <span className="text-sm text-[hsl(var(--pk-ink-soft))]">KPI 8 New Technology <StatusChip status={kpi8.status} className="ml-1" /></span>
+        <div className="flex items-center gap-4 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 text-sm text-[hsl(var(--pk-ink-soft))]">KPI 7 Process Improvements <StatusChip status={kpi7.status} /></span>
+          <span className="inline-flex items-center gap-1.5 text-sm text-[hsl(var(--pk-ink-soft))]">KPI 8 New Technology <StatusChip status={kpi8.status} /></span>
         </div>
         <div className="flex items-center gap-1 border border-[hsl(var(--pk-border))] rounded-lg p-1 bg-[hsl(var(--pk-surface))]">
           <button
@@ -64,6 +64,8 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </button>
         </div>
       </div>
+
+      <div className="mb-4"><StatusLegend /></div>
 
       {view === "cards" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -82,8 +84,6 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
         </div>
       )}
-
-      <div className="mt-4"><StatusLegend /></div>
     </div>
   );
 }
