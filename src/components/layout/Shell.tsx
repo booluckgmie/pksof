@@ -1,11 +1,46 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Menu, Search, LogIn, LogOut, LayoutGrid } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { Breadcrumb } from "@/components/pk/Misc";
 import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
-import type { ScreenId } from "@/lib/nav";
+import { screens, type ScreenId } from "@/lib/nav";
+
+const PILLAR_NAV: { id: ScreenId; label: string; group: string }[] = [
+  { id: "MAIN", label: "Main", group: "main" },
+  { id: "CP001", label: "Corporate Performance", group: "cp" },
+  { id: "PFH001", label: "Financial Health", group: "fh" },
+  { id: "RP001", label: "Resource & People", group: "rp" },
+];
+
+/** Top-level pillar switcher, styled as a pill row — lets a guest (no sidebar) or a collapsed-
+ * sidebar user jump straight to any pillar's overview from anywhere, one click. Hidden for
+ * restricted-pillar logins, same gate the sidebar itself already uses for the CP/FH/RP menu. */
+function PillarNav({ current, onNavigate, isRestrictedPillar }: { current: ScreenId; onNavigate: (id: ScreenId) => void; isRestrictedPillar: boolean }) {
+  if (isRestrictedPillar) return null;
+  const activeGroup = screens[current].group;
+  return (
+    <div className="hidden lg:flex flex-1 justify-center min-w-0 px-2">
+      <div className="flex items-center gap-0.5 rounded-full border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2)/0.6)] px-1 py-1">
+        {PILLAR_NAV.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => onNavigate(p.id)}
+            className={cn(
+              "rounded-full px-3 py-1 text-[12px] font-medium whitespace-nowrap transition-colors",
+              activeGroup === p.group
+                ? "bg-[hsl(var(--pk-surface))] text-[hsl(var(--pk-accent))] shadow-sm"
+                : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]"
+            )}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /** Always-visible brand mark, doubles as the "back to overview" affordance — the sidebar's
  * own Group HQ mark only exists once logged in, so guests browsing the public dashboards had
@@ -45,10 +80,17 @@ export function Shell({
   onOpenLogin: () => void;
   children: ReactNode;
 }) {
-  const { loggedIn, userName, roleLabel, logout } = useSession();
+  const { loggedIn, userName, roleLabel, logout, isRestrictedPillar } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const showSidebar = loggedIn && sidebarOpen;
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-[hsl(var(--pk-paper))]">
@@ -56,7 +98,14 @@ export function Shell({
         <Sidebar current={current} onNavigate={onNavigate} mobileOpen onCloseMobile={() => setSidebarOpen(false)} />
       )}
       <div className="flex-1 min-w-0 flex flex-col">
-        <div className="shrink-0 border-b border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] flex items-center justify-between gap-2 px-3 sm:px-4 py-2.5">
+        <div
+          className={cn(
+            "sticky top-0 z-30 flex items-center justify-between gap-2 px-3 sm:px-4 py-2.5 border-b transition-all duration-200",
+            scrolled
+              ? "backdrop-blur-md bg-[hsl(var(--pk-surface)/0.85)] border-[hsl(var(--pk-border)/0.7)] shadow-sm"
+              : "bg-[hsl(var(--pk-surface))] border-[hsl(var(--pk-border))]"
+          )}
+        >
           <div className="flex items-center gap-1.5 min-w-0">
             {loggedIn && (
               <button
@@ -74,6 +123,7 @@ export function Shell({
               </div>
             )}
           </div>
+          <PillarNav current={current} onNavigate={onNavigate} isRestrictedPillar={isRestrictedPillar} />
           <div className="flex items-center gap-2.5 shrink-0">
             <button
               onClick={() => setPaletteOpen(true)}
