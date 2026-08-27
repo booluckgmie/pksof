@@ -83,6 +83,10 @@ export const factSeed: FactKpiResultSeed[] = [
   { kpiId: "KPI3", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 4.5, ytdActual: 4.2, status: "not-met" },
   { kpiId: "KPI4", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Annual assessment scheduled Q4" },
   { kpiId: "KPI5", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Bi-annual survey — next in Q2" },
+  // Q2FY26's survey round is included even though the rest of FY2026's data stops at Q1 —
+  // the external survey is fielded and tallied faster than the quarter's other KPI data, so by
+  // the time Q2's reporting window opens its result is already in hand.
+  { kpiId: "KPI5", entityId: "HQ", periodId: "Q2FY26", ytdTarget: 4.7, ytdActual: 4.7, status: "met" },
   { kpiId: "KPI6", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Baseline monitoring framework in progress" },
   { kpiId: "KPI7", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Initiatives planned to complete from Q3" },
   { kpiId: "KPI8", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 6, ytdActual: 3, status: "not-met" },
