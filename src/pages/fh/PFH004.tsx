@@ -60,9 +60,19 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <StatCard label="Equity Ratio" value={`${equityRatio.toFixed(1)}%`} tone="good" sub={`Equity vs prior period +${equityGrowth.toFixed(1)}%`} />
       </div>
 
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-        <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Balance sheet trend — Shareholders' Fund vs Total Liabilities (RM Million)</div>
-        <StackedBarTrend data={balanceSheetTrend} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="md:col-span-2 rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+          <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Balance sheet trend — Shareholders' Fund vs Total Liabilities (RM Million)</div>
+          <StackedBarTrend data={balanceSheetTrend} />
+        </div>
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2.5">Key insights</div>
+          <ul className="flex flex-col gap-2.5 text-[12.5px] text-[hsl(var(--pk-ink-soft))]">
+            <li className="flex gap-2"><span className="text-[hsl(var(--pk-accent))] shrink-0">•</span>Equity makes up <span className="font-semibold text-[hsl(var(--pk-ink))]">{equityRatio.toFixed(1)}%</span> of total assets, up <span className="font-semibold text-[hsl(var(--pk-good))]">{equityGrowth.toFixed(1)}%</span> from the prior period.</li>
+            <li className="flex gap-2"><span className="text-[hsl(var(--pk-accent))] shrink-0">•</span>Total assets of <span className="font-semibold text-[hsl(var(--pk-ink))]">RM {totalAssets.toFixed(1)}m</span> against total liabilities of <span className="font-semibold text-[hsl(var(--pk-ink))]">RM {totalLiabilities.toFixed(1)}m</span> — a capital-strong position.</li>
+            <li className="flex gap-2"><span className="text-[hsl(var(--pk-accent))] shrink-0">•</span>Shareholders' Fund is the dominant driver of balance-sheet growth across the trend shown, well ahead of liability growth.</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

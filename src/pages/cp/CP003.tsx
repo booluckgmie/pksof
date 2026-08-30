@@ -7,13 +7,14 @@ import { DataOriginBadge } from "@/components/pk/DataOrigin";
 import { InfoTip } from "@/components/pk/InfoTip";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
+import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
 import { useKpiTargets } from "@/lib/kpiTargets";
 import { kpiById } from "@/data/kpis";
-import { periodById, periods } from "@/data/periods";
+import { periodById } from "@/data/periods";
 import { cn } from "@/lib/utils";
 
 interface BreakdownRow {
@@ -80,27 +81,13 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     <div>
       <ScreenHeader id="CP003" subtitle="Financial Perspective performance against approved targets for the year. Weight 25.0% · 2 KPIs." onNavigate={onNavigate} />
 
-      <div className="mb-3">
-        <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mb-1.5">Reporting period — sets the FY/YTD figures below</div>
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-          {periods.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => setPeriodId(p.id)}
-              className={cn(
-                "shrink-0 text-[11px] px-2.5 py-1 rounded-full border whitespace-nowrap transition-colors",
-                periodId === p.id
-                  ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] border-[hsl(var(--pk-accent))]"
-                  : "border-[hsl(var(--pk-border))] text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))]"
-              )}
-            >
-              {p.label.replace(" FY", " '")}
-            </button>
-          ))}
+      <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
+          <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
         </div>
+        <DurationFilterBar duration={duration} onChange={setDuration} total={fullTrend.length} />
       </div>
-
-      <DurationFilterBar duration={duration} onChange={setDuration} total={fullTrend.length} className="mb-4" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">

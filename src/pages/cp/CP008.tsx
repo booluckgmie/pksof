@@ -3,6 +3,7 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { CategoryBar, LineTrend } from "@/components/pk/Charts";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
+import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -18,7 +19,7 @@ const TABS = [
 ] as const;
 
 export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId } = useSession();
+  const { entityId, periodId, setPeriodId } = useSession();
   const { latestValue } = useWorkflow();
   const { bumiputeraProcurement, bumiputeraTrainingByPeriod, headcountSummaryByPeriod } = useDetails();
   const kpi11 = latestValue("KPI11", entityId, periodId);
@@ -44,6 +45,11 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     <div>
       <ScreenHeader id="CP008" subtitle="Weight 5.0% · 3 KPIs — Composition, Procurement and Training." onNavigate={onNavigate} />
 
+      <div className="mb-4 flex items-center gap-2">
+        <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
+        <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
+      </div>
+
       <div className="flex flex-wrap gap-1.5 mb-4">
         {TABS.map((t) => (
           <button
@@ -62,22 +68,24 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       {tab === "composition" && (
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 max-w-2xl">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 12 · Weight 1.67%</div>
-            <StatusChip status={kpi12.status} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 12 · Weight 1.67%</div>
+              <StatusChip status={kpi12.status} />
+            </div>
+            <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Composition</div>
+            <CategoryBar
+              segments={[
+                { label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" },
+                { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" },
+              ]}
+            />
+            <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">Target {kpi12.ytdTarget}% · Actual {kpi12.ytdActual?.toFixed(1)}%</div>
           </div>
-          <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Composition</div>
-          <CategoryBar
-            segments={[
-              { label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" },
-              { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" },
-            ]}
-          />
-          <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">Target {kpi12.ytdTarget}% · Actual {kpi12.ytdActual?.toFixed(1)}%</div>
 
           {compositionTrend.length > 1 && (
-            <div className="mt-4 pt-4 border-t border-[hsl(var(--pk-border))]">
+            <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
               <div className="flex items-center justify-between flex-wrap gap-1.5 mb-1.5">
                 <div className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Composition trend by quarter</div>
                 <DurationFilterBar duration={compDuration} onChange={setCompDuration} total={fullCompositionTrend.length} label="" />
@@ -89,7 +97,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       )}
 
       {tab === "procurement" && (
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 max-w-2xl">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 11 · Weight 1.67%</div>
             <StatusChip status={kpi11.status} />
@@ -116,7 +124,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       )}
 
       {tab === "training" && (
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 max-w-2xl">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weight 1.66%</div>
             <StatusChip status={kpi13.status} />

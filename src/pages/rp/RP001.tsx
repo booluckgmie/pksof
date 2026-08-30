@@ -91,15 +91,18 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {recruitmentIndex.map((m) => (
-                    <tr key={m.metric} className="border-t border-[hsl(var(--pk-border))]">
-                      <td className="py-2 text-[hsl(var(--pk-ink))]">{m.metric}</td>
-                      <td className="text-right py-2 tnum">{(m.weight * 100).toFixed(0)}%</td>
-                      <td className="py-2 tnum">{m.score}</td>
-                      <td className="py-2 tnum text-[hsl(var(--pk-ink-faint))]">{m.score} × {(m.weight * 100).toFixed(0)}%</td>
-                      <td className="text-right py-2 tnum font-semibold">{(m.weighted * 100).toFixed(1)}%</td>
-                    </tr>
-                  ))}
+                  {recruitmentIndex.map((m) => {
+                    const scoreDisplay = m.score || (m.weight > 0 ? `${Math.round((m.weighted / m.weight) * 100)}%` : "—");
+                    return (
+                      <tr key={m.metric} className="border-t border-[hsl(var(--pk-border))]">
+                        <td className="py-2 text-[hsl(var(--pk-ink))]">{m.metric}</td>
+                        <td className="text-right py-2 tnum">{(m.weight * 100).toFixed(0)}%</td>
+                        <td className="py-2 tnum">{scoreDisplay}</td>
+                        <td className="py-2 tnum text-[hsl(var(--pk-ink-faint))]">{scoreDisplay} × {(m.weight * 100).toFixed(0)}%</td>
+                        <td className="text-right py-2 tnum font-semibold">{(m.weighted * 100).toFixed(1)}%</td>
+                      </tr>
+                    );
+                  })}
                   <tr className="border-t-2 border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] font-semibold">
                     <td className="py-2 px-0 text-[hsl(var(--pk-ink))]" colSpan={4}>Total achievement</td>
                     <td className="text-right py-2 tnum text-[hsl(var(--pk-accent))]">{(totalWeighted * 100).toFixed(1)}%</td>

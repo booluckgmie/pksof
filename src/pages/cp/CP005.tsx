@@ -2,6 +2,7 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { StackedBarTrend } from "@/components/pk/Charts";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
+import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
 import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
@@ -11,7 +12,7 @@ import { useKpiTargets } from "@/lib/kpiTargets";
 import { periods, periodById } from "@/data/periods";
 
 export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId } = useSession();
+  const { entityId, periodId, setPeriodId } = useSession();
   const { latestValue } = useWorkflow();
   const { timeCharterCompliance } = useDetails();
   const { getFyTarget } = useKpiTargets();
@@ -34,6 +35,11 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   return (
     <div>
       <ScreenHeader id="CP005" subtitle="Customer Perspective performance for Management and Board reporting. Weight 15.0% · 2 KPIs." onNavigate={onNavigate} />
+
+      <div className="mb-4 flex items-center gap-2">
+        <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
+        <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">

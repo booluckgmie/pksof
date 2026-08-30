@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { cpNav, fhNav, rpNav, screens, type ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { entities } from "@/data/entities";
-import { periods } from "@/data/periods";
+import { YearQuarterDropdowns } from "@/components/pk/PeriodPicker";
 
 const CP_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   CP001: LayoutGrid, CP002: ClipboardList, CP003: Landmark, CP004: ShieldCheck,
@@ -56,7 +56,6 @@ function GroupLabel({ children }: { children: React.ReactNode }) {
 /** Entity + reporting period pickers, moved into the sidebar so they read as global session context rather than a per-page filter. */
 function SidebarFilters({ current }: { current: ScreenId }) {
   const { entityId, setEntityId, periodId, setPeriodId, pillarLocked, entityName } = useSession();
-  const fyGroups = Array.from(new Set(periods.map((p) => p.fy)));
   const onMain = current === "MAIN";
   // Managed Entities have no data yet, so there's nothing real to pick — a dropdown of
   // disabled options is just noise. Only render a real <select> once more than one entity
@@ -101,19 +100,7 @@ function SidebarFilters({ current }: { current: ScreenId }) {
 
       <div>
         <div className="text-[10px] uppercase tracking-wide text-white/40 font-semibold mb-1">Reporting Period</div>
-        <select
-          value={periodId}
-          onChange={(e) => setPeriodId(e.target.value as never)}
-          className="w-full bg-white/5 border border-white/10 rounded-md px-2 py-1.5 text-sm font-medium text-white outline-none cursor-pointer focus:border-white/30"
-        >
-          {fyGroups.map((fy) => (
-            <optgroup key={fy} label={fy} className="text-[hsl(var(--pk-ink))]">
-              {periods.filter((p) => p.fy === fy).map((p) => (
-                <option key={p.id} value={p.id} className="text-[hsl(var(--pk-ink))]">{p.label}</option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
+        <YearQuarterDropdowns periodId={periodId} onChange={(id) => setPeriodId(id as never)} dark />
       </div>
     </div>
   );

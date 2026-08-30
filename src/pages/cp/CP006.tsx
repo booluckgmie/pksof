@@ -45,9 +45,17 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     <div>
       <ScreenHeader id="CP006" subtitle="Internal Business Process performance with strategic initiative tracking. Weight 20.0% · 2 KPIs." onNavigate={onNavigate} />
       <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-        <div className="flex items-center gap-4 flex-wrap">
-          <span className="inline-flex items-center gap-1.5 text-sm text-[hsl(var(--pk-ink-soft))]">KPI 7 Process Improvements <StatusChip status={kpi7.status} /></span>
-          <span className="inline-flex items-center gap-1.5 text-sm text-[hsl(var(--pk-ink-soft))]">KPI 8 New Technology <StatusChip status={kpi8.status} /></span>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-2.5 py-1.5">
+            <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold">KPI 7</span>
+            <span className="text-sm text-[hsl(var(--pk-ink))]">Process Improvements</span>
+            <StatusChip status={kpi7.status} />
+          </div>
+          <div className="flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-2.5 py-1.5">
+            <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold">KPI 8</span>
+            <span className="text-sm text-[hsl(var(--pk-ink))]">New Technology</span>
+            <StatusChip status={kpi8.status} />
+          </div>
         </div>
         <div className="flex items-center gap-1 border border-[hsl(var(--pk-border))] rounded-lg p-1 bg-[hsl(var(--pk-surface))]">
           <button

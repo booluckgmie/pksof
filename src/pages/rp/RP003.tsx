@@ -1,12 +1,15 @@
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatCard } from "@/components/pk/Misc";
 import { StatusChip } from "@/components/pk/StatusChip";
+import { InfoTip } from "@/components/pk/InfoTip";
 import { LineTrend, CategoryBar } from "@/components/pk/Charts";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails, industryBenchmark } from "@/lib/details";
+
+const INDUSTRY_BENCHMARK_SOURCE = "Placeholder reference figure for this prototype — not yet tied to a cited source. Replace with the actual published industry turnover benchmark (e.g. sector HR association or MOF benchmarking report) once confirmed.";
 
 export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId } = useSession();
@@ -26,13 +29,22 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <StatCard label="Total Employees" value={String(headcountSummary.totalEmployees)} />
         <StatCard label="Employees Resigned" value={String(resigned)} />
         <StatCard label="Turnover Rate" value={`${turnoverRate.toFixed(1)}%`} tone="good" />
-        <StatCard label="Industry Benchmark" value={`${industryBenchmark.toFixed(1)}%`} />
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card px-4 py-3">
+          <div className="flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] text-[hsl(var(--pk-ink-faint))] font-semibold">
+            Industry Benchmark
+            <InfoTip title="Industry Benchmark — source" side="bottom">{INDUSTRY_BENCHMARK_SOURCE}</InfoTip>
+          </div>
+          <div className="tnum text-xl font-semibold mt-0.5 text-[hsl(var(--pk-ink))]">{industryBenchmark.toFixed(1)}%</div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2 flex-wrap gap-1.5">
-            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))]">Turnover trend by quarter vs industry benchmark</div>
+            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] inline-flex items-center gap-1">
+              Turnover trend by quarter vs industry benchmark
+              <InfoTip title="Industry Benchmark — source" side="bottom">{INDUSTRY_BENCHMARK_SOURCE}</InfoTip>
+            </div>
             <DurationFilterBar duration={duration} onChange={setDuration} total={fullTurnoverTrend.length} label="" />
           </div>
           <LineTrend

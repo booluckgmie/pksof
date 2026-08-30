@@ -1,6 +1,5 @@
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
-import { DataOriginBadge } from "@/components/pk/DataOrigin";
 import { InfoTip } from "@/components/pk/InfoTip";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
@@ -50,7 +49,6 @@ export function CP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 </span>
               </th>
               <th className="text-left font-medium px-3 py-2">Status</th>
-              <th className="text-left font-medium px-3 py-2">Source</th>
             </tr>
           </thead>
           <tbody>
@@ -90,7 +88,6 @@ export function CP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                     <td className="px-3 py-2 text-right tnum font-medium">{fmt(r.ytdActual, k.unit)}</td>
                     <td className="px-3 py-2 text-right tnum font-semibold">{r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"}</td>
                     <td className="px-3 py-2"><StatusChip status={r.status} /></td>
-                    <td className="px-3 py-2"><DataOriginBadge result={r} /></td>
                   </tr>
                 );
               });
@@ -100,7 +97,7 @@ export function CP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <tr className="border-t-2 border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] font-semibold">
               <td className="px-3 py-2.5" colSpan={7}>Total</td>
               <td className="px-3 py-2.5 text-right tnum text-[hsl(var(--pk-accent))]">{(totalWeighted * 100).toFixed(1)}%</td>
-              <td colSpan={2} />
+              <td />
             </tr>
           </tfoot>
         </table>

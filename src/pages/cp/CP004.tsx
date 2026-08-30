@@ -76,12 +76,18 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <InfoTip title="Not Measurable KPIs">Do not reduce achievement — progress updates run until the annual assessment. Full assessment scheduled Q4 FY2026.</InfoTip>
           </div>
           <div className="flex items-end justify-between gap-2">
-            <p className="text-xs text-[hsl(var(--pk-ink-faint))]">Full annual assessment scheduled Q4 FY2026 — components below report progress only.</p>
+            <div className="flex items-baseline gap-2">
+              <span className="tnum font-head text-2xl font-semibold">{kpi4.ytdActual !== null ? `${kpi4.ytdActual.toFixed(1)}%` : "—"}</span>
+              <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi4.ytdTarget !== null ? `${kpi4.ytdTarget.toFixed(1)}%` : "—"}</span>
+            </div>
             <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
               {expanded === "governance" ? "Hide updates" : "View updates"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "governance" && "rotate-180")} />
             </span>
           </div>
+          {kpi4.ytdActual === null && (
+            <p className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-1.5">Full annual assessment scheduled Q4 FY2026 — components below report progress only.</p>
+          )}
         </div>
       </div>
 

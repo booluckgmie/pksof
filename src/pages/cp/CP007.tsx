@@ -52,7 +52,7 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                       <div className="text-[11px] text-[hsl(var(--pk-ink-faint))]">{m.note}</div>
                     </td>
                     <td className="text-right py-2 tnum">{(m.weight * 100).toFixed(0)}%</td>
-                    <td className="py-2 tnum">{m.score}</td>
+                    <td className="py-2 tnum">{m.score || (m.weight > 0 ? `${Math.round((m.weighted / m.weight) * 100)}%` : "—")}</td>
                     <td className="text-right py-2 tnum font-semibold">{(m.weighted * 100).toFixed(1)}%</td>
                   </tr>
                 ))}
