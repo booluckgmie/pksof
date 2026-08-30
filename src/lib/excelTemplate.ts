@@ -15,6 +15,7 @@ export interface ParsedKpiRow {
   periodId: PeriodId;
   value: number;
   note: string;
+  sheet: string;
 }
 
 export interface ParsedDetailMetric {
@@ -23,6 +24,7 @@ export interface ParsedDetailMetric {
   dimension2: string;
   periodId: PeriodId;
   value: number;
+  sheet: string;
 }
 
 export interface ParsedDetailRecordRow {
@@ -31,6 +33,7 @@ export interface ParsedDetailRecordRow {
   category: string;
   periodId: PeriodId;
   value: number;
+  sheet: string;
 }
 
 export interface ParsedWorkbook {
@@ -103,11 +106,11 @@ export async function parseWorkbook(file: File): Promise<ParsedWorkbook> {
         periodsFound.add(periodId);
         if (field.dest === "kpi") {
           const no = Number(field.kpiId.replace("KPI", ""));
-          kpiRows.push({ kpiId: field.kpiId, kpiNo: no, periodId, value, note });
+          kpiRows.push({ kpiId: field.kpiId, kpiNo: no, periodId, value, note, sheet: sheetName });
         } else if (field.dest === "metric") {
-          metricRows.push({ metricKey: field.metricKey, dimension: field.dimension, dimension2: field.dimension2, periodId, value });
+          metricRows.push({ metricKey: field.metricKey, dimension: field.dimension, dimension2: field.dimension2, periodId, value, sheet: sheetName });
         } else {
-          recordRows.push({ recordType: field.recordType, label: field.recordLabel, category: sub === "—" ? "" : sub, periodId, value });
+          recordRows.push({ recordType: field.recordType, label: field.recordLabel, category: sub === "—" ? "" : sub, periodId, value, sheet: sheetName });
         }
       }
     }

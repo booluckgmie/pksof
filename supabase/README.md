@@ -12,7 +12,7 @@ Run it yourself:
   `migrations/0006_monthly_periods.sql`, `migrations/0007_kpi_fy_targets.sql`,
   `migrations/0008_allow_published_edits.sql`, `migrations/0009_widen_detail_record_id.sql`,
   `migrations/0010_lock_published_submissions.sql`, `migrations/0011_remove_pmo_checker_role.sql`,
-  then `seed.sql`.
+  `migrations/0012_upload_audit_trail.sql`, then `seed.sql`.
 - **Supabase CLI** (alternative): `supabase db push` after linking the project, or run each
   file in order with `psql "$DATABASE_URL" -f <file>`.
 
@@ -183,6 +183,23 @@ all open write (`with check (true)`) — there's no approval-trail check to enfo
 is for KPI facts, since building a second maker-checker queue for these datasets was out of scope
 for this pass. Same production caveat applies, doubly so: tie writes to a signed-in, role-checked
 user before this is real.
+
+**`0012_upload_audit_trail.sql`** adds the progress-tracking features from the 28 Aug 2026
+Prokhas meeting: two new append-only tables, `upload_events` (one row per Excel upload — file
+name, entity, sheets/periods present, uploader, timestamp, saved/failed row counts) and
+`upload_event_rows` (one row per individual KPI/metric/record row that upload touched, with its
+own saved/failed outcome and error message). Written from `handleSubmitParsed` in
+`src/pages/workflow/DataEntry.tsx` on every upload, alongside the existing KPI-submission and
+detail_metrics/detail_records writes — nothing about the upload's own effects changed, this only
+adds a record of what happened. Neither table has an update/delete policy — an audit trail that
+could be edited after the fact wouldn't be much of one.
+
+Verify & Publish's new **Uploads** tab (`src/pages/workflow/VerifyPublish.tsx`) reads these two
+tables: a per-entity progress summary (files/saved/failed), a searchable+paginated list of past
+uploads, and a click-to-expand per-row detail view for each one — reusing the same `Pager`/search
+pattern the Pending and Audit trail tabs already had. "Tracking by department" uses entity + the
+sheet(s) present as the closest existing proxies, since the app has no separate department
+dimension yet; the sheet names line up with the app's own CP/FH/RP pillar grouping.
 
 **`0009_widen_detail_record_id.sql`** fixes a real bug, not a policy change: `detail_records.id`
 was `varchar(40)`, sized back when ids were short hand-picked strings like `INIT-001`. The 3-pillar

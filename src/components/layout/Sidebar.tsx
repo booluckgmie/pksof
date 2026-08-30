@@ -205,7 +205,7 @@ export function Sidebar({
           ) : (
             <div className="mx-2 mt-4 rounded-md border border-white/10 bg-white/5 px-2.5 py-2.5">
               <p className="text-[11.5px] text-white/55 leading-snug">
-                The full screen menu is available to System Administrator and PMO & Administrator roles. You can still open any dashboard screen without signing in — sign out to browse them.
+                The full screen menu is available to the System Administrator role. You can still open any dashboard screen without signing in — sign out to browse them.
               </p>
             </div>
           )}

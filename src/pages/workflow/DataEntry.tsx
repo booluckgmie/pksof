@@ -12,6 +12,7 @@ import { kpiById } from "@/data/kpis";
 import { periods, periodById } from "@/data/periods";
 import { parseWorkbook, type ParsedWorkbook } from "@/lib/excelTemplate";
 import { upsertDetailMetric, upsertDetailRecord } from "@/lib/api/details";
+import { insertUploadEvent, insertUploadEventRows } from "@/lib/api/uploads";
 
 const EMPTY_PARSED: ParsedWorkbook = { kpiRows: [], metricRows: [], recordRows: [], periodsFound: [], sheetsFound: [] };
 
@@ -70,8 +71,18 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
     setSubmittingParsed(true);
     setSubmitProgress({ done: 0, total: totalRows });
 
+    const uploadId = `UPL-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+    const auditRows: {
+      id: string; uploadId: string; dest: "kpi" | "metric" | "record"; sheet: string;
+      label: string; periodId: (typeof parsed.kpiRows)[number]["periodId"]; value: number | null;
+      status: "saved" | "failed"; errorMessage?: string | null;
+    }[] = [];
+    let auditSeq = 0;
+    const nextAuditId = () => `${uploadId}-${auditSeq++}`;
+
     for (const row of parsed.kpiRows) {
       submit({ kpiId: row.kpiId, entityId, periodId: row.periodId, value: row.value, note: row.note, source: "excel-upload", submittedBy: userName || "reporting.officer" });
+      auditRows.push({ id: nextAuditId(), uploadId, dest: "kpi", sheet: row.sheet, label: `${kpiById(row.kpiId).name} (KPI ${row.kpiNo})`, periodId: row.periodId, value: row.value, status: "saved" });
       setSubmitProgress((p) => ({ ...p, done: p.done + 1 }));
     }
 
@@ -80,8 +91,11 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
       try {
         await upsertDetailMetric({ entityId, periodId: row.periodId, metricKey: row.metricKey, dimension: row.dimension, dimension2: row.dimension2, value: row.value });
         detailSaved++;
+        auditRows.push({ id: nextAuditId(), uploadId, dest: "metric", sheet: row.sheet, label: `${row.metricKey}/${row.dimension}`, periodId: row.periodId, value: row.value, status: "saved" });
       } catch (err) {
-        toast.error(`Couldn't save ${row.metricKey}/${row.dimension}`, { description: errMessage(err) });
+        const description = errMessage(err);
+        toast.error(`Couldn't save ${row.metricKey}/${row.dimension}`, { description });
+        auditRows.push({ id: nextAuditId(), uploadId, dest: "metric", sheet: row.sheet, label: `${row.metricKey}/${row.dimension}`, periodId: row.periodId, value: row.value, status: "failed", errorMessage: description });
       }
       setSubmitProgress((p) => ({ ...p, done: p.done + 1 }));
     }
@@ -93,12 +107,29 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
           label: row.label, category: row.category || null, valueNum: row.value,
         });
         detailSaved++;
+        auditRows.push({ id: nextAuditId(), uploadId, dest: "record", sheet: row.sheet, label: `${row.recordType}/${row.label}`, periodId: row.periodId, value: row.value, status: "saved" });
       } catch (err) {
-        toast.error(`Couldn't save ${row.recordType}/${row.label}`, { description: errMessage(err) });
+        const description = errMessage(err);
+        toast.error(`Couldn't save ${row.recordType}/${row.label}`, { description });
+        auditRows.push({ id: nextAuditId(), uploadId, dest: "record", sheet: row.sheet, label: `${row.recordType}/${row.label}`, periodId: row.periodId, value: row.value, status: "failed", errorMessage: description });
       }
       setSubmitProgress((p) => ({ ...p, done: p.done + 1 }));
     }
     if (detailSaved > 0) await refresh();
+
+    const failedCount = auditRows.filter((r) => r.status === "failed").length;
+    try {
+      await insertUploadEvent({
+        id: uploadId, entityId, fileName: fileName ?? "unknown.xlsx",
+        sheets: parsed.sheetsFound.join(", "),
+        periods: parsed.periodsFound.map((id) => periodById(id).label).join(", "),
+        uploadedBy: userName || "reporting.officer",
+        totalRows, savedRows: totalRows - failedCount, failedRows: failedCount,
+      });
+      await insertUploadEventRows(auditRows);
+    } catch (err) {
+      console.error("Failed to record upload audit trail", err);
+    }
     setSubmittingParsed(false);
 
     const periodLabels = parsed.periodsFound.map((id) => periodById(id).label).join(", ");
