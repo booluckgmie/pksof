@@ -50,6 +50,9 @@
     --pk-bad-soft: 358 50% 94%;
     --pk-pending: 213 10% 48%;
     --pk-pending-soft: 213 12% 92%;
+    --pk-info: 213 70% 46%;
+    --pk-info-lt: 213 77% 66%;
+    --pk-info-soft: 213 60% 93%;
   }
 
   .dark {
@@ -93,6 +96,8 @@
     --pk-bad-soft: 5 40% 16%;
     --pk-pending: 205 10% 62%;
     --pk-pending-soft: 205 14% 16%;
+    --pk-info: 213 70% 66%;
+    --pk-info-soft: 213 45% 16%;
   }
 }
 

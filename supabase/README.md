@@ -11,7 +11,7 @@ Run it yourself:
   `migrations/0004_allow_pending_submission_edits.sql`, `migrations/0005_org_settings.sql`,
   `migrations/0006_monthly_periods.sql`, `migrations/0007_kpi_fy_targets.sql`,
   `migrations/0008_allow_published_edits.sql`, `migrations/0009_widen_detail_record_id.sql`,
-  then `seed.sql`.
+  `migrations/0010_lock_published_submissions.sql`, then `seed.sql`.
 - **Supabase CLI** (alternative): `supabase db push` after linking the project, or run each
   file in order with `psql "$DATABASE_URL" -f <file>`.
 
@@ -156,16 +156,21 @@ a submission can only be inserted as `submitted`, can only move from `submitted`
 that has a matching `published` row in `submissions` — so a figure can't be forged on the
 dashboard without a real approval trail behind it.
 
-**`0008_allow_published_edits.sql` narrows that guarantee, by explicit client request.** A
-published submission's value/note can now be edited directly from Data Entry's "Recent
-submissions" panel — `latestValue()` in `src/lib/workflow.tsx` prefers a matching `published`
-submission over `fact_kpi_results`, so the edit shows up immediately; `editSubmission()` also
-re-upserts `fact_kpi_results` to match, so the two tables don't drift. The trade-off: a published
-figure can now change with no re-approval and no visible record that it was ever different —
-the "never edited again after review" guarantee above now only holds for the `submitted →
-published/rejected` transition itself, not for a published row afterward. Also: `periods.ts` now
-has `isOpenForEntry: true` for every period (was previously just the current quarter), so Data
-Entry's period picker can target any past period too, not only the in-progress one.
+**`0008_allow_published_edits.sql` briefly narrowed that guarantee, by explicit client request —
+`0010_lock_published_submissions.sql` reverses it.** 0008 let a published submission's value/note
+be edited directly from Data Entry's "Recent submissions" panel. The 28 Aug 2026 Prokhas progress
+meeting decided the opposite: once a submission is locked/HoD-approved (i.e. `published`), it
+cannot be edited — only a still-`submitted` (pending) row can. 0010 drops 0008's permissive
+UPDATE policy, restoring the original guarantee that `submitted → published/rejected` is the only
+mutation a submission ever gets. This also fixes a real bug 0008 had introduced:
+`updateSubmissionValue()` (`src/lib/api/submissions.ts`) still filtered its `UPDATE` on
+`status = 'submitted'`, so an "edit" of a published row matched zero rows in `submissions` and
+silently failed to persist there, even though the UI showed a success toast and `fact_kpi_results`
+*did* get the new value — the two tables drifted out of sync on every published-row edit. Reverting
+the feature removes the code path that could do that. Data Entry's edit-pencil is now shown only
+for `status === "submitted"` rows, matching the DB-level lock. (`periods.ts`'s
+`isOpenForEntry: true` for every period is unrelated and unchanged — that's about which period a
+*new* submission can target, not about editing an existing one after publish.)
 
 That's still not identity-based, though. **Before this goes anywhere near production**: wire up
 Supabase Auth, tie `app_users.id` to `auth.uid()`, and add policies so a submission's

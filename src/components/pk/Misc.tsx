@@ -11,8 +11,8 @@ import { exportScreenAsExcel, exportScreenAsPdf, exportScreenAsPptx } from "@/li
 export function StatusLegend() {
   const items: { label: string; color: string }[] = [
     { label: "Completed", color: "hsl(var(--pk-good))" },
-    { label: "In Progress", color: "hsl(var(--pk-navy))" },
-    { label: "Planned", color: "hsl(var(--pk-warn))" },
+    { label: "In Progress", color: "hsl(var(--pk-warn))" },
+    { label: "Planned", color: "hsl(var(--pk-info))" },
     { label: "Delayed", color: "hsl(var(--pk-bad))" },
     { label: "On Hold", color: "hsl(var(--pk-pending))" },
   ];
@@ -31,8 +31,8 @@ export function StatusLegend() {
 export function InitiativeStatusDot({ status }: { status: string }) {
   const c =
     status === "Completed" ? "hsl(var(--pk-good))"
-    : status === "In Progress" ? "hsl(var(--pk-navy))"
-    : status === "Planned" ? "hsl(var(--pk-warn))"
+    : status === "In Progress" ? "hsl(var(--pk-warn))"
+    : status === "Planned" ? "hsl(var(--pk-info))"
     : status === "Delayed" ? "hsl(var(--pk-bad))"
     : "hsl(var(--pk-pending))";
   return (

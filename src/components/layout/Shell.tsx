@@ -153,6 +153,9 @@ export function Shell({
           </div>
         </div>
         <main id="screen-content" className="flex-1 px-3.5 sm:px-6 py-4 sm:py-6 max-w-[1180px] w-full mx-auto bg-[hsl(var(--pk-paper))]">{children}</main>
+        <footer className="shrink-0 border-t border-[hsl(var(--pk-border))] px-3.5 sm:px-6 py-3 text-center text-[11px] text-[hsl(var(--pk-ink-faint))]">
+          Design by Operational Excellence Department (OED) &middot; Prokhas Sdn Bhd
+        </footer>
       </div>
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} onNavigate={onNavigate} />
     </div>

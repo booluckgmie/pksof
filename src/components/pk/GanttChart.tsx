@@ -2,8 +2,8 @@ import type { Initiative } from "@/lib/details";
 
 const STATUS_COLOR: Record<string, string> = {
   Completed: "hsl(var(--pk-good))",
-  "In Progress": "hsl(var(--pk-navy))",
-  Planned: "hsl(var(--pk-warn))",
+  "In Progress": "hsl(var(--pk-warn))",
+  Planned: "hsl(var(--pk-info))",
   Delayed: "hsl(var(--pk-bad))",
   "On Hold": "hsl(var(--pk-pending))",
 };
