@@ -69,7 +69,6 @@ insert into app_users (id, display_name, role, home_entity) values
   ('board.member',  'Board Member', 'board',             'HQ'),
   ('hafiz.deptlead','Hafiz Rahman', 'dept_head',         'HQ'),
   ('siti.aminah',  'Siti Aminah',  'reporting_officer', 'SJKP'),
-  ('pmo.checker',  'PMO Checker',  'checker',           'HQ'),
   ('sys.admin',    'System Admin', 'admin',             'HQ');
 
 -- ── Fact KPI results (published figures) ──────────────────────────────

@@ -11,7 +11,8 @@ Run it yourself:
   `migrations/0004_allow_pending_submission_edits.sql`, `migrations/0005_org_settings.sql`,
   `migrations/0006_monthly_periods.sql`, `migrations/0007_kpi_fy_targets.sql`,
   `migrations/0008_allow_published_edits.sql`, `migrations/0009_widen_detail_record_id.sql`,
-  `migrations/0010_lock_published_submissions.sql`, then `seed.sql`.
+  `migrations/0010_lock_published_submissions.sql`, `migrations/0011_remove_pmo_checker_role.sql`,
+  then `seed.sql`.
 - **Supabase CLI** (alternative): `supabase db push` after linking the project, or run each
   file in order with `psql "$DATABASE_URL" -f <file>`.
 
@@ -212,11 +213,19 @@ that fact honest instead of implying a login wall that wasn't backed by anything
 a real production public/private split, the same "wire up Supabase Auth" caveat above applies.
 
 The sign-in dialog's role list is further trimmed to roles that can actually write (Reporting
-Officer, Dept Head, PMO & Administrator, System Administrator) — Board & Directors and Executive
-Management were dropped since they're read-only and read access is already open to everyone.
-Signed-in "normal" roles (Reporting Officer, Dept Head) get a slim sidebar (Main + their own
-Data Governance items); the full CP/FH/RP screen menu is shown only to "admin" roles (System
-Administrator, PMO & Administrator) — see `isAdminTier` in `src/components/layout/Sidebar.tsx`.
+Officer, Dept Head, System Administrator) — Board & Directors and Executive Management were
+dropped since they're read-only and read access is already open to everyone. Signed-in "normal"
+roles (Reporting Officer, Dept Head) get a slim sidebar (Main + their own Data Governance items);
+the full CP/FH/RP screen menu is shown only to System Administrator — see `isAdminTier` in
+`src/components/layout/Sidebar.tsx`.
+
+**`0011_remove_pmo_checker_role.sql` retires the `checker` role** ("PMO & Administrator"), per the
+28 Aug 2026 Prokhas meeting: "remove role: PMO & Administrator; Department Head will verify and
+published." Department Head (`dept_head`) already had independent verify/publish rights scoped to
+its own pillar and is now the only non-admin role that can approve & publish a submission — there
+is no longer a cross-pillar checker role. The migration deletes any `app_users` row still on
+`checker` and tightens that table's role check constraint to match; `src/types.ts`'s `Role` union
+and `src/lib/roles.ts`'s `roleDefs` drop it too.
 
 ## 5. Troubleshooting: "duplicate key value violates unique constraint" on `entities`
 

@@ -22,7 +22,7 @@ export const roleDefs: RoleDef[] = [
   {
     id: "dept_head",
     label: "Department Head",
-    description: "Dashboards within scope, plus checker sign-off for their own pillar.",
+    description: "Dashboards within scope, plus verify-and-publish sign-off for their own pillar.",
     canEnterData: false,
     canVerify: true,
     readOnly: true,
@@ -36,15 +36,6 @@ export const roleDefs: RoleDef[] = [
     canVerify: false,
     readOnly: false,
     pillarLocked: true,
-  },
-  {
-    id: "checker",
-    label: "PMO & Administrator",
-    description: "Configuration, users and set-up — plus checker verification across entities.",
-    canEnterData: false,
-    canVerify: true,
-    readOnly: true,
-    pillarLocked: false,
   },
   {
     id: "admin",

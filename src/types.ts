@@ -83,7 +83,6 @@ export type Role =
   | "exec"
   | "dept_head"
   | "reporting_officer"
-  | "checker"
   | "admin";
 
 export interface RoleDef {

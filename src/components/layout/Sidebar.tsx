@@ -134,7 +134,9 @@ export function Sidebar({
   // "Main/admin users" get the full perspective submenu; "normal" upload/verify roles get a
   // slim sidebar (Main + their own Data Governance items) — they can still reach every screen
   // as a guest would, via Main's own subpage dropdowns, without the full tree taking up space.
-  const isAdminTier = role === "admin" || role === "checker";
+  // dept_head (Department Head — now the sole verify/publish role) stays pillar-locked and slim,
+  // same as reporting_officer; only System Administrator is unrestricted enough for the full tree.
+  const isAdminTier = role === "admin";
 
   // Navigating does NOT auto-close the sidebar — Shell now mounts/unmounts the whole sidebar
   // for its persistent show/hide toggle, and treating every nav click as a "close" would hide
