@@ -165,8 +165,8 @@ export function Sidebar({
       >
         <div className="flex items-center gap-2.5 px-4 h-14 border-b border-white/10 shrink-0">
           <div className="leading-tight flex-1 min-w-0">
-            <div className="font-head font-semibold text-[16px] tracking-tight">
-              Group <span className="text-[hsl(var(--pk-accent-lt))]">HQ</span>
+            <div className="font-head font-semibold text-[16px] tracking-tight lowercase">
+              pro<span className="text-[hsl(var(--pk-accent-lt))]">khas</span>
             </div>
             <div className="text-[10px] text-white/40 -mt-0.5 tracking-wide">Group Performance Dashboard</div>
           </div>
@@ -188,7 +188,7 @@ export function Sidebar({
                 <Lock className="h-3 w-3" />Scoped to {homeEntityName}
               </div>
               <p className="text-[11.5px] text-white/55 mt-1.5 leading-snug">
-                {`Corporate Performance, Financial Health and Resource & People are Group HQ's own dashboards — not part of ${homeEntityName}'s pillar. ${homeEntityName}'s own modules are scoped for a later phase of this engagement.`}
+                {`Corporate Performance, Financial Health and Resource & People are Prokhas' own dashboards — not part of ${homeEntityName}'s pillar. ${homeEntityName}'s own modules are scoped for a later phase of this engagement.`}
               </p>
             </div>
           ) : isAdminTier ? (

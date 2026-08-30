@@ -46,7 +46,7 @@ const SCREEN_MAP: Record<ScreenId, React.ComponentType<{ onNavigate: (id: Screen
   GLOSSARY: Glossary,
 };
 
-/** Group HQ's own dashboards — off-limits to a login scoped to a Managed Entity pillar. */
+/** Prokhas' own dashboards — off-limits to a login scoped to a Managed Entity pillar. */
 const HQ_ONLY_GROUPS = new Set(["cp", "fh", "rp"]);
 /** Requires a real sign-in — browsing every other screen doesn't. */
 const LOGIN_REQUIRED_SCREENS = new Set<ScreenId>(["DATA_ENTRY", "VERIFY_PUBLISH", "SETTINGS"]);
@@ -115,7 +115,7 @@ function AuthedApp() {
               ? "Uploading data and verifying/publishing submissions needs a real sign-in — browsing the dashboards doesn't."
               : settingsBlocked
                 ? "Organisation-wide settings are restricted to the System Administrator role."
-                : `This dashboard belongs to Group HQ's own scorecard. Your login is scoped to ${homeEntityName} and can't view it.`}
+                : `This dashboard belongs to Prokhas' own scorecard. Your login is scoped to ${homeEntityName} and can't view it.`}
           </p>
           <button
             onClick={() => (loginRequired ? setLoginOpen(true) : navigate("MAIN"))}

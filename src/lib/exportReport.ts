@@ -3,8 +3,10 @@
 // Visual language follows the client's own Q1 2026 CKPI/MEC report decks (uploaded
 // reference files): white background, bold blue ALL-CAPS section titles, a thin
 // green-to-blue gradient rule under the header, "Strictly Confidential" + copyright
-// footer with page numbers, and a wordmark top-right — "Group HQ" here since the app
-// itself is generic (see the de-branding pass in git history), not the client's logo.
+// footer with page numbers, and a "prokhas" wordmark top-right in the brand's own
+// blue/green split (see src/assets/prokhas-logo.png for the real logo file, used
+// in-app; these exports render it as text since jsPDF/pptxgenjs text is sharper at
+// small sizes than a scaled raster).
 //
 // PDF/PPTX both wrap a full-resolution screenshot of the live screen (html2canvas) in
 // that branded cover + header/footer chrome, so every one of the 19 screens gets a
@@ -130,17 +132,17 @@ export async function exportScreenAsPdf(ctx: ExportContext, options: ExportOptio
     doc.setFontSize(8);
     doc.setTextColor(INK_FAINT_HEX);
     doc.text("Strictly Confidential", margin, pageH - 18);
-    doc.text(`Copyright © Group HQ. All rights reserved.  [ ${page} ]`, pageW - margin, pageH - 18, { align: "right" });
+    doc.text(`Copyright © Prokhas. All rights reserved.  [ ${page} ]`, pageW - margin, pageH - 18, { align: "right" });
   };
 
   const drawWordmark = (x: number, y: number) => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.setTextColor(NAVY_HEX);
-    const groupW = doc.getTextWidth("Group ");
-    doc.text("Group ", x, y);
+    const proW = doc.getTextWidth("pro");
+    doc.text("pro", x, y);
     doc.setTextColor(ACCENT_EMERALD_HEX);
-    doc.text("HQ", x + groupW, y);
+    doc.text("khas", x + proW, y);
   };
 
   // Cover page
@@ -223,7 +225,7 @@ export async function exportScreenAsPptx(ctx: ExportContext, options: ExportOpti
     slide.addText("Strictly Confidential", {
       x: margin, y: slideH - 0.35, w: 3, h: 0.25, fontSize: 8, color: INK_FAINT_HEX, fontFace: "Arial", margin: 0,
     });
-    slide.addText(`Copyright © Group HQ. All rights reserved.  [ ${pageNum} ]`, {
+    slide.addText(`Copyright © Prokhas. All rights reserved.  [ ${pageNum} ]`, {
       x: slideW - 3.5 - margin, y: slideH - 0.35, w: 3.5, h: 0.25, fontSize: 8, color: INK_FAINT_HEX, fontFace: "Arial", align: "right", margin: 0,
     });
   };
@@ -231,8 +233,8 @@ export async function exportScreenAsPptx(ctx: ExportContext, options: ExportOpti
   const addWordmark = (slide: import("pptxgenjs").default.PresSlide, y: number) => {
     slide.addText(
       [
-        { text: "Group ", options: { color: NAVY_HEX, bold: true } },
-        { text: "HQ", options: { color: ACCENT_EMERALD_HEX, bold: true } },
+        { text: "pro", options: { color: NAVY_HEX, bold: true } },
+        { text: "khas", options: { color: ACCENT_EMERALD_HEX, bold: true } },
       ],
       { x: slideW - margin - 1.4, y, w: 1.4, h: 0.3, fontSize: 16, fontFace: "Arial", align: "right", margin: 0 }
     );

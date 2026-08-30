@@ -57,7 +57,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
           <div>
             <div className="text-[10px] uppercase tracking-[0.14em] text-[hsl(var(--pk-accent-lt))] font-semibold">
-              {isRestrictedPillar ? `${entityName} pillar` : "Group Headquarters · wholly owned by MOF Inc."}
+              {isRestrictedPillar ? `${entityName} pillar` : "Prokhas · wholly owned by MOF Inc."}
             </div>
             <h1 className="font-head text-2xl sm:text-[28px] font-semibold tracking-tight mt-1">
               {isRestrictedPillar ? `${entityName} Performance` : "Group Performance"}
@@ -92,7 +92,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       {entityId !== "HQ" && !isRestrictedPillar && (
         <InfoNote>
-          Managed Entity screens for {entityName} follow within the 3-month engagement — Group HQ priority 1 is fully modelled first. Figures above are illustrative until {entityName}'s BRS is signed off.
+          Managed Entity screens for {entityName} follow within the 3-month engagement — Prokhas priority 1 is fully modelled first. Figures above are illustrative until {entityName}'s BRS is signed off.
         </InfoNote>
       )}
 
@@ -100,7 +100,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="mt-5">
           <NoDataState
             title={`${entityName}'s own dashboards aren't built yet`}
-            body={`Corporate Performance, Financial Health and Resource & People above are Group HQ's own scorecard — not ${entityName}'s. ${entityName}'s dedicated modules are scoped for a later phase of this engagement; today, this pillar's job is to keep its KPI 3 sub-metrics current.`}
+            body={`Corporate Performance, Financial Health and Resource & People above are Prokhas' own scorecard — not ${entityName}'s. ${entityName}'s dedicated modules are scoped for a later phase of this engagement; today, this pillar's job is to keep its KPI 3 sub-metrics current.`}
             action={
               canEnterData ? (
                 <button

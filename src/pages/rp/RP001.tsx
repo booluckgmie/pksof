@@ -87,7 +87,7 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                     <th className="text-right font-medium py-1.5">Weight</th>
                     <th className="text-left font-medium py-1.5">Score</th>
                     <th className="text-left font-medium py-1.5">Computation</th>
-                    <th className="text-right font-medium py-1.5">Weighted Score</th>
+                    <th className="text-right font-medium py-1.5">Weight Score</th>
                   </tr>
                 </thead>
                 <tbody>

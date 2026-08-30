@@ -26,7 +26,14 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     <div>
       <ScreenHeader id="CP001" subtitle="Consolidated achievement across all six Strategic Perspectives, with drill-down to KPI detail." onNavigate={onNavigate} />
 
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5 flex flex-col md:flex-row items-center gap-6 mb-6">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => onNavigate("CP002")}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onNavigate("CP002"); } }}
+        title="Open Corporate KPI Performance Status — every KPI's own score"
+        className="w-full text-left cursor-pointer rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating hover:border-[hsl(var(--pk-accent))] transition-all p-5 flex flex-col md:flex-row items-center gap-6 mb-6"
+      >
         <Gauge value={overall} cumulativeThreshold={period.cumulativeThreshold} mofThreshold={period.mofThreshold} label="YTD achievement" size={220} />
         <div className="flex-1 w-full overflow-x-auto">
           <table className="w-full text-sm min-w-[420px]">

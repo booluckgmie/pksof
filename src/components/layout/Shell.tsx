@@ -1,10 +1,11 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Menu, Search, LogIn, User, LayoutGrid, BookOpen } from "lucide-react";
+import { Menu, Search, LogIn, User, BookOpen } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import { screens, type ScreenId } from "@/lib/nav";
+import prokhasLogo from "@/assets/prokhas-logo.png";
 
 const PILLAR_NAV: { id: ScreenId; label: string; group: string }[] = [
   { id: "MAIN", label: "Main", group: "main" },
@@ -42,7 +43,7 @@ function PillarNav({ current, onNavigate, isRestrictedPillar }: { current: Scree
 }
 
 /** Always-visible brand mark, doubles as the "back to overview" affordance — the sidebar's
- * own Group HQ mark only exists once logged in, so guests browsing the public dashboards had
+ * own Prokhas mark only exists once logged in, so guests browsing the public dashboards had
  * no persistent way back to Main other than a breadcrumb buried in each screen's content. */
 function BrandHome({ current, onNavigate }: { current: ScreenId; onNavigate: (id: ScreenId) => void }) {
   const onMain = current === "MAIN";
@@ -55,14 +56,9 @@ function BrandHome({ current, onNavigate }: { current: ScreenId; onNavigate: (id
         onMain ? "cursor-default" : "hover:bg-[hsl(var(--pk-surface-2))]"
       )}
     >
-      <span className="h-7 w-7 shrink-0 rounded-md bg-[hsl(var(--pk-navy))] flex items-center justify-center">
-        <LayoutGrid className="h-3.5 w-3.5 text-[hsl(var(--pk-accent-lt))]" />
-      </span>
-      <span className="leading-tight text-left">
-        <span className="block font-head font-semibold text-[13.5px] tracking-tight text-[hsl(var(--pk-ink))]">
-          Group <span className="text-[hsl(var(--pk-accent))]">HQ</span>
-        </span>
-        <span className="hidden sm:block text-[10px] text-[hsl(var(--pk-ink-faint))] -mt-0.5">Performance Dashboard</span>
+      <img src={prokhasLogo} alt="Prokhas" className="h-6 w-auto shrink-0" />
+      <span className="hidden sm:block leading-tight text-left border-l border-[hsl(var(--pk-border))] pl-2.5 ml-0.5">
+        <span className="block text-[10px] text-[hsl(var(--pk-ink-faint))]">Performance Dashboard</span>
       </span>
     </button>
   );
