@@ -11,6 +11,15 @@ import { fetchUploadEvents, fetchUploadEventRows, type UploadEvent, type UploadE
 
 const PAGE_SIZE = 10;
 
+/** Module code → the exact sheet name that code appears as in an upload's comma-joined `sheets`
+ * field (src/lib/excelTemplate.ts's SHEET_NAMES) — same order as Entity.modules everywhere else
+ * in the app, so this is the one place the two need to line up. */
+const PILLAR_SHEET: Record<"CP" | "FH" | "RP", string> = {
+  CP: "Corporate Performance",
+  FH: "Financial Health",
+  RP: "Resource & People",
+};
+
 function matchesUploadSearch(u: UploadEvent, query: string): boolean {
   if (!query.trim()) return true;
   const e = entityById(u.entityId);
@@ -116,7 +125,23 @@ export function UploadsPanel({ entityId, showProgressGrid = !entityId }: { entit
   }, [uploads, currentPeriodLabel]);
   const notYetUploaded = progressByEntity.filter((r) => !r.uploadedThisPeriod);
 
-  const myUploadedThisPeriod = entityId ? scoped.some((u) => u.periods.includes(currentPeriodLabel) && u.savedRows > 0) : null;
+  const progressByPillar = useMemo(() => {
+    if (!entityId) return [];
+    const modules = entityById(entityId).modules;
+    return modules.map((mod) => {
+      const sheet = PILLAR_SHEET[mod];
+      const relevant = scoped.filter((u) => u.sheets.split(", ").includes(sheet));
+      return {
+        module: mod,
+        sheet,
+        files: relevant.length,
+        saved: relevant.reduce((s, u) => s + u.savedRows, 0),
+        failed: relevant.reduce((s, u) => s + u.failedRows, 0),
+        uploadedThisPeriod: relevant.some((u) => u.periods.includes(currentPeriodLabel) && u.savedRows > 0),
+      };
+    });
+  }, [scoped, entityId, currentPeriodLabel]);
+  const pillarsNotYetUploaded = progressByPillar.filter((r) => !r.uploadedThisPeriod);
 
   if (error) return <p className="text-sm text-[hsl(var(--pk-bad))]">Couldn't load upload history: {error}</p>;
   if (uploads === null) return <div className="flex items-center gap-1.5 text-sm text-[hsl(var(--pk-ink-faint))]"><Loader2 className="h-4 w-4 animate-spin" />Loading upload history…</div>;
@@ -164,14 +189,43 @@ export function UploadsPanel({ entityId, showProgressGrid = !entityId }: { entit
         </div>
       ) : (
         entityId && (
-          <div
-            className={cn(
-              "rounded-lg border px-3 py-2 text-sm font-medium inline-flex items-center gap-1.5 w-fit",
-              myUploadedThisPeriod ? "border-[hsl(var(--pk-good))]/40 bg-[hsl(var(--pk-good))]/10 text-[hsl(var(--pk-good))]" : "border-[hsl(var(--pk-bad))]/40 bg-[hsl(var(--pk-bad-soft))] text-[hsl(var(--pk-bad))]"
-            )}
-          >
-            {myUploadedThisPeriod ? <Check className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
-            {myUploadedThisPeriod ? `Uploaded for ${currentPeriodLabel}` : `Not yet uploaded for ${currentPeriodLabel}`}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Upload progress — {currentPeriodLabel}</div>
+              {pillarsNotYetUploaded.length > 0 ? (
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[hsl(var(--pk-bad))]">
+                  <AlertTriangle className="h-3 w-3" />{pillarsNotYetUploaded.length} of {progressByPillar.length} not yet uploaded
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[hsl(var(--pk-good))]">
+                  <Check className="h-3 w-3" />All pillars have uploaded
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {progressByPillar.map((r) => (
+                <div
+                  key={r.module}
+                  className={cn(
+                    "rounded-lg border shadow-card p-3",
+                    r.uploadedThisPeriod ? "border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))]" : "border-[hsl(var(--pk-bad))]/40 bg-[hsl(var(--pk-bad-soft))]"
+                  )}
+                >
+                  <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] truncate">{r.sheet}</div>
+                  {r.uploadedThisPeriod ? (
+                    <>
+                      <div className="text-lg font-head font-semibold text-[hsl(var(--pk-ink))] mt-0.5">{r.files} file{r.files !== 1 ? "s" : ""}</div>
+                      <div className="text-[11px] mt-0.5">
+                        <span className="text-[hsl(var(--pk-good))] font-medium">{r.saved} saved</span>
+                        {r.failed > 0 && <span className="text-[hsl(var(--pk-bad))] font-medium"> · {r.failed} failed</span>}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-sm font-medium text-[hsl(var(--pk-bad))] mt-1.5">Not yet uploaded</div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )
       )}
