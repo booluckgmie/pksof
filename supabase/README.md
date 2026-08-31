@@ -21,7 +21,12 @@ For a fresh project, or to re-apply by hand:
   `migrations/0008_allow_published_edits.sql`, `migrations/0009_widen_detail_record_id.sql`,
   `migrations/0010_lock_published_submissions.sql`, `migrations/0011_remove_pmo_checker_role.sql`,
   `migrations/0012_upload_audit_trail.sql`, `migrations/0013_widen_detail_record_text_note.sql`,
-  then `seed.sql`.
+  `migrations/0014_activity_log.sql`, then `seed.sql`.
+
+**`0014` is not yet applied to the live "pksof" project** — the MCP connection used to apply
+`0001`–`0013` disconnected before this one could run. Verify & Publish's "Activity" tab degrades
+gracefully until it is (shows a load error instead of crashing, and sign-in stops trying to log
+itself after one failed write), but won't show anything real until `0014` runs.
 - **Supabase CLI** (alternative): `supabase db push` after linking the project, or run each
   file in order with `psql "$DATABASE_URL" -f <file>`.
 
@@ -214,9 +219,19 @@ packed `start|end|status|detail` text (`src/lib/details.tsx`, CP009's add/edit f
 rows run to ~610 chars — so every seed or upload of those rows silently failed with "value too long
 for type character varying(500)" until this ran.
 
-Verify & Publish's new **Uploads** tab (`src/pages/workflow/VerifyPublish.tsx`) reads these two
-tables: a per-entity progress summary (files/saved/failed), a searchable+paginated list of past
-uploads, and a click-to-expand per-row detail view for each one — reusing the same `Pager`/search
+**`0014_activity_log.sql`** adds one more append-only table, `activity_log`, for the one user
+action nothing else captured: signing in. Every submit/approve/reject already lands in
+`submissions`, every Excel upload already lands in `upload_events`/`upload_event_rows` (0012) — a
+sign-in had nowhere to go. `src/lib/session.tsx`'s `login()` writes a row here (fire-and-forget —
+a failed write never blocks sign-in itself), and Verify & Publish's new **Activity** tab merges
+logins with the existing submissions and upload-event data into one chronological "who did what,
+when" feed, rather than duplicating what those two tables already record.
+
+Verify & Publish's **Uploads** tab (`src/pages/workflow/VerifyPublish.tsx`) reads these two
+tables: a per-entity progress summary for the current reporting period — every entity is shown,
+including ones with zero uploads, flagged "Not yet uploaded" so it doubles as a submission-status
+checklist rather than only listing who already came in — plus a searchable+paginated list of past
+uploads, and a click-to-expand per-row detail view for each one, reusing the same `Pager`/search
 pattern the Pending and Audit trail tabs already had. "Tracking by department" uses entity + the
 sheet(s) present as the closest existing proxies, since the app has no separate department
 dimension yet; the sheet names line up with the app's own CP/FH/RP pillar grouping.

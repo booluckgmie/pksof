@@ -3,6 +3,7 @@ import type { EntityId, PeriodId, Role } from "@/types";
 import { roleById } from "@/lib/roles";
 import { entityById } from "@/data/entities";
 import { resolveCurrentPeriodId } from "@/data/periods";
+import { logLogin } from "@/lib/api/activity";
 
 /** The period whose calendar quarter contains today — sessions default to it until the user picks another. */
 const latestPeriodId: PeriodId = resolveCurrentPeriodId();
@@ -58,8 +59,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       isRestrictedPillar: roleDef.pillarLocked && state.homeEntity !== "HQ",
       homeEntityName: entityById(state.homeEntity).name,
       entityName: entityById(state.entityId).name,
-      login: ({ role, userName, homeEntity, periodId }) =>
-        setState({ loggedIn: true, role, userName, homeEntity, entityId: homeEntity, periodId }),
+      login: ({ role, userName, homeEntity, periodId }) => {
+        setState({ loggedIn: true, role, userName, homeEntity, entityId: homeEntity, periodId });
+        logLogin({ userName, role, entityId: homeEntity });
+      },
       logout: () => setState(DEFAULT),
       setEntityId: (id) =>
         setState((s) => ({ ...s, entityId: roleById(s.role).pillarLocked ? s.homeEntity : id })),
