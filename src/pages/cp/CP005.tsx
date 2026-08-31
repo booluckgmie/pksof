@@ -2,7 +2,7 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { StackedBarTrend } from "@/components/pk/Charts";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
-import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
+import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
 import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
@@ -10,9 +10,12 @@ import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
 import { useKpiTargets } from "@/lib/kpiTargets";
 import { periods, periodById } from "@/data/periods";
+import { useState } from "react";
+import type { PeriodId } from "@/types";
 
 export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId, setPeriodId } = useSession();
+  const [compareIds, setCompareIds] = useState<PeriodId[]>([]);
   const { latestValue } = useWorkflow();
   const { timeCharterCompliance } = useDetails();
   const { getFyTarget } = useKpiTargets();
@@ -36,10 +39,23 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     <div>
       <ScreenHeader id="CP005" subtitle="Customer Perspective performance for Management and Board reporting. Weight 15.0% · 2 KPIs." onNavigate={onNavigate} />
 
-      <div className="mb-4 flex items-center gap-2">
-        <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
-        <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
+      <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
+          <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
+        </div>
+        <ComparePeriodsPicker selected={compareIds} onChange={setCompareIds} />
       </div>
+
+      <PeriodComparisonTable
+        periodIds={compareIds}
+        onRemove={(id) => setCompareIds((prev) => prev.filter((x) => x !== id))}
+        rows={[
+          { label: "External Client Satisfaction — YTD Actual", get: (id) => { const r = latestValue("KPI5", entityId, id); return r.ytdActual !== null ? r.ytdActual.toFixed(1) : "—"; } },
+          { label: "External Client Satisfaction — Weighted Achievement", get: (id) => { const r = latestValue("KPI5", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
+          { label: "Time Charter Compliance — Weighted Achievement", get: (id) => { const r = latestValue("KPI6", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
+        ]}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">

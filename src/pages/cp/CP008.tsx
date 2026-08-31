@@ -3,7 +3,7 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { CategoryBar, LineTrend } from "@/components/pk/Charts";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
-import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
+import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -11,6 +11,7 @@ import { useDetails } from "@/lib/details";
 import { kpiById } from "@/data/kpis";
 import { periods } from "@/data/periods";
 import { cn } from "@/lib/utils";
+import type { PeriodId } from "@/types";
 
 const TABS = [
   { id: "composition", label: "Composition (KPI 12)" },
@@ -29,6 +30,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const headcountSummary = headcountSummaryByPeriod[periodId];
   const kpi13Target = kpiById("KPI13").fyTarget ?? 0;
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("composition");
+  const [compareIds, setCompareIds] = useState<PeriodId[]>([]);
 
   const procTotal = bumiputeraProcurement.reduce((s, r) => s + r.ytdActual, 0);
 
@@ -45,10 +47,23 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     <div>
       <ScreenHeader id="CP008" subtitle="Weight 5.0% · 3 KPIs — Composition, Procurement and Training." onNavigate={onNavigate} />
 
-      <div className="mb-4 flex items-center gap-2">
-        <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
-        <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
+      <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
+          <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
+        </div>
+        <ComparePeriodsPicker selected={compareIds} onChange={setCompareIds} />
       </div>
+
+      <PeriodComparisonTable
+        periodIds={compareIds}
+        onRemove={(id) => setCompareIds((prev) => prev.filter((x) => x !== id))}
+        rows={[
+          { label: "Bumiputera Composition — Weighted Achievement", get: (id) => { const r = latestValue("KPI12", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
+          { label: "Bumiputera Procurement — Weighted Achievement", get: (id) => { const r = latestValue("KPI11", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
+          { label: "Bumiputera Training — Weighted Achievement", get: (id) => { const r = latestValue("KPI13", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
+        ]}
+      />
 
       <div className="flex flex-wrap gap-1.5 mb-4">
         {TABS.map((t) => (

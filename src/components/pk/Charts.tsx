@@ -65,14 +65,14 @@ export function GroupedBarTrend({
           const groupX = PAD + i * bw + bw * 0.16;
           return (
             <g key={d.label}>
-              <rect x={groupX} y={H - 24 - ha} width={barW} height={ha} rx={2} fill={aColor}>
+              <rect x={groupX} y={H - 24 - ha} width={barW} height={ha} rx={3} fill={aColor}>
                 <title>{aLabel} — {d.label}: {d.a}</title>
               </rect>
-              <text x={groupX + barW / 2} y={H - 24 - ha - 4} textAnchor="middle" fontSize={8.5} className="fill-[hsl(var(--pk-ink-faint))] tnum">{d.a}</text>
-              <rect x={groupX + barW + 3} y={H - 24 - hb} width={barW} height={hb} rx={2} fill={bColor}>
+              <text x={groupX + barW / 2} y={H - 24 - ha - 5} textAnchor="middle" fontSize={9.5} className="fill-[hsl(var(--pk-ink-faint))] tnum" fontWeight={500}>{d.a}</text>
+              <rect x={groupX + barW + 3} y={H - 24 - hb} width={barW} height={hb} rx={3} fill={bColor}>
                 <title>{bLabel} — {d.label}: {d.b}</title>
               </rect>
-              <text x={groupX + barW + 3 + barW / 2} y={H - 24 - hb - 4} textAnchor="middle" fontSize={8.5} className="fill-[hsl(var(--pk-ink))] tnum" fontWeight={600}>{d.b}</text>
+              <text x={groupX + barW + 3 + barW / 2} y={H - 24 - hb - 5} textAnchor="middle" fontSize={9.5} className="fill-[hsl(var(--pk-ink))] tnum" fontWeight={700}>{d.b}</text>
               <text x={groupX + barW + 1.5} y={H - 10} textAnchor="middle" fontSize={9} className="fill-[hsl(var(--pk-ink-faint))]">{d.label}</text>
             </g>
           );
@@ -176,6 +176,7 @@ export function StackedBarTrend({ data, unit = "" }: { data: StackedPoint[]; uni
           const total = totals[i];
           const x = PAD + i * bw + bw * 0.18;
           const barW = bw * 0.64;
+          const isLast = i === data.length - 1;
           let yCursor = H - 24;
           return (
             <g key={d.label}>
@@ -183,12 +184,12 @@ export function StackedBarTrend({ data, unit = "" }: { data: StackedPoint[]; uni
                 const h = ((H - 44) * s.value) / max;
                 yCursor -= h;
                 return (
-                  <rect key={s.label} x={x} y={yCursor} width={barW} height={h} fill={s.color}>
+                  <rect key={s.label} x={x} y={yCursor} width={barW} height={h} rx={2} fill={s.color}>
                     <title>{s.label} — {d.label}: {s.value.toFixed(1)}{unit}</title>
                   </rect>
                 );
               })}
-              <text x={x + barW / 2} y={H - 24 - ((H - 44) * total) / max - 5} textAnchor="middle" fontSize={9.5} className="fill-[hsl(var(--pk-ink))] tnum" fontWeight={600}>
+              <text x={x + barW / 2} y={H - 24 - ((H - 44) * total) / max - 5} textAnchor="middle" fontSize={9.5} className="fill-[hsl(var(--pk-ink))] tnum" fontWeight={isLast ? 700 : 500}>
                 {total.toFixed(1)}{unit}
               </text>
               <text x={x + barW / 2} y={H - 10} textAnchor="middle" fontSize={9} className="fill-[hsl(var(--pk-ink-faint))]">

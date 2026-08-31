@@ -96,6 +96,7 @@ export interface RecruitmentMetric {
   metric: string;
   weight: number;
   score: string;
+  computation: string;
   note: string;
   weighted: number;
 }
@@ -286,8 +287,9 @@ export function useDetails() {
       out[p.id] = metricNames.map((name) => {
         const weight = forPeriod.find((r) => r.dimension === name && r.dimension2 === "weight")?.value ?? 0;
         const score = forPeriod.find((r) => r.dimension === name && r.dimension2 === "score")?.note ?? "";
+        const computation = forPeriod.find((r) => r.dimension === name && r.dimension2 === "computation")?.note ?? "";
         const weightedRow = forPeriod.find((r) => r.dimension === name && r.dimension2 === "weighted");
-        return { metric: name, weight, score, note: weightedRow?.note ?? "", weighted: weightedRow?.value ?? 0 };
+        return { metric: name, weight, score, computation, note: weightedRow?.note ?? "", weighted: weightedRow?.value ?? 0 };
       });
     }
     return out;

@@ -125,9 +125,13 @@ fallback, had been updated. Both now agree.
   `process_initiative`/`tech_initiative`. CP009 is the first screen with real add/edit/delete UI
   for a `detail_records` dataset (previously all ~15 of them were read-only, entered by writing
   rows to Supabase directly). `seed.sql` now carries the client's full Q1FY26 programme list
-  (SEED-0025 through SEED-0035, 11 rows across all four sub-areas) — the detail column packs both
-  the plan and the free-text progress note the client's source table showed as two separate
-  columns, since CP009 only has one `detail` field per entry.
+  (SEED-0025 through SEED-0035, 11 rows across all four sub-areas, re-transcribed from the
+  client's own source table) plus a full 12-quarter set (`PDP-<period>-<n>` ids, 121 more rows) so
+  CP009 isn't empty outside Q1FY26 — same 11 real programmes, with `status` computed per period
+  against each programme's own real start/end range (Planned before it starts, In Progress within
+  range, Completed after). The detail column packs both the plan and the free-text progress note
+  the client's source table showed as two separate columns, since CP009 only has one `detail`
+  field per entry.
 - **CP003 drill-down breakdown (`financial_breakdown`, new)**: clicking KPI1 (PBT) or KPI2
   (Cost-to-Income Ratio)'s trend chart reveals a line-item breakdown table — `category` is
   `'PBT'` or `'CIR'`, `value_num`/`value_num2` hold FY target/YTD actual, `text_note` packs YTD

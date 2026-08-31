@@ -7,7 +7,7 @@ import { DataOriginBadge } from "@/components/pk/DataOrigin";
 import { InfoTip } from "@/components/pk/InfoTip";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
-import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
+import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -16,6 +16,7 @@ import { useKpiTargets } from "@/lib/kpiTargets";
 import { kpiById } from "@/data/kpis";
 import { periodById } from "@/data/periods";
 import { cn } from "@/lib/utils";
+import type { PeriodId } from "@/types";
 
 interface BreakdownRow {
   label: string;
@@ -76,6 +77,14 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const kpi2FyTarget = getFyTarget("KPI2", fy);
   const { duration, setDuration, filtered: quarterlyTrend } = useDurationFilter(fullTrend);
   const [openBreakdown, setOpenBreakdown] = useState<{ pbt: boolean; cir: boolean }>({ pbt: false, cir: false });
+  const [compareIds, setCompareIds] = useState<PeriodId[]>([]);
+
+  const compareRows = [
+    { label: "PBT — YTD Actual", get: (id: PeriodId) => { const r = latestValue("KPI1", entityId, id); return r.ytdActual !== null ? `RM ${r.ytdActual.toFixed(1)}m` : "—"; } },
+    { label: "PBT — Weighted Achievement", get: (id: PeriodId) => { const r = latestValue("KPI1", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
+    { label: "Cost-to-Income Ratio — YTD Actual", get: (id: PeriodId) => { const r = latestValue("KPI2", entityId, id); return r.ytdActual !== null ? `${r.ytdActual.toFixed(1)}%` : "—"; } },
+    { label: "Cost-to-Income Ratio — Weighted Achievement", get: (id: PeriodId) => { const r = latestValue("KPI2", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
+  ];
 
   return (
     <div>
@@ -87,7 +96,10 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
         </div>
         <DurationFilterBar duration={duration} onChange={setDuration} total={fullTrend.length} />
+        <ComparePeriodsPicker selected={compareIds} onChange={setCompareIds} />
       </div>
+
+      <PeriodComparisonTable periodIds={compareIds} rows={compareRows} onRemove={(id) => setCompareIds((prev) => prev.filter((x) => x !== id))} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">

@@ -90,7 +90,7 @@ export const factSeed: FactKpiResultSeed[] = [
   { kpiId: "KPI6", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Baseline monitoring framework in progress" },
   { kpiId: "KPI7", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Initiatives planned to complete from Q3" },
   { kpiId: "KPI8", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 6, ytdActual: 3, status: "not-met" },
-  { kpiId: "KPI9", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 80.0, ytdActual: 88.7, status: "met" },
+  { kpiId: "KPI9", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 80.0, ytdActual: 84.4, status: "met" },
   { kpiId: "KPI10", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Programmes commence Q2 onward" },
   { kpiId: "KPI11", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 0.625, ytdActual: 1.03, status: "met" },
   { kpiId: "KPI12", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 70.0, ytdActual: 92.4, status: "met" },
