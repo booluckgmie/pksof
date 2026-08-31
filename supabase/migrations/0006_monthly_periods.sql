@@ -41,16 +41,6 @@ insert into periods (id, label, fy, quarter, cumulative_threshold, mof_threshold
   ('Q3FY26-M3', 'Sep 2026', 'FY2026', 3, 0.75, 0.60, false, false, 'month', 'Q3FY26'),
   ('Q4FY26-M1', 'Oct 2026', 'FY2026', 4, 1.00, 0.80, false, false, 'month', 'Q4FY26'),
   ('Q4FY26-M2', 'Nov 2026', 'FY2026', 4, 1.00, 0.80, false, false, 'month', 'Q4FY26'),
-  ('Q4FY26-M3', 'Dec 2026', 'FY2026', 4, 1.00, 0.80, false, false, 'month', 'Q4FY26'),
-  ('Q1FY27-M1', 'Jan 2027', 'FY2027', 1, 0.25, 0.20, false, false, 'month', 'Q1FY27'),
-  ('Q1FY27-M2', 'Feb 2027', 'FY2027', 1, 0.25, 0.20, false, false, 'month', 'Q1FY27'),
-  ('Q1FY27-M3', 'Mar 2027', 'FY2027', 1, 0.25, 0.20, false, false, 'month', 'Q1FY27'),
-  ('Q2FY27-M1', 'Apr 2027', 'FY2027', 2, 0.50, 0.40, false, false, 'month', 'Q2FY27'),
-  ('Q2FY27-M2', 'May 2027', 'FY2027', 2, 0.50, 0.40, false, false, 'month', 'Q2FY27'),
-  ('Q2FY27-M3', 'Jun 2027', 'FY2027', 2, 0.50, 0.40, false, false, 'month', 'Q2FY27'),
-  ('Q3FY27-M1', 'Jul 2027', 'FY2027', 3, 0.75, 0.60, false, false, 'month', 'Q3FY27'),
-  ('Q3FY27-M2', 'Aug 2027', 'FY2027', 3, 0.75, 0.60, false, false, 'month', 'Q3FY27'),
-  ('Q3FY27-M3', 'Sep 2027', 'FY2027', 3, 0.75, 0.60, false, false, 'month', 'Q3FY27'),
-  ('Q4FY27-M1', 'Oct 2027', 'FY2027', 4, 1.00, 0.80, false, false, 'month', 'Q4FY27'),
-  ('Q4FY27-M2', 'Nov 2027', 'FY2027', 4, 1.00, 0.80, false, false, 'month', 'Q4FY27'),
-  ('Q4FY27-M3', 'Dec 2027', 'FY2027', 4, 1.00, 0.80, false, false, 'month', 'Q4FY27');
+  ('Q4FY26-M3', 'Dec 2026', 'FY2026', 4, 1.00, 0.80, false, false, 'month', 'Q4FY26');
+-- FY2027 quarters are never seeded (seed.sql stops at FY2026), so no FY2027 month rows here --
+-- a parent_period_id FK to a nonexistent 'Q1FY27' etc. would fail on every apply.

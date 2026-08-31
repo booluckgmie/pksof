@@ -2,9 +2,17 @@
 
 ## 1. Run the migration
 
-This session could not reach Supabase's servers to run this directly (network policy in the
-sandbox it was written in blocks the connection) — it's untested against your live project.
-Run it yourself:
+As of 31 Aug 2026, migrations `0001`–`0013` and the current `seed.sql` have been applied directly
+to the live "pksof" Supabase project via an MCP connection available in that session — the live
+database now matches this repo. Until then it had been stuck on roughly the `0001`/`0003` schema
+since project creation (17 Aug 2026), which is why a long run of "still broken on the live site"
+reports traced back to the database, not the app code: none of `0004`–`0012` nor any seed.sql
+update after the first had ever reached production. Two of the migrations had latent bugs only
+caught by that real run — `0006` referenced FY2027 quarter periods that don't exist (fixed to stop
+at FY2026), and `detail_records.text_note` was too narrow for the fully-transcribed People
+Development Programme notes (fixed by `0013`, see below).
+
+For a fresh project, or to re-apply by hand:
 
 - **Supabase Dashboard**: open your project → SQL Editor → run, in order: `migrations/0001_init.sql`,
   `migrations/0002_tighten_write_policies.sql`, `migrations/0003_detail_data.sql`,
@@ -12,7 +20,8 @@ Run it yourself:
   `migrations/0006_monthly_periods.sql`, `migrations/0007_kpi_fy_targets.sql`,
   `migrations/0008_allow_published_edits.sql`, `migrations/0009_widen_detail_record_id.sql`,
   `migrations/0010_lock_published_submissions.sql`, `migrations/0011_remove_pmo_checker_role.sql`,
-  `migrations/0012_upload_audit_trail.sql`, then `seed.sql`.
+  `migrations/0012_upload_audit_trail.sql`, `migrations/0013_widen_detail_record_text_note.sql`,
+  then `seed.sql`.
 - **Supabase CLI** (alternative): `supabase db push` after linking the project, or run each
   file in order with `psql "$DATABASE_URL" -f <file>`.
 
@@ -197,6 +206,13 @@ own saved/failed outcome and error message). Written from `handleSubmitParsed` i
 detail_metrics/detail_records writes — nothing about the upload's own effects changed, this only
 adds a record of what happened. Neither table has an update/delete policy — an audit trail that
 could be edited after the fact wouldn't be much of one.
+
+**`0013_widen_detail_record_text_note.sql`** widens `detail_records.text_note` from `varchar(500)`
+to `varchar(2000)`. It was sized for short operational notes; the People Development Programme's
+packed `start|end|status|detail` text (`src/lib/details.tsx`, CP009's add/edit form) runs well past
+500 chars once a quarter's narrative is fully transcribed — e.g. `seed.sql`'s SEED-0026/SEED-0028
+rows run to ~610 chars — so every seed or upload of those rows silently failed with "value too long
+for type character varying(500)" until this ran.
 
 Verify & Publish's new **Uploads** tab (`src/pages/workflow/VerifyPublish.tsx`) reads these two
 tables: a per-entity progress summary (files/saved/failed), a searchable+paginated list of past
