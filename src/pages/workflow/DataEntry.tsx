@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { PenLine, Send, UploadCloud, History } from "lucide-react";
+import { PenLine, Send, UploadCloud, History, Files } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { WorkflowChip } from "@/components/pk/StatusChip";
 import { InfoNote } from "@/components/pk/Misc";
@@ -166,13 +166,13 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
 
       <div className="flex items-center gap-1 border border-[hsl(var(--pk-border))] rounded-lg p-1 w-fit bg-[hsl(var(--pk-surface))] mb-5">
         <button onClick={() => setTab("upload")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "upload" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
-          <UploadCloud className="h-3.5 w-3.5" />Upload
+          <UploadCloud className="h-3.5 w-3.5" />New Upload
         </button>
         <button onClick={() => setTab("audit")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "audit" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
           <History className="h-3.5 w-3.5" />Audit trail
         </button>
         <button onClick={() => setTab("uploads")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "uploads" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
-          <UploadCloud className="h-3.5 w-3.5" />Uploads
+          <Files className="h-3.5 w-3.5" />Upload History
         </button>
       </div>
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Check, X, FileSpreadsheet, PenLine, History, Inbox, CheckCheck, Pencil, Search, Loader2, UploadCloud, Activity as ActivityIcon, LogIn, UploadIcon, Send, CircleCheck, CircleX } from "lucide-react";
+import { Check, X, FileSpreadsheet, PenLine, History, Inbox, CheckCheck, Pencil, Search, Loader2, Files, Activity as ActivityIcon, LogIn, UploadIcon, Send, CircleCheck, CircleX } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { WorkflowChip } from "@/components/pk/StatusChip";
 import { NoDataState } from "@/components/pk/DataOrigin";
@@ -215,7 +215,7 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
             <History className="h-3.5 w-3.5" />Audit trail
           </button>
           <button onClick={() => changeTab("uploads")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "uploads" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
-            <UploadCloud className="h-3.5 w-3.5" />Uploads
+            <Files className="h-3.5 w-3.5" />Upload History
           </button>
           <button onClick={() => changeTab("activity")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "activity" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
             <ActivityIcon className="h-3.5 w-3.5" />Activity
