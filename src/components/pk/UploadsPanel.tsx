@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { Search, ChevronDown, Loader2, AlertTriangle, Check } from "lucide-react";
+import { toast } from "sonner";
+import { Search, ChevronDown, Loader2, AlertTriangle, Check, Trash2 } from "lucide-react";
 import { NoDataState } from "@/components/pk/DataOrigin";
 import { Pager } from "@/components/pk/Pager";
 import { useOrgSettings } from "@/lib/orgSettings";
@@ -8,7 +9,7 @@ import { periodById, resolveCurrentPeriodId } from "@/data/periods";
 import { cn } from "@/lib/utils";
 import type { EntityId, Module } from "@/types";
 import { MODULE_LABEL } from "@/lib/modules";
-import { fetchUploadEvents, fetchUploadEventRows, type UploadEvent, type UploadEventRow } from "@/lib/api/uploads";
+import { fetchUploadEvents, fetchUploadEventRows, deleteUploadEvent, type UploadEvent, type UploadEventRow } from "@/lib/api/uploads";
 
 const PAGE_SIZE = 10;
 
@@ -80,19 +81,35 @@ function UploadRowDetails({ uploadId }: { uploadId: string }) {
  * Officer sees only their own pillar's history) so the two stay in sync rather than drifting
  * into two separate implementations.
  */
-export function UploadsPanel({ entityId, assignedModule, showProgressGrid = !entityId }: { entityId?: EntityId; assignedModule?: Module | null; showProgressGrid?: boolean }) {
+export function UploadsPanel({ entityId, assignedModule, canDelete = false, showProgressGrid = !entityId }: { entityId?: EntityId; assignedModule?: Module | null; canDelete?: boolean; showProgressGrid?: boolean }) {
   const { fiscalYearEndMonth } = useOrgSettings();
   const [uploads, setUploads] = useState<UploadEvent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUploadEvents()
       .then(setUploads)
       .catch((err: Error) => setError(err.message));
   }, []);
+
+  const handleDelete = async (id: string, fileName: string) => {
+    setDeletingId(id);
+    try {
+      await deleteUploadEvent(id);
+      setUploads((prev) => (prev ? prev.filter((u) => u.id !== id) : prev));
+      setConfirmingId(null);
+      toast.success("Upload record deleted", { description: `${fileName} removed from Upload History. The data it saved is unaffected.` });
+    } catch (err) {
+      toast.error("Couldn't delete upload", { description: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const scoped = useMemo(() => (entityId ? (uploads ?? []).filter((u) => u.entityId === entityId) : uploads ?? []), [uploads, entityId]);
   const changeSearch = (q: string) => { setSearch(q); setPage(1); };
@@ -253,6 +270,7 @@ export function UploadsPanel({ entityId, assignedModule, showProgressGrid = !ent
                   <th className="text-left font-medium px-3 py-2">Periods</th>
                   <th className="text-left font-medium px-3 py-2">Uploaded</th>
                   <th className="text-right font-medium px-3 py-2">Rows</th>
+                  {canDelete && <th className="w-16"></th>}
                   <th className="w-8"></th>
                 </tr>
               </thead>
@@ -260,6 +278,8 @@ export function UploadsPanel({ entityId, assignedModule, showProgressGrid = !ent
                 {pageItems.map((u) => {
                   const e = entityById(u.entityId);
                   const expanded = expandedId === u.id;
+                  const confirming = confirmingId === u.id;
+                  const deleting = deletingId === u.id;
                   return (
                     <Fragment key={u.id}>
                       <tr
@@ -274,11 +294,35 @@ export function UploadsPanel({ entityId, assignedModule, showProgressGrid = !ent
                           <span className="text-[hsl(var(--pk-good))]">{u.savedRows}</span>
                           {u.failedRows > 0 && <span className="text-[hsl(var(--pk-bad))]"> / {u.failedRows} failed</span>}
                         </td>
+                        {canDelete && (
+                          <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
+                            {confirming ? (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleDelete(u.id, u.fileName)}
+                                  disabled={deleting}
+                                  className="text-[11px] font-medium rounded px-1.5 py-0.5 bg-[hsl(var(--pk-bad))] text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                                >
+                                  {deleting ? <Loader2 className="h-3 w-3 animate-spin" /> : "Delete"}
+                                </button>
+                                <button onClick={() => setConfirmingId(null)} disabled={deleting} className="text-[11px] text-[hsl(var(--pk-ink-faint))] px-1">Cancel</button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setConfirmingId(u.id)}
+                                title="Delete this upload record"
+                                className="inline-flex items-center justify-center h-6 w-6 rounded-md text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-bad))] hover:bg-[hsl(var(--pk-bad-soft))] transition-colors"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </td>
+                        )}
                         <td className="px-3 py-2 text-[hsl(var(--pk-ink-faint))]"><ChevronDown className={cn("h-3.5 w-3.5 transition-transform", expanded && "rotate-180")} /></td>
                       </tr>
                       {expanded && (
                         <tr className="border-t border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))]">
-                          <td colSpan={6} className="p-0">
+                          <td colSpan={canDelete ? 7 : 6} className="p-0">
                             <UploadRowDetails uploadId={u.id} />
                           </td>
                         </tr>

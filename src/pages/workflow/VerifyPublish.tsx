@@ -119,8 +119,15 @@ function SourceTag({ source }: { source: Submission["source"] }) {
 }
 
 export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { userName } = useSession();
-  const { pending, submissions, approve, approveAll, reject, editSubmission } = useWorkflow();
+  const { userName, entityId, pillarLocked, role } = useSession();
+  const { pending: allPending, submissions: allSubmissions, approve, approveAll, reject, editSubmission } = useWorkflow();
+  const canDeleteUploads = role === "admin" || role === "dept_head";
+
+  /** A Department Head is entity-locked (pillarLocked) — scope every tab here to just their own
+   * entity, the same way Data Entry already scopes for a Reporting Officer, rather than showing
+   * the whole org. System Administrator (not pillarLocked) still sees everything. */
+  const pending = useMemo(() => (pillarLocked ? allPending.filter((s) => s.entityId === entityId) : allPending), [allPending, pillarLocked, entityId]);
+  const submissions = useMemo(() => (pillarLocked ? allSubmissions.filter((s) => s.entityId === entityId) : allSubmissions), [allSubmissions, pillarLocked, entityId]);
   const [tab, setTab] = useState<"pending" | "audit" | "uploads" | "activity">("pending");
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
@@ -151,10 +158,12 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
       .catch((err: Error) => setLoginsError(err.message));
   }, [tab, logins]);
 
-  const activityFeed = useMemo(
-    () => (logins && activityUploads ? buildActivityFeed(logins, submissions, activityUploads) : null),
-    [logins, activityUploads, submissions]
-  );
+  const activityFeed = useMemo(() => {
+    if (!logins || !activityUploads) return null;
+    const scopedLogins = pillarLocked ? logins.filter((l) => l.entityId === entityId) : logins;
+    const scopedUploads = pillarLocked ? activityUploads.filter((u) => u.entityId === entityId) : activityUploads;
+    return buildActivityFeed(scopedLogins, submissions, scopedUploads);
+  }, [logins, activityUploads, submissions, pillarLocked, entityId]);
   const filteredActivity = useMemo(() => (activityFeed ?? []).filter((a) => matchesActivity(a, search)), [activityFeed, search]);
   const activityPageCount = Math.max(1, Math.ceil(filteredActivity.length / PAGE_SIZE));
   const activityPage = filteredActivity.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -166,7 +175,7 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
 
   const handleApproveAll = () => {
     const count = pending.length;
-    approveAll(userName || "checker", "Bulk approved — verified against source documents.");
+    approveAll(userName || "checker", "Bulk approved — verified against source documents.", pillarLocked ? pending.map((s) => s.id) : undefined);
     toast.success(`Published ${count} submission${count > 1 ? "s" : ""}`, { description: "All pending items are now live on the dashboards." });
   };
 
@@ -337,9 +346,9 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
           </div>
         )
       ) : tab === "audit" ? (
-        <AuditTrailPanel submissions={submissions} />
+        <AuditTrailPanel submissions={submissions} showEntityColumn={!pillarLocked} />
       ) : tab === "uploads" ? (
-        <UploadsPanel />
+        <UploadsPanel entityId={pillarLocked ? entityId : undefined} canDelete={canDeleteUploads} />
       ) : loginsError || activityUploadsError ? (
         <p className="text-sm text-[hsl(var(--pk-bad))]">Couldn't load activity: {loginsError ?? activityUploadsError}</p>
       ) : activityFeed === null ? (

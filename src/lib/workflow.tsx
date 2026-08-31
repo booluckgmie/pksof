@@ -21,7 +21,7 @@ interface WorkflowContextValue {
   }) => void;
   editSubmission: (id: string, value: number, note: string) => void;
   approve: (id: string, reviewedBy: string, reviewNote?: string) => void;
-  approveAll: (reviewedBy: string, reviewNote?: string) => void;
+  approveAll: (reviewedBy: string, reviewNote?: string, ids?: string[]) => void;
   reject: (id: string, reviewedBy: string, reviewNote: string) => void;
   pending: Submission[];
   latestValue: (kpiId: string, entityId: EntityId, periodId: PeriodId) => KpiResult;
@@ -128,9 +128,9 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
 
   const approve: WorkflowContextValue["approve"] = (id, reviewedBy, reviewNote) => approveOne(id, reviewedBy, reviewNote);
 
-  const approveAll: WorkflowContextValue["approveAll"] = (reviewedBy, reviewNote) => {
-    const ids = submissions.filter((s) => s.status === "submitted").map((s) => s.id);
-    for (const id of ids) approveOne(id, reviewedBy, reviewNote);
+  const approveAll: WorkflowContextValue["approveAll"] = (reviewedBy, reviewNote, ids) => {
+    const targets = ids ?? submissions.filter((s) => s.status === "submitted").map((s) => s.id);
+    for (const id of targets) approveOne(id, reviewedBy, reviewNote);
   };
 
   /** Corrects a submission's value/note while it's still pending review. Once a submission is

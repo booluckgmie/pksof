@@ -21,12 +21,12 @@ For a fresh project, or to re-apply by hand:
   `migrations/0008_allow_published_edits.sql`, `migrations/0009_widen_detail_record_id.sql`,
   `migrations/0010_lock_published_submissions.sql`, `migrations/0011_remove_pmo_checker_role.sql`,
   `migrations/0012_upload_audit_trail.sql`, `migrations/0013_widen_detail_record_text_note.sql`,
-  `migrations/0014_activity_log.sql`, then `seed.sql`.
+  `migrations/0014_activity_log.sql`, `migrations/0015_allow_upload_deletion.sql`, then `seed.sql`.
 
-**`0014` is not yet applied to the live "pksof" project** — the MCP connection used to apply
-`0001`–`0013` disconnected before this one could run. Verify & Publish's "Activity" tab degrades
-gracefully until it is (shows a load error instead of crashing, and sign-in stops trying to log
-itself after one failed write), but won't show anything real until `0014` runs.
+**`0014` and `0015` are not yet applied to the live "pksof" project** — the MCP connection used to
+apply `0001`–`0013` disconnected before these could run. Verify & Publish's "Activity" tab and the
+Uploads tab's delete button both degrade gracefully until they are (a load/action error instead of
+a crash), but won't work for real until both run.
 - **Supabase CLI** (alternative): `supabase db push` after linking the project, or run each
   file in order with `psql "$DATABASE_URL" -f <file>`.
 
@@ -226,6 +226,13 @@ sign-in had nowhere to go. `src/lib/session.tsx`'s `login()` writes a row here (
 a failed write never blocks sign-in itself), and Verify & Publish's new **Activity** tab merges
 logins with the existing submissions and upload-event data into one chronological "who did what,
 when" feed, rather than duplicating what those two tables already record.
+
+**`0015_allow_upload_deletion.sql`** reverses part of `0012`'s original "no update/delete policy"
+stance: System Administrator and Department Head can now delete an upload's audit-trail record
+(`upload_events`, cascading to `upload_event_rows` via its existing FK) straight from the Uploads
+tab's delete button — for removing a mistaken or duplicate entry from the log. This is deliberately
+**not** an undo: the KPI submissions / `detail_metrics` / `detail_records` that upload already
+wrote are a separate, already-committed write and are untouched by deleting its log entry.
 
 Verify & Publish's **Uploads** tab (`src/pages/workflow/VerifyPublish.tsx`) reads these two
 tables: a per-entity progress summary for the current reporting period — every entity is shown,

@@ -117,6 +117,13 @@ export async function insertUploadEvent(input: {
   if (error) throw error;
 }
 
+/** Deletes an upload's audit-trail record only (upload_event_rows cascades via its FK) — the
+ * KPI submissions / detail_metrics / detail_records that upload already wrote are untouched. */
+export async function deleteUploadEvent(id: string): Promise<void> {
+  const { error } = await getSupabase().from("upload_events").delete().eq("id", id);
+  if (error) throw error;
+}
+
 export async function insertUploadEventRows(rows: {
   id: string;
   uploadId: string;
