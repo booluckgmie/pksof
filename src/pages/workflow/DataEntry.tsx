@@ -30,7 +30,7 @@ function errMessage(err: unknown): string {
 }
 
 export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, userName } = useSession();
+  const { entityId, userName, assignedModule, assignedModuleLabel } = useSession();
   const { submit, submissions, editSubmission } = useWorkflow();
   const { refresh } = useDetails();
 
@@ -60,10 +60,26 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
     setParseError(null);
     setParsed(EMPTY_PARSED);
     try {
-      const result = await parseWorkbook(file);
+      const raw = await parseWorkbook(file);
+      let result = raw;
+      if (assignedModuleLabel) {
+        const skippedSheets = raw.sheetsFound.filter((s) => s !== assignedModuleLabel);
+        const kpiRows = raw.kpiRows.filter((r) => r.sheet === assignedModuleLabel);
+        const metricRows = raw.metricRows.filter((r) => r.sheet === assignedModuleLabel);
+        const recordRows = raw.recordRows.filter((r) => r.sheet === assignedModuleLabel);
+        const periodsFound = [...new Set([...kpiRows, ...metricRows, ...recordRows].map((r) => r.periodId))];
+        result = { kpiRows, metricRows, recordRows, periodsFound, sheetsFound: raw.sheetsFound.filter((s) => s === assignedModuleLabel) };
+        if (skippedSheets.length > 0) {
+          toast.warning(`Only "${assignedModuleLabel}" is saved from your uploads`, { description: `Skipped ${skippedSheets.join(", ")} in this file — that's outside your assigned pillar.` });
+        }
+      }
       setParsed(result);
       if (result.kpiRows.length === 0 && result.metricRows.length === 0 && result.recordRows.length === 0) {
-        setParseError("Nothing recognized in this file — check it's built from the standard 3-pillar template (Corporate Performance / Financial Health / Resource & People sheets) with quarter columns matching a real reporting period label.");
+        setParseError(
+          assignedModuleLabel
+            ? `No "${assignedModuleLabel}" data found in this file — you're assigned to that pillar only, so other sheets in this workbook won't be processed here.`
+            : "Nothing recognized in this file — check it's built from the standard 3-pillar template (Corporate Performance / Financial Health / Resource & People sheets) with quarter columns matching a real reporting period label."
+        );
       }
     } catch (err) {
       setParseError(err instanceof Error ? err.message : "Couldn't read this file.");
@@ -179,10 +195,15 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
       {tab === "audit" ? (
         <AuditTrailPanel submissions={myEntitySubmissions} showEntityColumn={false} />
       ) : tab === "uploads" ? (
-        <UploadsPanel entityId={entityId} />
+        <UploadsPanel entityId={entityId} assignedModule={assignedModule} />
       ) : (
         <>
-      <div className="mb-5">
+      <div className="mb-5 flex flex-col gap-3">
+        {assignedModuleLabel && (
+          <div className="rounded-md border border-[hsl(var(--pk-accent))]/40 bg-[hsl(var(--pk-accent))]/10 px-3 py-2 text-xs text-[hsl(var(--pk-ink))]">
+            <span className="font-semibold">Assigned pillar: {assignedModuleLabel}.</span> Only rows from that sheet are saved from your uploads — the other two pillar files are someone else's to submit.
+          </div>
+        )}
         <InfoNote>
           The template carries its own reporting-period columns (Q2 FY2025 through Q2 FY2026 by default) —
           there's no period to pick here first. Leave a cell blank for any quarter a figure genuinely wasn't
@@ -194,7 +215,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
       <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-5">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5 flex flex-col gap-4 h-fit">
           <div className="flex flex-col gap-2">
-            <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Completed 3-pillar Excel template</span>
+            <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">{assignedModuleLabel ? `Completed ${assignedModuleLabel} Excel template` : "Completed 3-pillar Excel template"}</span>
             <label className="flex flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-[hsl(var(--pk-border))] py-6 cursor-pointer hover:border-[hsl(var(--pk-accent))] transition-colors">
               <UploadCloud className="h-5 w-5 text-[hsl(var(--pk-ink-faint))]" />
               <span className="text-xs text-[hsl(var(--pk-ink-faint))]">{parsing ? "Reading file…" : (fileName ?? "Click to choose a .xlsx file")}</span>

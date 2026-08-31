@@ -6,19 +6,11 @@ import { useOrgSettings } from "@/lib/orgSettings";
 import { entityById, entities } from "@/data/entities";
 import { periodById, resolveCurrentPeriodId } from "@/data/periods";
 import { cn } from "@/lib/utils";
-import type { EntityId } from "@/types";
+import type { EntityId, Module } from "@/types";
+import { MODULE_LABEL } from "@/lib/modules";
 import { fetchUploadEvents, fetchUploadEventRows, type UploadEvent, type UploadEventRow } from "@/lib/api/uploads";
 
 const PAGE_SIZE = 10;
-
-/** Module code → the exact sheet name that code appears as in an upload's comma-joined `sheets`
- * field (src/lib/excelTemplate.ts's SHEET_NAMES) — same order as Entity.modules everywhere else
- * in the app, so this is the one place the two need to line up. */
-const PILLAR_SHEET: Record<"CP" | "FH" | "RP", string> = {
-  CP: "Corporate Performance",
-  FH: "Financial Health",
-  RP: "Resource & People",
-};
 
 function matchesUploadSearch(u: UploadEvent, query: string): boolean {
   if (!query.trim()) return true;
@@ -88,7 +80,7 @@ function UploadRowDetails({ uploadId }: { uploadId: string }) {
  * Officer sees only their own pillar's history) so the two stay in sync rather than drifting
  * into two separate implementations.
  */
-export function UploadsPanel({ entityId, showProgressGrid = !entityId }: { entityId?: EntityId; showProgressGrid?: boolean }) {
+export function UploadsPanel({ entityId, assignedModule, showProgressGrid = !entityId }: { entityId?: EntityId; assignedModule?: Module | null; showProgressGrid?: boolean }) {
   const { fiscalYearEndMonth } = useOrgSettings();
   const [uploads, setUploads] = useState<UploadEvent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -129,7 +121,7 @@ export function UploadsPanel({ entityId, showProgressGrid = !entityId }: { entit
     if (!entityId) return [];
     const modules = entityById(entityId).modules;
     return modules.map((mod) => {
-      const sheet = PILLAR_SHEET[mod];
+      const sheet = MODULE_LABEL[mod];
       const relevant = scoped.filter((u) => u.sheets.split(", ").includes(sheet));
       return {
         module: mod,
@@ -211,7 +203,12 @@ export function UploadsPanel({ entityId, showProgressGrid = !entityId }: { entit
                     r.uploadedThisPeriod ? "border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))]" : "border-[hsl(var(--pk-bad))]/40 bg-[hsl(var(--pk-bad-soft))]"
                   )}
                 >
-                  <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] truncate">{r.sheet}</div>
+                  <div className="flex items-center justify-between gap-1">
+                    <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] truncate">{r.sheet}</div>
+                    {assignedModule === r.module && (
+                      <span className="shrink-0 text-[9.5px] font-semibold uppercase tracking-wide rounded-full px-1.5 py-0.5 bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]">Yours</span>
+                    )}
+                  </div>
                   {r.uploadedThisPeriod ? (
                     <>
                       <div className="text-lg font-head font-semibold text-[hsl(var(--pk-ink))] mt-0.5">{r.files} file{r.files !== 1 ? "s" : ""}</div>

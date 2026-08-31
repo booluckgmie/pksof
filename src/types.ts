@@ -1,11 +1,13 @@
 export type EntityId = "HQ" | "SJPP" | "SJKP" | "DANAHARTA" | "DANAINFRA" | "GOVCO";
 
+export type Module = "CP" | "FH" | "RP";
+
 export interface Entity {
   id: EntityId;
   name: string;
   fullName: string;
   kind: "HQ" | "ME";
-  modules: ("CP" | "FH" | "RP")[];
+  modules: Module[];
 }
 
 export type PerspectiveId = "FIN" | "MG" | "CUST" | "IBP" | "OC" | "BE";
@@ -93,6 +95,7 @@ export interface RoleDef {
   canVerify: boolean;
   readOnly: boolean;
   pillarLocked: boolean; // restricted to one entity
+  moduleLocked: boolean; // restricted to one CP/FH/RP pillar within that entity
 }
 
 export interface SessionState {
@@ -100,4 +103,5 @@ export interface SessionState {
   userName: string;
   entityId: EntityId;
   periodId: PeriodId;
+  assignedModule: Module | null;
 }

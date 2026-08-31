@@ -9,6 +9,7 @@ export const roleDefs: RoleDef[] = [
     canVerify: false,
     readOnly: true,
     pillarLocked: false,
+    moduleLocked: false,
   },
   {
     id: "exec",
@@ -18,6 +19,7 @@ export const roleDefs: RoleDef[] = [
     canVerify: false,
     readOnly: true,
     pillarLocked: false,
+    moduleLocked: false,
   },
   {
     id: "dept_head",
@@ -27,15 +29,17 @@ export const roleDefs: RoleDef[] = [
     canVerify: true,
     readOnly: true,
     pillarLocked: true,
+    moduleLocked: false,
   },
   {
     id: "reporting_officer",
     label: "Reporting Officer",
-    description: "Data input where permitted, plus report generation. Own pillar only.",
+    description: "Data input for one CP/FH/RP pillar within their entity, plus report generation.",
     canEnterData: true,
     canVerify: false,
     readOnly: false,
     pillarLocked: true,
+    moduleLocked: true,
   },
   {
     id: "admin",
@@ -45,6 +49,7 @@ export const roleDefs: RoleDef[] = [
     canVerify: true,
     readOnly: false,
     pillarLocked: false,
+    moduleLocked: false,
   },
 ];
 

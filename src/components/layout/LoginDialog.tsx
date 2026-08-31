@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
-import { ShieldCheck, KeyRound, Building2 } from "lucide-react";
+import { ShieldCheck, KeyRound, Building2, LayoutGrid } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useSession } from "@/lib/session";
 import { useOrgSettings } from "@/lib/orgSettings";
 import { roleDefs } from "@/lib/roles";
-import { entities } from "@/data/entities";
+import { entities, entityById } from "@/data/entities";
 import { resolveCurrentPeriodId } from "@/data/periods";
-import type { EntityId, Role } from "@/types";
+import { MODULE_LABEL } from "@/lib/modules";
+import type { EntityId, Module, Role } from "@/types";
 
 /** Login is restricted to roles that can actually write (upload data and/or verify/publish) —
  * Board & Directors and Executive Management are read-only, and read access is already open to
@@ -26,14 +27,22 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>(UPLOADER_ROLES[0].id);
   const [homeEntity, setHomeEntity] = useState<EntityId>("HQ");
+  const [assignedModule, setAssignedModule] = useState<Module>(entityById("HQ").modules[0]);
 
   const roleDef = UPLOADER_ROLES.find((r) => r.id === role)!;
   const latestPeriodId = useMemo(() => resolveCurrentPeriodId(new Date(), fiscalYearEndMonth), [fiscalYearEndMonth]);
+  const availableModules = entityById(homeEntity).modules;
+
+  const changeHomeEntity = (id: EntityId) => {
+    setHomeEntity(id);
+    const modules = entityById(id).modules;
+    if (!modules.includes(assignedModule)) setAssignedModule(modules[0]);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const displayName = userId.trim() || "demo.user";
-    login({ role, userName: displayName, homeEntity, periodId: latestPeriodId });
+    login({ role, userName: displayName, homeEntity, periodId: latestPeriodId, assignedModule: roleDef.moduleLocked ? assignedModule : null });
     onOpenChange(false);
     setUserId("");
     setPassword("");
@@ -109,12 +118,12 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
 
           {roleDef.pillarLocked && (
             <label className="flex flex-col gap-1">
-              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Assigned pillar</span>
+              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Assigned entity</span>
               <div className="flex items-center gap-2 rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-2">
                 <Building2 className="h-4 w-4 text-[hsl(var(--pk-ink-faint))]" />
                 <select
                   value={homeEntity}
-                  onChange={(e) => setHomeEntity(e.target.value as EntityId)}
+                  onChange={(e) => changeHomeEntity(e.target.value as EntityId)}
                   className="flex-1 bg-transparent text-sm outline-none text-[hsl(var(--pk-ink))]"
                 >
                   {entities.map((e) => (
@@ -122,7 +131,26 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
                   ))}
                 </select>
               </div>
-              <span className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mt-0.5">Pillar isolation — this role sees only its assigned entity.</span>
+              <span className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mt-0.5">Entity isolation — this role sees only its assigned entity.</span>
+            </label>
+          )}
+
+          {roleDef.moduleLocked && (
+            <label className="flex flex-col gap-1">
+              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Assigned pillar</span>
+              <div className="flex items-center gap-2 rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-2">
+                <LayoutGrid className="h-4 w-4 text-[hsl(var(--pk-ink-faint))]" />
+                <select
+                  value={assignedModule}
+                  onChange={(e) => setAssignedModule(e.target.value as Module)}
+                  className="flex-1 bg-transparent text-sm outline-none text-[hsl(var(--pk-ink))]"
+                >
+                  {availableModules.map((m) => (
+                    <option key={m} value={m}>{MODULE_LABEL[m]}</option>
+                  ))}
+                </select>
+              </div>
+              <span className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mt-0.5">Pillar isolation — Data Entry only accepts uploads for this one CP/FH/RP sheet.</span>
             </label>
           )}
 
