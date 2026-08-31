@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { PenLine, Send, UploadCloud } from "lucide-react";
+import { PenLine, Send, UploadCloud, History } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { WorkflowChip } from "@/components/pk/StatusChip";
 import { InfoNote } from "@/components/pk/Misc";
+import { AuditTrailPanel } from "@/components/pk/AuditTrailPanel";
+import { UploadsPanel } from "@/components/pk/UploadsPanel";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -13,6 +15,7 @@ import { periods, periodById } from "@/data/periods";
 import { parseWorkbook, type ParsedWorkbook } from "@/lib/excelTemplate";
 import { upsertDetailMetric, upsertDetailRecord } from "@/lib/api/details";
 import { insertUploadEvent, insertUploadEventRows } from "@/lib/api/uploads";
+import { cn } from "@/lib/utils";
 
 const EMPTY_PARSED: ParsedWorkbook = { kpiRows: [], metricRows: [], recordRows: [], periodsFound: [], sheetsFound: [] };
 
@@ -39,6 +42,9 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
   const [submitProgress, setSubmitProgress] = useState({ done: 0, total: 0 });
   const [editingSubId, setEditingSubId] = useState<string | null>(null);
   const [editingSubValue, setEditingSubValue] = useState("");
+  const [tab, setTab] = useState<"upload" | "audit" | "uploads">("upload");
+
+  const myEntitySubmissions = useMemo(() => submissions.filter((s) => s.entityId === entityId), [submissions, entityId]);
 
   const mySubmissions = useMemo(
     () => submissions.filter((s) => s.submittedBy === userName || s.entityId === entityId).slice(0, 12),
@@ -158,6 +164,24 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
     <div>
       <ScreenHeader id="DATA_ENTRY" subtitle="Upload the 3-pillar Excel template — each quarter column in the file is written to its own reporting period, in one pass." onNavigate={onNavigate} />
 
+      <div className="flex items-center gap-1 border border-[hsl(var(--pk-border))] rounded-lg p-1 w-fit bg-[hsl(var(--pk-surface))] mb-5">
+        <button onClick={() => setTab("upload")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "upload" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
+          <UploadCloud className="h-3.5 w-3.5" />Upload
+        </button>
+        <button onClick={() => setTab("audit")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "audit" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
+          <History className="h-3.5 w-3.5" />Audit trail
+        </button>
+        <button onClick={() => setTab("uploads")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "uploads" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
+          <UploadCloud className="h-3.5 w-3.5" />Uploads
+        </button>
+      </div>
+
+      {tab === "audit" ? (
+        <AuditTrailPanel submissions={myEntitySubmissions} showEntityColumn={false} />
+      ) : tab === "uploads" ? (
+        <UploadsPanel entityId={entityId} />
+      ) : (
+        <>
       <div className="mb-5">
         <InfoNote>
           The template carries its own reporting-period columns (Q2 FY2025 through Q2 FY2026 by default) —
@@ -309,6 +333,8 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
           )}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }
