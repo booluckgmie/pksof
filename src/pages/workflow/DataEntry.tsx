@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { PenLine, Send, UploadCloud, History, Files } from "lucide-react";
+import { PenLine, Send, UploadCloud, History, Files, CheckCircle2, AlertTriangle } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { WorkflowChip } from "@/components/pk/StatusChip";
 import { InfoNote } from "@/components/pk/Misc";
 import { AuditTrailPanel } from "@/components/pk/AuditTrailPanel";
 import { UploadsPanel } from "@/components/pk/UploadsPanel";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -29,6 +30,90 @@ function errMessage(err: unknown): string {
   return String(err);
 }
 
+interface UploadResultSummary {
+  fileName: string;
+  periodLabels: string;
+  kpiCount: number;
+  detailSaved: number;
+  failed: { label: string; error: string }[];
+}
+
+/** A toast alone was too easy to miss for a multi-minute upload — this stays on screen until the
+ * uploader explicitly closes it (X or the Close button), not a timeout, so they can't lose track
+ * of whether a big batch actually finished, and see every failed row's own error, not just a count. */
+function UploadResultDialog({ result, onClose }: { result: UploadResultSummary | null; onClose: () => void }) {
+  return (
+    <Dialog open={result !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent
+        className="max-w-[480px]"
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
+        {result && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="font-head flex items-center gap-2">
+                {result.failed.length === 0 ? (
+                  <CheckCircle2 className="h-5 w-5 text-[hsl(var(--pk-good))]" />
+                ) : (
+                  <AlertTriangle className="h-5 w-5 text-[hsl(var(--pk-bad))]" />
+                )}
+                Upload {result.failed.length === 0 ? "complete" : "finished with errors"}
+              </DialogTitle>
+              <DialogDescription>{result.fileName} · {result.periodLabels}</DialogDescription>
+            </DialogHeader>
+
+            <div className="flex flex-col gap-2 text-sm">
+              {result.kpiCount > 0 && (
+                <div className="flex items-center gap-2 text-[hsl(var(--pk-ink))]">
+                  <CheckCircle2 className="h-4 w-4 text-[hsl(var(--pk-good))] shrink-0" />
+                  {result.kpiCount} KPI update{result.kpiCount > 1 ? "s" : ""} routed to the checker queue
+                </div>
+              )}
+              {result.detailSaved > 0 && (
+                <div className="flex items-center gap-2 text-[hsl(var(--pk-ink))]">
+                  <CheckCircle2 className="h-4 w-4 text-[hsl(var(--pk-good))] shrink-0" />
+                  {result.detailSaved} detail figure{result.detailSaved > 1 ? "s" : ""} saved directly to the dashboards
+                </div>
+              )}
+              {result.kpiCount === 0 && result.detailSaved === 0 && result.failed.length === 0 && (
+                <div className="text-[hsl(var(--pk-ink-faint))]">Nothing was saved from this file.</div>
+              )}
+            </div>
+
+            {result.failed.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-bad))] font-semibold">
+                  {result.failed.length} row{result.failed.length > 1 ? "s" : ""} failed to save
+                </div>
+                <div className="rounded-md border border-[hsl(var(--pk-bad))] bg-[hsl(var(--pk-bad-soft))] divide-y divide-[hsl(var(--pk-bad))]/20 max-h-40 overflow-y-auto">
+                  {result.failed.map((f, i) => (
+                    <div key={i} className="px-2.5 py-1.5 text-xs">
+                      <div className="font-medium text-[hsl(var(--pk-ink))]">{f.label}</div>
+                      <div className="text-[hsl(var(--pk-bad))]">{f.error}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <DialogFooter>
+              <DialogClose asChild>
+                <button
+                  onClick={onClose}
+                  className="rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] font-medium text-sm px-4 py-2 hover:opacity-90 transition-opacity"
+                >
+                  Close
+                </button>
+              </DialogClose>
+            </DialogFooter>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, userName, assignedModule, assignedModuleLabel } = useSession();
   const { submit, submissions, editSubmission } = useWorkflow();
@@ -43,6 +128,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
   const [editingSubId, setEditingSubId] = useState<string | null>(null);
   const [editingSubValue, setEditingSubValue] = useState("");
   const [tab, setTab] = useState<"upload" | "audit" | "uploads">("upload");
+  const [uploadResult, setUploadResult] = useState<UploadResultSummary | null>(null);
 
   const myEntitySubmissions = useMemo(() => submissions.filter((s) => s.entityId === entityId), [submissions, entityId]);
 
@@ -155,12 +241,13 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
     setSubmittingParsed(false);
 
     const periodLabels = parsed.periodsFound.map((id) => periodById(id).label).join(", ");
-    const parts: string[] = [];
-    if (parsed.kpiRows.length > 0) parts.push(`${parsed.kpiRows.length} KPI update${parsed.kpiRows.length > 1 ? "s" : ""} routed to the checker queue`);
-    if (detailSaved > 0) parts.push(`${detailSaved} detail figure${detailSaved > 1 ? "s" : ""} saved directly to the dashboards`);
-    if (parts.length > 0) {
-      toast.success("Upload processed", { description: `${fileName} · ${periodLabels} — ${parts.join("; ")}.` });
-    }
+    setUploadResult({
+      fileName: fileName ?? "unknown.xlsx",
+      periodLabels,
+      kpiCount: parsed.kpiRows.length,
+      detailSaved,
+      failed: auditRows.filter((r) => r.status === "failed").map((r) => ({ label: r.label, error: r.errorMessage ?? "Unknown error" })),
+    });
     setFileName(null);
     setParsed(EMPTY_PARSED);
   };
@@ -356,6 +443,8 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
       </div>
         </>
       )}
+
+      <UploadResultDialog result={uploadResult} onClose={() => setUploadResult(null)} />
     </div>
   );
 }

@@ -146,6 +146,23 @@ def cp_rows():
         vals = series(a, "flat", decimals=2, spread=0.05) if a is not None else fresh_series(0.8, "flat", decimals=2, seed_key=item)
         rows.append(("record", "governance_index", item, "", item, vals))
 
+    rows.append(("section", "Client Satisfaction (KPI 5 support)", None))
+    a = anchors.get(("client_satisfaction", "External Client Satisfaction", ""))
+    vals = series(a, "flat", decimals=1, spread=0.03) if a is not None else fresh_series(4.5, "flat", decimals=1, seed_key="client_satisfaction")
+    rows.append(("record", "client_satisfaction", "External Client Satisfaction", "", "External Client Satisfaction", vals))
+
+    # Only weight/weighted -- the two numeric fields this template can carry (see excelTemplate.ts:
+    # a metric row's uploaded value is a single number, no text). score/computation stay text-only,
+    # entered in-app -- RecruitmentIndexScorecard.tsx already computes a sensible score % and
+    # "score x weight%" fallback whenever those two text fields are blank, so this alone is enough
+    # to stop CP007/RP001 showing "Component breakdown not tracked for this reporting period."
+    rows.append(("section", "Recruitment Efficiency Index (KPI 9 support)", None))
+    for name in ["Time to Hire (TTH)", "MRF Fulfilment Rate", "Quality of Hire", "Offer Acceptance Rate"]:
+        for sub, dec in [("weight", 2), ("weighted", 4)]:
+            a = anchors.get(("recruitment_index", name, sub))
+            vals = series(a, "flat", decimals=dec, spread=0.08, floor=0) if a is not None else fresh_series(0.2, "flat", decimals=dec, floor=0, seed_key=name + sub)
+            rows.append(("metric", "recruitment_index", name, sub, f"{name} — {sub.title()}", vals))
+
     rows.append(("section", "Bumiputera Procurement (KPI 11 support, RM mil)", None))
     for dept in ["Administration & Security", "Corporate Communications", "Information Technology"]:
         for sub, dirn in [("fy_target", "flat"), ("ytd_actual", "growth")]:
@@ -288,6 +305,11 @@ def rp_rows():
         vals = series(a, "flat", decimals=0, spread=0.04) if a is not None else fresh_series(100, "flat", decimals=0, seed_key=dim)
         rows.append(("metric", "gender_breakdown", dim, "", dim.title(), vals))
 
+    rows.append(("section", "Average Age", None))
+    a = anchors.get(("average_age", "avg", ""))
+    vals = series(a, "flat", decimals=1, spread=0.01) if a is not None else fresh_series(38, "flat", decimals=1, seed_key="average_age")
+    rows.append(("metric", "average_age", "avg", "", "Average Age (years)", vals))
+
     rows.append(("section", "Grade Breakdown (5 approved bands)", None))
     for dim in ["Top Management", "Senior Management", "Management", "Executive", "Non-Executive"]:
         a = anchors.get(("grade_breakdown", dim, ""))
@@ -348,6 +370,8 @@ SCREEN_FOR = {
     "KPI Scorecard": "Main · every CP/PFH/RP screen for that KPI's own perspective",
     "Managed Entities Rating (KPI 3 support)": "CP004 Mandate & Governance — Managed Entities Performance Summary table",
     "Governance Index (KPI 4 support)": "CP004 Mandate & Governance — Governance Index panel",
+    "Client Satisfaction (KPI 5 support)": "CP005 Customer — External Client Satisfaction",
+    "Recruitment Efficiency Index (KPI 9 support)": "CP007 Organisational Capacity · RP001 Section B — component scorecard",
     "Bumiputera Procurement (KPI 11 support, RM mil)": "CP008 Bumiputera Empowerment — Procurement tab",
     "Bumiputera Training (KPI 13 support)": "CP008 Bumiputera Empowerment — Training tab",
     "Financial Trend (RM mil / %)": "CP003 Financial Perspective (PBT/CIR charts) · PFH002 Financial Results QoQ",
@@ -361,6 +385,7 @@ SCREEN_FOR = {
     "Balance Sheet Line Items (RM mil)": "PFH004 Assets & Liabilities — asset/liability breakdown",
     "Receivables Aging (RM '000)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
     "Headcount Summary": "RP001 Total Headcount · RP002 Approved Headcount · CP008 Composition tab · Main pillar snapshot",
+    "Average Age": "RP001A Staff Demographics — Age Profile Summary donut",
     "Gender Breakdown": "RP001A Staff Demographics — Section A",
     "Grade Breakdown (5 approved bands)": "RP001A Staff Demographics — Section B",
     "Age Breakdown (4 bands)": "RP001A Staff Demographics — Section C age heatmap",
@@ -421,6 +446,9 @@ def build_workbook(qi: int, pillar: str) -> openpyxl.Workbook:
         ("NOT COVERED HERE", 12, True, NAVY),
         ("Initiative lists (Process/Tech/People Development Programme), related-party transactions, and the PBT/CIR", 11, False, "333333"),
         ("drill-down breakdown stay entered directly in-app — they're free-form catalogs, not one number per quarter.", 11, False, "333333"),
+        ("Time Charter Compliance (CP005) and the Variance Commentary notes (PFH003) are also entered directly in-app —", 11, False, "333333"),
+        ("both are a status/commentary word or sentence per line, not a number, so they don't fit this template's one-number-", 11, False, "333333"),
+        ("per-quarter column.", 11, False, "333333"),
     ]
     for i, (text, size, bold, color) in enumerate(lines, start=1):
         c = instructions.cell(row=i, column=1, value=text)
