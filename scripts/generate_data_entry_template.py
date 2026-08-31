@@ -18,7 +18,7 @@ import os
 import re
 import random
 import openpyxl
-from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side, Protection
 from openpyxl.utils import get_column_letter
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -370,9 +370,25 @@ SCREEN_FOR = {
 }
 
 
-def build_workbook(qi: int) -> openpyxl.Workbook:
-    """A single-quarter workbook — same 3 pillar sheets, one value column (QUARTER_LABELS[qi])."""
+PILLAR_SLUG = {
+    "Corporate Performance": "corporate_performance",
+    "Financial Health": "financial_health",
+    "Resource & People": "resource_people",
+}
+
+UNLOCKED = Protection(locked=False)
+LOCKED = Protection(locked=True)
+
+
+def build_workbook(qi: int, pillar: str) -> openpyxl.Workbook:
+    """A single-quarter, single-pillar workbook — one sheet for `pillar`, one value column
+    (QUARTER_LABELS[qi]). Split by pillar (rather than one workbook with 3 sheets) so each
+    department's preparer only ever opens their own file. Every cell except the value column
+    (and the free-text note column, for the KPI Scorecard section) is protected/locked, so a
+    preparer can't rename a row, reorder a sheet, or fat-finger a label — Excel will refuse the
+    edit unless they explicitly unprotect the sheet first."""
     quarter_label = QUARTER_LABELS[qi]
+    rows = SHEETS[pillar]
     wb = openpyxl.Workbook()
     wb.remove(wb.active)
 
@@ -380,16 +396,22 @@ def build_workbook(qi: int) -> openpyxl.Workbook:
     instructions.sheet_view.showGridLines = False
     instructions.column_dimensions["A"].width = 100
     lines = [
-        (f"Group Performance Dashboard — Data Entry Template · {quarter_label}", 16, True, NAVY),
+        (f"{pillar} — Data Entry Template · {quarter_label}", 16, True, NAVY),
         ("", 11, False, "000000"),
-        ("Three sheets, one per dashboard pillar: Corporate Performance, Financial Health, Resource & People.", 11, False, "333333"),
+        (f"One sheet, scoped to this dashboard pillar only: {pillar}.", 11, False, "333333"),
         (f"Each row is one figure the dashboard displays, for this one reporting period: {quarter_label}.", 11, False, "333333"),
         ("", 11, False, "000000"),
         ("HOW TO USE", 12, True, NAVY),
-        ("1. Fill in or correct the shaded value column — do not rename rows, sheets, or the quarter header.", 11, False, "333333"),
+        ("1. Fill in or correct the shaded value column — every other cell is protected and can't be edited.", 11, False, "333333"),
         ("2. Leave a cell blank if that figure genuinely wasn't measured this quarter (e.g. an annual KPI outside Q4).", 11, False, "333333"),
         ("3. Upload this file from Data Entry — the quarter it writes to is read from the column header, not a dropdown.", 11, False, "333333"),
-        ("4. The KPI Scorecard section on 'Corporate Performance' routes through the checker queue; every other row saves directly.", 11, False, "333333"),
+        ("4. The KPI Scorecard section (Corporate Performance sheet only) routes through the checker queue; every other row saves directly.", 11, False, "333333"),
+        ("", 11, False, "000000"),
+        ("SHEET IS PROTECTED", 12, True, NAVY),
+        ("Row labels, sub-categories, headers and the reference remark column are locked so they can't be renamed or", 11, False, "333333"),
+        ("reordered by accident. Only the value column (and the note column on KPI rows) accepts edits. Preparers who", 11, False, "333333"),
+        ("genuinely need to change the sheet layout can turn this off from Excel's Review → Unprotect Sheet menu — no", 11, False, "333333"),
+        ("password is set.", 11, False, "333333"),
         ("", 11, False, "000000"),
         ("WHAT'S PRE-FILLED", 12, True, NAVY),
         (f"This copy already carries dummy data for {quarter_label} so it's ready to test-upload as-is.", 11, False, "333333"),
@@ -404,68 +426,101 @@ def build_workbook(qi: int) -> openpyxl.Workbook:
         c = instructions.cell(row=i, column=1, value=text)
         c.font = Font(name="Calibri", size=size, bold=bold, color=color)
         c.alignment = Alignment(wrap_text=True, vertical="top")
+    # Instructions is read-only end to end — no cell on it is ever meant to be edited.
+    instructions.protection.sheet = True
 
-    for sheet_name, rows in SHEETS.items():
-        ws = wb.create_sheet(sheet_name)
-        ws.sheet_view.showGridLines = False
-        ws.freeze_panes = "C4"
+    ws = wb.create_sheet(pillar)
+    ws.sheet_view.showGridLines = False
+    ws.freeze_panes = "C4"
 
-        ws.merge_cells("A1:E1")
-        title = ws.cell(row=1, column=1, value=f"{sheet_name} — {quarter_label}")
-        title.font = Font(name="Calibri", size=14, bold=True, color=NAVY)
+    ws.merge_cells("A1:E1")
+    title = ws.cell(row=1, column=1, value=f"{pillar} — {quarter_label}")
+    title.font = Font(name="Calibri", size=14, bold=True, color=NAVY)
+    title.protection = LOCKED
 
-        header_row = 3
-        headers = ["Metric", "Sub / Category", quarter_label, "Displayed on Dashboard", "Note to checker"]
-        for ci, h in enumerate(headers, start=1):
-            c = ws.cell(row=header_row, column=ci, value=h)
-            c.font = Font(name="Calibri", size=10, bold=True, color="FFFFFF")
-            c.fill = PatternFill("solid", fgColor=NAVY)
-            c.alignment = Alignment(horizontal="center" if ci > 2 else "left", vertical="center", wrap_text=True)
+    header_row = 3
+    headers = ["Metric", "Sub / Category", quarter_label, "Displayed on Dashboard", "Note to checker"]
+    for ci, h in enumerate(headers, start=1):
+        c = ws.cell(row=header_row, column=ci, value=h)
+        c.font = Font(name="Calibri", size=10, bold=True, color="FFFFFF")
+        c.fill = PatternFill("solid", fgColor=NAVY)
+        c.alignment = Alignment(horizontal="center" if ci > 2 else "left", vertical="center", wrap_text=True)
+        c.protection = LOCKED
 
-        r = header_row + 1
-        current_screen = ""
-        for entry in rows:
-            if entry[0] == "section":
-                current_screen = SCREEN_FOR.get(entry[1], "")
-                ws.merge_cells(f"A{r}:E{r}")
-                c = ws.cell(row=r, column=1, value=entry[1].upper())
-                c.font = Font(name="Calibri", size=10.5, bold=True, color=ACCENT)
-                c.fill = PatternFill("solid", fgColor=LIGHT)
-                r += 1
-                continue
-            if entry[0] == "kpi":
-                _, kid, name, vals = entry
-                ws.cell(row=r, column=1, value=f"{kid} — {name}").font = Font(name="Calibri", size=10, bold=True)
-                ws.cell(row=r, column=2, value="YTD Actual")
-            elif entry[0] == "record":
-                _, record_type, label, category, display, vals = entry
-                ws.cell(row=r, column=1, value=display).font = Font(name="Calibri", size=10)
-                ws.cell(row=r, column=2, value=category or "—")
-            else:
-                _, metric_key, dim, dim2, display, vals = entry
-                ws.cell(row=r, column=1, value=display).font = Font(name="Calibri", size=10)
-                ws.cell(row=r, column=2, value=dim2 or "—")
-
-            v = vals[qi]
-            cell = ws.cell(row=r, column=3, value=v)
-            cell.font = Font(name="Calibri", size=10, color="1B4D3E")
-            cell.fill = PatternFill("solid", fgColor="FBFDFC")
-            cell.number_format = "#,##0.00" if isinstance(v, float) and v != int(v) else "#,##0"
-            cell.alignment = Alignment(horizontal="right")
-            cell.border = BORDER
-
-            remark = ws.cell(row=r, column=4, value=current_screen)
-            remark.font = Font(name="Calibri", size=8.5, italic=True, color="6B7B76")
-            remark.alignment = Alignment(wrap_text=True, vertical="center")
-
-            for ci in (1, 2, 4, 5):
-                ws.cell(row=r, column=ci).border = BORDER
+    r = header_row + 1
+    current_screen = ""
+    for entry in rows:
+        if entry[0] == "section":
+            current_screen = SCREEN_FOR.get(entry[1], "")
+            ws.merge_cells(f"A{r}:E{r}")
+            c = ws.cell(row=r, column=1, value=entry[1].upper())
+            c.font = Font(name="Calibri", size=10.5, bold=True, color=ACCENT)
+            c.fill = PatternFill("solid", fgColor=LIGHT)
+            c.protection = LOCKED
             r += 1
+            continue
+        is_kpi_row = entry[0] == "kpi"
+        if is_kpi_row:
+            _, kid, name, vals = entry
+            ws.cell(row=r, column=1, value=f"{kid} — {name}").font = Font(name="Calibri", size=10, bold=True)
+            ws.cell(row=r, column=2, value="YTD Actual")
+        elif entry[0] == "record":
+            _, record_type, label, category, display, vals = entry
+            ws.cell(row=r, column=1, value=display).font = Font(name="Calibri", size=10)
+            ws.cell(row=r, column=2, value=category or "—")
+        else:
+            _, metric_key, dim, dim2, display, vals = entry
+            ws.cell(row=r, column=1, value=display).font = Font(name="Calibri", size=10)
+            ws.cell(row=r, column=2, value=dim2 or "—")
+        ws.cell(row=r, column=1).protection = LOCKED
+        ws.cell(row=r, column=2).protection = LOCKED
 
-        widths = {1: 44, 2: 16, 3: 14, 4: 38, 5: 26}
-        for ci, w in widths.items():
-            ws.column_dimensions[get_column_letter(ci)].width = w
-        ws.row_dimensions[header_row].height = 30
+        v = vals[qi]
+        cell = ws.cell(row=r, column=3, value=v)
+        cell.font = Font(name="Calibri", size=10, color="1B4D3E")
+        cell.fill = PatternFill("solid", fgColor="FBFDFC")
+        cell.number_format = "#,##0.00" if isinstance(v, float) and v != int(v) else "#,##0"
+        cell.alignment = Alignment(horizontal="right")
+        cell.border = BORDER
+        cell.protection = UNLOCKED  # the one cell per row a preparer is meant to touch
+
+        remark = ws.cell(row=r, column=4, value=current_screen)
+        remark.font = Font(name="Calibri", size=8.5, italic=True, color="6B7B76")
+        remark.alignment = Alignment(wrap_text=True, vertical="center")
+        remark.protection = LOCKED
+
+        # Note-to-checker is a genuine free-text input, but only KPI Scorecard rows actually
+        # route through the checker queue / carry that note anywhere — leave it editable there
+        # and locked (inert) everywhere else so it can't be mistaken for a place to leave notes
+        # that nothing reads.
+        note_cell = ws.cell(row=r, column=5)
+        note_cell.protection = UNLOCKED if is_kpi_row else LOCKED
+
+        for ci in (1, 2, 4, 5):
+            ws.cell(row=r, column=ci).border = BORDER
+        r += 1
+
+    widths = {1: 44, 2: 16, 3: 14, 4: 38, 5: 26}
+    for ci, w in widths.items():
+        ws.column_dimensions[get_column_letter(ci)].width = w
+    ws.row_dimensions[header_row].height = 30
+
+    # Enable protection last, once every cell's locked/unlocked state is final. No password —
+    # this guards against accidental edits, not a determined one, and a forgotten password would
+    # be a support headache for no real security gain here.
+    ws.protection.sheet = True
+    ws.protection.formatCells = False
+    ws.protection.formatColumns = False
+    ws.protection.formatRows = False
+    ws.protection.insertColumns = False
+    ws.protection.insertRows = False
+    ws.protection.insertHyperlinks = False
+    ws.protection.deleteColumns = False
+    ws.protection.deleteRows = False
+    ws.protection.sort = False
+    ws.protection.autoFilter = False
+    ws.protection.selectLockedCells = False
+    ws.protection.selectUnlockedCells = False
 
     wb._sheets.sort(key=lambda s: 0 if s.title == "Instructions" else 1)
     return wb
@@ -473,10 +528,11 @@ def build_workbook(qi: int) -> openpyxl.Workbook:
 
 os.makedirs(OUT_DIR, exist_ok=True)
 for qi, (qid, qlabel) in enumerate(zip(QUARTERS, QUARTER_LABELS)):
-    wb = build_workbook(qi)
-    out_path = os.path.join(OUT_DIR, f"pksof_data_entry_{qid}.xlsx")
-    wb.save(out_path)
-    print("Saved:", out_path)
+    for pillar, slug in PILLAR_SLUG.items():
+        wb = build_workbook(qi, pillar)
+        out_path = os.path.join(OUT_DIR, f"pksof_data_entry_{qid}_{slug}.xlsx")
+        wb.save(out_path)
+        print("Saved:", out_path)
 
 # ---------------------------------------------------------------------------
 # 4. Emit the identical row manifest as a TypeScript lookup table, so the parser
