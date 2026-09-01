@@ -115,6 +115,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" },
               ]}
             />
+            <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">Target {kpi12.ytdTarget}% · Actual {kpi12.ytdActual?.toFixed(1)}%</div>
           </div>
 
           {compositionTrend.length > 1 && (

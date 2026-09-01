@@ -4,6 +4,7 @@ import { StackedBarTrend } from "@/components/pk/Charts";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
+import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -68,6 +69,10 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <StatusChip status={kpi5.status} />
           </div>
           <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-2">External Client Satisfaction</div>
+          <div className={cn("tnum font-head text-2xl font-semibold mb-2", kpi5.ytdActual !== null ? "text-[hsl(var(--pk-ink))]" : "text-[hsl(var(--pk-ink-faint))]")}>
+            {kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
+            <span className="text-sm font-sans font-normal text-[hsl(var(--pk-ink-faint))]"> / target {kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}</span>
+          </div>
           <KpiMetricStrip
             weight="7.5%"
             fy={fy}

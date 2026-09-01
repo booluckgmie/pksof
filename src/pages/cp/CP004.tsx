@@ -55,6 +55,10 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             Managed Entities Rating
             <InfoTip title="Weighted Achievement">YTD Actual ÷ FY Target × Weight, capped at 7.5%. Rolled up from each Managed Entity's own quarterly rating.</InfoTip>
           </div>
+          <div className="flex items-baseline gap-2 mb-2">
+            <span className="tnum font-head text-2xl font-semibold">{kpi3.ytdActual !== null ? kpi3.ytdActual.toFixed(1) : "—"}</span>
+            <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi3.ytdTarget ?? "—"}</span>
+          </div>
           <KpiMetricStrip
             weight="7.5%"
             fy={fy}
@@ -89,6 +93,10 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-2 inline-flex items-center gap-1.5">
             Governance Index
             <InfoTip title="Not Measurable KPIs">Do not reduce achievement — progress updates run until the annual assessment. Full assessment scheduled Q4 FY2026.</InfoTip>
+          </div>
+          <div className="flex items-baseline gap-2 mb-2">
+            <span className="tnum font-head text-2xl font-semibold">{kpi4.ytdActual !== null ? `${kpi4.ytdActual.toFixed(1)}%` : "—"}</span>
+            <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi4.ytdTarget !== null ? `${kpi4.ytdTarget.toFixed(1)}%` : "—"}</span>
           </div>
           <KpiMetricStrip
             weight="7.5%"
