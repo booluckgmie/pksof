@@ -3,20 +3,29 @@ import { Lock, ChevronRight, ChevronDown } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { InfoTip } from "@/components/pk/InfoTip";
+import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { cn } from "@/lib/utils";
 import { anonymizedEntityLabel } from "@/lib/anonymize";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
+import { useKpiTargets } from "@/lib/kpiTargets";
 import { entities } from "@/data/entities";
+import { periodById } from "@/data/periods";
 
 export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId, isRestrictedPillar, homeEntityName, setEntityId } = useSession();
   const { latestValue } = useWorkflow();
   const { managedEntityRatings, governanceIndex } = useDetails();
+  const { getFyTarget } = useKpiTargets();
   const kpi3 = latestValue("KPI3", entityId, periodId);
   const kpi4 = latestValue("KPI4", entityId, periodId);
+  const period = periodById(periodId);
+  const fy = period.fy;
+  const periodLabel = period.label.replace(" FY", " ");
+  const kpi3FyTarget = getFyTarget("KPI3", fy);
+  const kpi4FyTarget = getFyTarget("KPI4", fy);
   const [expanded, setExpanded] = useState<"ratings" | "governance" | null>(null);
   const toggle = (key: "ratings" | "governance") => setExpanded((e) => (e === key ? null : key));
   const onToggleKeyDown = (key: "ratings" | "governance") => (e: React.KeyboardEvent) => {
@@ -46,11 +55,17 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             Managed Entities Rating
             <InfoTip title="Weighted Achievement">YTD Actual ÷ FY Target × Weight, capped at 7.5%. Rolled up from each Managed Entity's own quarterly rating.</InfoTip>
           </div>
-          <div className="flex items-end justify-between gap-2">
-            <div className="flex items-baseline gap-2">
-              <span className="tnum font-head text-2xl font-semibold">{kpi3.ytdActual !== null ? kpi3.ytdActual.toFixed(1) : "—"}</span>
-              <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi3.ytdTarget ?? "—"}</span>
-            </div>
+          <KpiMetricStrip
+            weight="7.5%"
+            fy={fy}
+            periodLabel={periodLabel}
+            fyTarget={kpi3FyTarget.toFixed(1)}
+            ytdTarget={kpi3.ytdTarget !== null ? kpi3.ytdTarget.toFixed(1) : "—"}
+            ytdActual={kpi3.ytdActual !== null ? kpi3.ytdActual.toFixed(1) : "—"}
+            achievement={kpi3.weighted !== null ? `${(kpi3.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi3.status}
+          />
+          <div className="flex items-center justify-end">
             <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
               {expanded === "ratings" ? "Hide details" : "View details"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "ratings" && "rotate-180")} />
@@ -75,11 +90,17 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             Governance Index
             <InfoTip title="Not Measurable KPIs">Do not reduce achievement — progress updates run until the annual assessment. Full assessment scheduled Q4 FY2026.</InfoTip>
           </div>
-          <div className="flex items-end justify-between gap-2">
-            <div className="flex items-baseline gap-2">
-              <span className="tnum font-head text-2xl font-semibold">{kpi4.ytdActual !== null ? `${kpi4.ytdActual.toFixed(1)}%` : "—"}</span>
-              <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi4.ytdTarget !== null ? `${kpi4.ytdTarget.toFixed(1)}%` : "—"}</span>
-            </div>
+          <KpiMetricStrip
+            weight="7.5%"
+            fy={fy}
+            periodLabel={periodLabel}
+            fyTarget={`${kpi4FyTarget.toFixed(1)}%`}
+            ytdTarget={kpi4.ytdTarget !== null ? `${kpi4.ytdTarget.toFixed(1)}%` : "—"}
+            ytdActual={kpi4.ytdActual !== null ? `${kpi4.ytdActual.toFixed(1)}%` : "—"}
+            achievement={kpi4.weighted !== null ? `${(kpi4.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi4.status}
+          />
+          <div className="flex items-center justify-end">
             <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
               {expanded === "governance" ? "Hide updates" : "View updates"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "governance" && "rotate-180")} />

@@ -2,14 +2,16 @@ import { useState } from "react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { CategoryBar, LineTrend } from "@/components/pk/Charts";
+import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
+import { useKpiTargets } from "@/lib/kpiTargets";
 import { kpiById } from "@/data/kpis";
-import { periods } from "@/data/periods";
+import { periods, periodById } from "@/data/periods";
 import { cn } from "@/lib/utils";
 import type { PeriodId } from "@/types";
 
@@ -23,11 +25,18 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId, setPeriodId } = useSession();
   const { latestValue } = useWorkflow();
   const { bumiputeraProcurement, bumiputeraTrainingByPeriod, headcountSummaryByPeriod } = useDetails();
+  const { getFyTarget } = useKpiTargets();
   const kpi11 = latestValue("KPI11", entityId, periodId);
   const kpi12 = latestValue("KPI12", entityId, periodId);
   const kpi13 = latestValue("KPI13", entityId, periodId);
   const bumiputeraTraining = bumiputeraTrainingByPeriod[periodId];
   const headcountSummary = headcountSummaryByPeriod[periodId];
+  const period = periodById(periodId);
+  const fy = period.fy;
+  const periodLabel = period.label.replace(" FY", " ");
+  const kpi11FyTarget = getFyTarget("KPI11", fy);
+  const kpi12FyTarget = getFyTarget("KPI12", fy);
+  const kpi13FyTarget = getFyTarget("KPI13", fy);
   const kpi13Target = kpiById("KPI13").fyTarget ?? 0;
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("composition");
   const [compareIds, setCompareIds] = useState<PeriodId[]>([]);
@@ -90,13 +99,22 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               <StatusChip status={kpi12.status} />
             </div>
             <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Composition</div>
+            <KpiMetricStrip
+              weight="1.67%"
+              fy={fy}
+              periodLabel={periodLabel}
+              fyTarget={`${kpi12FyTarget.toFixed(1)}%`}
+              ytdTarget={kpi12.ytdTarget !== null ? `${kpi12.ytdTarget.toFixed(1)}%` : "—"}
+              ytdActual={kpi12.ytdActual !== null ? `${kpi12.ytdActual.toFixed(1)}%` : "—"}
+              achievement={kpi12.weighted !== null ? `${(kpi12.weighted * 100).toFixed(1)}%` : "—"}
+              status={kpi12.status}
+            />
             <CategoryBar
               segments={[
                 { label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" },
                 { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" },
               ]}
             />
-            <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">Target {kpi12.ytdTarget}% · Actual {kpi12.ytdActual?.toFixed(1)}%</div>
           </div>
 
           {compositionTrend.length > 1 && (
@@ -118,6 +136,16 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <StatusChip status={kpi11.status} />
           </div>
           <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Procurement</div>
+          <KpiMetricStrip
+            weight="1.67%"
+            fy={fy}
+            periodLabel={periodLabel}
+            fyTarget={`RM ${kpi11FyTarget.toFixed(2)}m`}
+            ytdTarget={kpi11.ytdTarget !== null ? `RM ${kpi11.ytdTarget.toFixed(2)}m` : "—"}
+            ytdActual={kpi11.ytdActual !== null ? `RM ${kpi11.ytdActual.toFixed(2)}m` : "—"}
+            achievement={kpi11.weighted !== null ? `${(kpi11.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi11.status}
+          />
           <div className="tnum font-head text-2xl font-semibold mb-4">RM {procTotal.toFixed(2)}m</div>
           <div className="flex flex-col gap-3">
             {bumiputeraProcurement.map((d) => {
@@ -145,6 +173,16 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <StatusChip status={kpi13.status} />
           </div>
           <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Training</div>
+          <KpiMetricStrip
+            weight="1.66%"
+            fy={fy}
+            periodLabel={periodLabel}
+            fyTarget={String(kpi13FyTarget)}
+            ytdTarget={kpi13.ytdTarget !== null ? String(kpi13.ytdTarget) : "—"}
+            ytdActual={kpi13.ytdActual !== null ? String(kpi13.ytdActual) : "—"}
+            achievement={kpi13.weighted !== null ? `${(kpi13.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi13.status}
+          />
           <div className="grid grid-cols-3 gap-2 text-center">
             <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.poolIdentified}</div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">Pool identified</div></div>
             <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.attendedOne}</div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">Attended 1 programme</div></div>

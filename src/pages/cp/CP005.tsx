@@ -1,9 +1,9 @@
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { StackedBarTrend } from "@/components/pk/Charts";
+import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
-import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -21,7 +21,11 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { getFyTarget } = useKpiTargets();
   const kpi5 = latestValue("KPI5", entityId, periodId);
   const kpi6 = latestValue("KPI6", entityId, periodId);
-  const kpi5Target = kpi5.ytdTarget ?? getFyTarget("KPI5", periodById(periodId).fy);
+  const period = periodById(periodId);
+  const fy = period.fy;
+  const periodLabel = period.label.replace(" FY", " ");
+  const kpi5FyTarget = getFyTarget("KPI5", fy);
+  const kpi6FyTarget = getFyTarget("KPI6", fy);
 
   const fullSatisfactionTrend = periods
     .map((p) => ({ p, r: latestValue("KPI5", entityId, p.id) }))
@@ -64,10 +68,16 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <StatusChip status={kpi5.status} />
           </div>
           <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-2">External Client Satisfaction</div>
-          <div className={cn("tnum font-head text-2xl font-semibold", kpi5.ytdActual !== null ? "text-[hsl(var(--pk-ink))]" : "text-[hsl(var(--pk-ink-faint))]")}>
-            {kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
-            <span className="text-sm font-sans font-normal text-[hsl(var(--pk-ink-faint))]"> / target {kpi5Target.toFixed(1)}</span>
-          </div>
+          <KpiMetricStrip
+            weight="7.5%"
+            fy={fy}
+            periodLabel={periodLabel}
+            fyTarget={kpi5FyTarget.toFixed(1)}
+            ytdTarget={kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}
+            ytdActual={kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
+            achievement={kpi5.weighted !== null ? `${(kpi5.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi5.status}
+          />
           {kpi5.ytdActual === null && (
             <p className="text-xs text-[hsl(var(--pk-ink-faint))] mt-2">{kpi5.note ?? "Not yet reported for this period."}</p>
           )}
@@ -86,6 +96,16 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <StatusChip status={kpi6.status} />
           </div>
           <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Time Charter Compliance</div>
+          <KpiMetricStrip
+            weight="7.5%"
+            fy={fy}
+            periodLabel={periodLabel}
+            fyTarget={`${kpi6FyTarget.toFixed(1)}%`}
+            ytdTarget={kpi6.ytdTarget !== null ? `${kpi6.ytdTarget.toFixed(1)}%` : "—"}
+            ytdActual={kpi6.ytdActual !== null ? `${kpi6.ytdActual.toFixed(1)}%` : "—"}
+            achievement={kpi6.weighted !== null ? `${(kpi6.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi6.status}
+          />
           <div className="divide-y divide-[hsl(var(--pk-border))]">
             {timeCharterCompliance.map((t) => (
               <div key={t.service} className="flex items-center justify-between py-1.5 text-sm">
