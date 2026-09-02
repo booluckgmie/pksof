@@ -62,7 +62,7 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2 rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Balance sheet trend — Shareholders' Fund vs Total Liabilities (RM Million)</div>
+          <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))] mb-2">Balance sheet trend — Shareholders' Fund vs Total Liabilities (RM Million)</div>
           <StackedBarTrend data={balanceSheetTrend} />
         </div>
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">

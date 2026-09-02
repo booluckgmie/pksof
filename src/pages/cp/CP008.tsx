@@ -98,7 +98,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 12 · Weight 1.67%</div>
               <StatusChip status={kpi12.status} />
             </div>
-            <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Composition</div>
+            <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Composition</div>
             <KpiMetricStrip
               weight="1.67%"
               fy={fy}
@@ -121,7 +121,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           {compositionTrend.length > 1 && (
             <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
               <div className="flex items-center justify-between flex-wrap gap-1.5 mb-1.5">
-                <div className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Composition trend by quarter</div>
+                <div className="text-[11px] font-bold underline text-[hsl(var(--pk-ink-faint))]">Composition trend by quarter</div>
                 <DurationFilterBar duration={compDuration} onChange={setCompDuration} total={fullCompositionTrend.length} label="" />
               </div>
               <LineTrend data={compositionTrend} unit="%" />
@@ -136,7 +136,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 11 · Weight 1.67%</div>
             <StatusChip status={kpi11.status} />
           </div>
-          <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Procurement</div>
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Procurement</div>
           <KpiMetricStrip
             weight="1.67%"
             fy={fy}
@@ -173,7 +173,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weight 1.66%</div>
             <StatusChip status={kpi13.status} />
           </div>
-          <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Training</div>
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Training</div>
           <KpiMetricStrip
             weight="1.66%"
             fy={fy}

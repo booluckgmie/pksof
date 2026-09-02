@@ -68,7 +68,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 5 · Weight 7.5% · bi-annual</div>
             <StatusChip status={kpi5.status} />
           </div>
-          <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-2">External Client Satisfaction</div>
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">External Client Satisfaction</div>
           <div className={cn("tnum font-head text-2xl font-semibold mb-2", kpi5.ytdActual !== null ? "text-[hsl(var(--pk-ink))]" : "text-[hsl(var(--pk-ink-faint))]")}>
             {kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
             <span className="text-sm font-sans font-normal text-[hsl(var(--pk-ink-faint))]"> / target {kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}</span>
@@ -88,7 +88,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           )}
           <div className="mt-3">
             <div className="flex items-center justify-between flex-wrap gap-1.5 mb-1.5">
-              <div className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Historical trend — bi-annual survey rounds only</div>
+              <div className="text-[11px] font-bold underline text-[hsl(var(--pk-ink-faint))]">Historical trend — bi-annual survey rounds only</div>
               <DurationFilterBar duration={duration} onChange={setDuration} total={fullSatisfactionTrend.length} label="" />
             </div>
             <StackedBarTrend data={satisfactionTrend} />
@@ -100,7 +100,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 6 · Weight 7.5% · quarterly</div>
             <StatusChip status={kpi6.status} />
           </div>
-          <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Time Charter Compliance</div>
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Time Charter Compliance</div>
           <KpiMetricStrip
             weight="7.5%"
             fy={fy}

@@ -183,7 +183,7 @@ export function UploadsPanel({ entityId, assignedModule, canDelete = false, show
                 <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] truncate">{r.entity.fullName}</div>
                 {r.uploadedThisPeriod ? (
                   <>
-                    <div className="text-lg font-head font-semibold text-[hsl(var(--pk-ink))] mt-0.5">{r.files} file{r.files !== 1 ? "s" : ""}</div>
+                    <div className="text-lg font-head font-bold text-[hsl(var(--pk-ink))] mt-0.5">{r.files} file{r.files !== 1 ? "s" : ""}</div>
                     <div className="text-[11px] mt-0.5">
                       <span className="text-[hsl(var(--pk-good))] font-medium">{r.saved} saved</span>
                       {r.failed > 0 && <span className="text-[hsl(var(--pk-bad))] font-medium"> · {r.failed} failed</span>}
@@ -228,7 +228,7 @@ export function UploadsPanel({ entityId, assignedModule, canDelete = false, show
                   </div>
                   {r.uploadedThisPeriod ? (
                     <>
-                      <div className="text-lg font-head font-semibold text-[hsl(var(--pk-ink))] mt-0.5">{r.files} file{r.files !== 1 ? "s" : ""}</div>
+                      <div className="text-lg font-head font-bold text-[hsl(var(--pk-ink))] mt-0.5">{r.files} file{r.files !== 1 ? "s" : ""}</div>
                       <div className="text-[11px] mt-0.5">
                         <span className="text-[hsl(var(--pk-good))] font-medium">{r.saved} saved</span>
                         {r.failed > 0 && <span className="text-[hsl(var(--pk-bad))] font-medium"> · {r.failed} failed</span>}

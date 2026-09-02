@@ -46,7 +46,7 @@ export function RecruitmentIndexScorecard({
       <div className="flex items-center justify-between mb-3">
         <div>
           <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 9 · Weight {weightPct}</div>
-          <div className="font-head font-semibold text-[hsl(var(--pk-ink))] inline-flex items-center gap-1.5">
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] inline-flex items-center gap-1.5">
             Recruitment Efficiency Index
             <InfoTip title="Recruitment Efficiency Index">
               Sum of four weighted components — Time to Hire, MRF Fulfilment, Quality of Hire, Offer Acceptance. Each component's score is out of 5 (or a ratio), multiplied by its own weight.

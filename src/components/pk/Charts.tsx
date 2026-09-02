@@ -53,10 +53,6 @@ export function GroupedBarTrend({
   const barW = bw * 0.28;
   return (
     <div>
-      <div className="flex items-center gap-4 text-[11px] text-[hsl(var(--pk-ink-faint))] mb-1.5">
-        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: aColor }} />{aLabel}</span>
-        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: bColor }} />{bLabel}</span>
-      </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Grouped bar chart">
         <line x1={PAD} y1={H - 24} x2={W - 6} y2={H - 24} stroke="hsl(var(--pk-border))" strokeWidth={1} />
         {data.map((d, i) => {
@@ -78,6 +74,10 @@ export function GroupedBarTrend({
           );
         })}
       </svg>
+      <div className="flex items-center justify-center gap-4 text-[11px] text-[hsl(var(--pk-ink-faint))] mt-1.5">
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: aColor }} />{aLabel}</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: bColor }} />{bLabel}</span>
+      </div>
     </div>
   );
 }
@@ -162,14 +162,6 @@ export function StackedBarTrend({ data, unit = "" }: { data: StackedPoint[]; uni
   const legend = data[0].segments;
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[hsl(var(--pk-ink-faint))] mb-1.5">
-        {legend.map((s) => (
-          <span key={s.label} className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-sm" style={{ background: s.color }} />
-            {s.label}
-          </span>
-        ))}
-      </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Stacked bar trend chart">
         <line x1={PAD} y1={H - 24} x2={W - 6} y2={H - 24} stroke="hsl(var(--pk-border))" strokeWidth={1} />
         {data.map((d, i) => {
@@ -199,6 +191,14 @@ export function StackedBarTrend({ data, unit = "" }: { data: StackedPoint[]; uni
           );
         })}
       </svg>
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-[hsl(var(--pk-ink-faint))] mt-1.5">
+        {legend.map((s) => (
+          <span key={s.label} className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-sm" style={{ background: s.color }} />
+            {s.label}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -220,14 +220,6 @@ export function CategoryBar({
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[hsl(var(--pk-ink-faint))] mb-2">
-        {segments.map((s) => (
-          <span key={s.label} className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-sm" style={{ background: s.color }} />
-            {s.label}
-          </span>
-        ))}
-      </div>
       <svg viewBox={`0 0 ${W} ${chartH}`} className="w-full h-auto" role="img" aria-label="Composition bar chart">
         {segments.map((s, i) => {
           const pct = (s.value / total) * 100;
@@ -251,6 +243,14 @@ export function CategoryBar({
           );
         })}
       </svg>
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">
+        {segments.map((s) => (
+          <span key={s.label} className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-sm" style={{ background: s.color }} />
+            {s.label}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -261,16 +261,6 @@ export function SplitBar({ segments }: { segments: { label: string; value: numbe
   const total = segments.reduce((s, x) => s + x.value, 0) || 1;
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[hsl(var(--pk-ink-faint))] mb-2">
-        {segments.map((s) => (
-          <span key={s.label} className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-sm shrink-0" style={{ background: s.color }} />
-            {s.label}
-            <span className="tnum font-semibold text-[hsl(var(--pk-ink))]">{s.value}</span>
-            <span className="tnum">({((s.value / total) * 100).toFixed(1)}%)</span>
-          </span>
-        ))}
-      </div>
       <div className="flex h-3 w-full rounded-full overflow-hidden">
         {segments.map((s) => (
           <div
@@ -278,6 +268,16 @@ export function SplitBar({ segments }: { segments: { label: string; value: numbe
             style={{ width: `${(s.value / total) * 100}%`, background: s.color }}
             title={`${s.label}: ${s.value} (${((s.value / total) * 100).toFixed(1)}%)`}
           />
+        ))}
+      </div>
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">
+        {segments.map((s) => (
+          <span key={s.label} className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-sm shrink-0" style={{ background: s.color }} />
+            {s.label}
+            <span className="tnum font-semibold text-[hsl(var(--pk-ink))]">{s.value}</span>
+            <span className="tnum">({((s.value / total) * 100).toFixed(1)}%)</span>
+          </span>
         ))}
       </div>
     </div>

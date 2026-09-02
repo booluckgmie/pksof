@@ -117,7 +117,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4 flex flex-col gap-3">
             <button onClick={() => onNavigate("CP001")} className="group flex items-center justify-between">
-              <span className="flex items-center gap-2 font-head font-semibold text-[hsl(var(--pk-ink))]"><LayoutGrid className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Corporate Performance</span>
+              <span className="flex items-center gap-2 font-head font-bold text-[hsl(var(--pk-ink))]"><LayoutGrid className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Corporate Performance</span>
               <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
             </button>
             <div className="grid grid-cols-2 gap-2">
@@ -128,7 +128,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4 flex flex-col gap-3">
             <button onClick={() => onNavigate("PFH001")} className="group flex items-center justify-between">
-              <span className="flex items-center gap-2 font-head font-semibold text-[hsl(var(--pk-ink))]"><Wallet className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Financial Health</span>
+              <span className="flex items-center gap-2 font-head font-bold text-[hsl(var(--pk-ink))]"><Wallet className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Financial Health</span>
               <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
             </button>
             <div className="grid grid-cols-2 gap-2">
@@ -139,7 +139,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4 flex flex-col gap-3">
             <button onClick={() => onNavigate("RP001")} className="group flex items-center justify-between">
-              <span className="flex items-center gap-2 font-head font-semibold text-[hsl(var(--pk-ink))]"><Users2 className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Resource &amp; People</span>
+              <span className="flex items-center gap-2 font-head font-bold text-[hsl(var(--pk-ink))]"><Users2 className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Resource &amp; People</span>
               <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
             </button>
             <div className="grid grid-cols-2 gap-2">

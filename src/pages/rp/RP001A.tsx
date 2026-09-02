@@ -68,7 +68,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <SectionLabel>Section C — Breakdown by Age Group (4 bands)</SectionLabel>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mb-2">Male / female headcount per age band (HRMS)</div>
+          <div className="text-[11px] font-bold underline text-[hsl(var(--pk-ink-faint))] mb-2">Male / female headcount per age band (HRMS)</div>
           <GroupedBarTrend
             data={ageGenderBreakdown.map((a) => ({ label: a.band, a: a.male, b: a.female }))}
             aLabel="Male"

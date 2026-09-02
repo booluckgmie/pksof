@@ -80,7 +80,7 @@ export function CP009({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4 flex items-center justify-between">
         <div>
           <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 10 · Weight 10.0%</div>
-          <div className="font-head font-semibold text-[hsl(var(--pk-ink))]">People Development Programme</div>
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))]">People Development Programme</div>
         </div>
         <StatusChip status={kpi10.status} />
       </div>

@@ -269,7 +269,7 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-head font-semibold text-[hsl(var(--pk-ink))]">{k.name}</span>
+                        <span className="font-head font-bold text-[hsl(var(--pk-ink))]">{k.name}</span>
                         <WorkflowChip status={s.status} />
                         <SourceTag source={s.source} />
                       </div>

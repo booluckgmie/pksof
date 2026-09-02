@@ -41,7 +41,7 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2 flex-wrap gap-1.5">
-            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] inline-flex items-center gap-1">
+            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))] inline-flex items-center gap-1">
               Turnover trend by quarter vs industry benchmark
               <InfoTip title="Industry Benchmark — source" side="bottom">{INDUSTRY_BENCHMARK_SOURCE}</InfoTip>
             </div>
@@ -55,7 +55,7 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </div>
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))]">KPI 12 — Bumiputera Composition</div>
+            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))]">KPI 12 — Bumiputera Composition</div>
             <StatusChip status={kpi12.status} />
           </div>
           <CategoryBar segments={[{ label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" }, { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" }]} />

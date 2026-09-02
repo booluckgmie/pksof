@@ -17,7 +17,7 @@ function InitiativeTable({ title, weight, rows }: { title: string; weight: strin
   return (
     <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
       <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-1">{weight}</div>
-      <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">{title}</div>
+      <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">{title}</div>
       <div className="divide-y divide-[hsl(var(--pk-border))]">
         {rows.map((r) => (
           <div key={r.name} className="py-2.5">
@@ -60,7 +60,7 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 7 · Weight 10.0%</div>
             <StatusChip status={kpi7.status} />
           </div>
-          <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">Process Improvements</div>
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Process Improvements</div>
           <KpiMetricStrip
             weight="10.0%"
             fy={fy}
@@ -77,7 +77,7 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 8 · Weight 10.0%</div>
             <StatusChip status={kpi8.status} />
           </div>
-          <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-3">New Technology Implementation</div>
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">New Technology Implementation</div>
           <KpiMetricStrip
             weight="10.0%"
             fy={fy}
@@ -118,11 +118,11 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-3">Process Improvement Initiatives</div>
+            <div className="text-[11px] uppercase tracking-wide font-bold underline text-[hsl(var(--pk-ink-faint))] mb-3">Process Improvement Initiatives</div>
             <GanttChart rows={processInitiatives} />
           </div>
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-3">Technology &amp; Digital Transformation</div>
+            <div className="text-[11px] uppercase tracking-wide font-bold underline text-[hsl(var(--pk-ink-faint))] mb-3">Technology &amp; Digital Transformation</div>
             <GanttChart rows={techInitiatives} />
           </div>
         </div>

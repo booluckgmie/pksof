@@ -65,11 +65,11 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       {granularity === "quarterly" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">PBT quarter-on-quarter trend</div>
+            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))] mb-2">PBT quarter-on-quarter trend</div>
             <BarTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.pbt }))} unit="m" />
           </div>
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Net Profit Margin trend</div>
+            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))] mb-2">Net Profit Margin trend</div>
             <LineTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.netMargin }))} unit="%" />
           </div>
         </div>
@@ -80,11 +80,11 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">PBT by month — {periods.find((p) => p.id === monthQuarter)?.label}</div>
+            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))] mb-2">PBT by month — {periods.find((p) => p.id === monthQuarter)?.label}</div>
             <BarTrend data={monthlyPbt} unit="m" />
           </div>
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] mb-2">Net Profit Margin by month — {periods.find((p) => p.id === monthQuarter)?.label}</div>
+            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))] mb-2">Net Profit Margin by month — {periods.find((p) => p.id === monthQuarter)?.label}</div>
             <LineTrend data={monthlyMargin} unit="%" />
           </div>
         </div>

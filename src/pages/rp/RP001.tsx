@@ -43,7 +43,7 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between flex-wrap gap-1.5">
-            <div className="text-xs font-medium text-[hsl(var(--pk-ink-soft))]">Headcount Trend — minimum 4 quarters</div>
+            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))]">Headcount Trend — minimum 4 quarters</div>
             <DurationFilterBar duration={duration} onChange={setDuration} total={fullHeadcountTrend.length} label="" />
           </div>
           <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mb-2">Actual headcount (HRMS) vs approved establishment</div>
@@ -51,7 +51,7 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </div>
         <button onClick={() => onNavigate("RP001A")} className="group rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 text-left hover:border-[hsl(var(--pk-accent))] transition-colors">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-[hsl(var(--pk-ink-soft))]">Workforce composition — click for full breakdown</span>
+            <span className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))]">Workforce composition — click for full breakdown</span>
             <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
           </div>
           <CategoryBar

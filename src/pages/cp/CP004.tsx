@@ -51,7 +51,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 3 · Weight 7.5%</div>
             <StatusChip status={kpi3.status} />
           </div>
-          <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-2 inline-flex items-center gap-1.5">
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2 inline-flex items-center gap-1.5">
             Managed Entities Rating
             <InfoTip title="Weighted Achievement">YTD Actual ÷ FY Target × Weight, capped at 7.5%. Rolled up from each Managed Entity's own quarterly rating.</InfoTip>
           </div>
@@ -90,7 +90,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 4 · Weight 7.5%</div>
             <StatusChip status={kpi4.status} />
           </div>
-          <div className="font-head font-semibold text-[hsl(var(--pk-ink))] mb-2 inline-flex items-center gap-1.5">
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2 inline-flex items-center gap-1.5">
             Governance Index
             <InfoTip title="Not Measurable KPIs">Do not reduce achievement — progress updates run until the annual assessment. Full assessment scheduled Q4 FY2026.</InfoTip>
           </div>

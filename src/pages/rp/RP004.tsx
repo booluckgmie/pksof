@@ -47,7 +47,7 @@ export function RP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="flex items-center justify-between mb-3">
           <div>
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weight 1.66%</div>
-            <div className="font-head font-semibold text-[hsl(var(--pk-ink))]">Bumiputera Training &amp; Development</div>
+            <div className="font-head font-bold text-[hsl(var(--pk-ink))]">Bumiputera Training &amp; Development</div>
           </div>
           <StatusChip status={kpi13.status} />
         </div>
