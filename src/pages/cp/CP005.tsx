@@ -1,6 +1,6 @@
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
-import { StackedBarTrend } from "@/components/pk/Charts";
+import { StackedBarTrend, LineTrend } from "@/components/pk/Charts";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
@@ -11,14 +11,23 @@ import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
 import { useKpiTargets } from "@/lib/kpiTargets";
 import { periods, periodById } from "@/data/periods";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { PeriodId } from "@/types";
+
+/** Mean of a department's own quarters that actually have a score — used both for the table's
+ * trailing average column and to label it: two quarters reads as a half-year ("1H"), matching how
+ * the client's own report names it; any other count falls back to a generic "Average". */
+function meanOf(values: (number | null)[]): number | null {
+  const known = values.filter((v): v is number => v !== null);
+  return known.length > 0 ? known.reduce((s, v) => s + v, 0) / known.length : null;
+}
 
 export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, periodId, setPeriodId } = useSession();
   const [compareIds, setCompareIds] = useState<PeriodId[]>([]);
+  const [selectedDept, setSelectedDept] = useState<string | null>(null);
   const { latestValue } = useWorkflow();
-  const { timeCharterCompliance } = useDetails();
+  const { timeCharterByDept } = useDetails();
   const { getFyTarget } = useKpiTargets();
   const kpi5 = latestValue("KPI5", entityId, periodId);
   const kpi6 = latestValue("KPI6", entityId, periodId);
@@ -39,6 +48,19 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       ],
     }));
   const { duration, setDuration, filtered: satisfactionTrend } = useDurationFilter(fullSatisfactionTrend);
+
+  const avgLabel = timeCharterByDept.periods.length === 2 ? `1H ${periodById(timeCharterByDept.periods[1].id).fy.replace("FY", "")}` : "Average";
+  const selectedRow = selectedDept ? timeCharterByDept.departments.find((d) => d.department === selectedDept) : undefined;
+  const chartLabel = selectedRow ? selectedRow.department : "Group average";
+  const chartScores = selectedRow ? selectedRow.scores : timeCharterByDept.overallByPeriod;
+  const chartData = useMemo(
+    () =>
+      timeCharterByDept.periods
+        .map((p, i) => ({ label: p.label, value: chartScores[i] }))
+        .filter((d): d is { label: string; value: number } => d.value !== null),
+    [timeCharterByDept.periods, chartScores]
+  );
+  const overallAvg = meanOf(timeCharterByDept.overallByPeriod);
 
   return (
     <div>
@@ -111,16 +133,71 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             achievement={kpi6.weighted !== null ? `${(kpi6.weighted * 100).toFixed(1)}%` : "—"}
             status={kpi6.status}
           />
-          <div className="divide-y divide-[hsl(var(--pk-border))]">
-            {timeCharterCompliance.map((t) => (
-              <div key={t.service} className="flex items-center justify-between py-1.5 text-sm">
-                <span className="text-[hsl(var(--pk-ink-soft))]">{t.service}</span>
-                <span className="text-[11.5px] text-[hsl(var(--pk-ink-faint))]">{t.targetSla}</span>
-              </div>
-            ))}
-          </div>
+          <p className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">Group average across {timeCharterByDept.departments.length || "—"} departments, scored quarterly — full breakdown below.</p>
         </div>
       </div>
+
+      {timeCharterByDept.periods.length > 0 && (
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mt-4">
+          <div className="flex items-center justify-between flex-wrap gap-1.5 mb-1.5">
+            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))]">Time Charter Compliance — scoring by quarter — {chartLabel}</div>
+            {selectedDept && (
+              <button
+                onClick={() => setSelectedDept(null)}
+                className="text-[11px] font-medium text-[hsl(var(--pk-accent))] hover:opacity-75 transition-opacity"
+              >
+                Reset to Group average
+              </button>
+            )}
+          </div>
+          <LineTrend data={chartData} unit="%" />
+
+          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mt-4 mb-2">Summary of Results — click a department to chart its own trend</div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[560px]">
+              <thead>
+                <tr className="text-[11px] uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+                  <th className="text-left font-medium px-3 py-2 w-10">No</th>
+                  <th className="text-left font-medium px-3 py-2">Departments</th>
+                  {timeCharterByDept.periods.map((p) => (
+                    <th key={p.id} className="text-right font-medium px-3 py-2">{p.label}</th>
+                  ))}
+                  <th className="text-right font-medium px-3 py-2">{avgLabel}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {timeCharterByDept.departments.map((d, i) => {
+                  const active = selectedDept === d.department;
+                  return (
+                    <tr
+                      key={d.department}
+                      onClick={() => setSelectedDept(active ? null : d.department)}
+                      className={cn(
+                        "border-t border-[hsl(var(--pk-border))] cursor-pointer transition-colors",
+                        active ? "bg-[hsl(var(--pk-accent-soft))]" : "hover:bg-[hsl(var(--pk-surface-2))]"
+                      )}
+                    >
+                      <td className="px-3 py-2 text-[hsl(var(--pk-ink-faint))]">{i + 1}</td>
+                      <td className="px-3 py-2 font-medium text-[hsl(var(--pk-ink))]">{d.department}</td>
+                      {d.scores.map((v, j) => (
+                        <td key={timeCharterByDept.periods[j].id} className="text-right px-3 py-2 tnum text-[hsl(var(--pk-accent))]">{v !== null ? `${v.toFixed(1)}%` : "—"}</td>
+                      ))}
+                      <td className="text-right px-3 py-2 tnum font-semibold text-[hsl(var(--pk-accent))]">{(() => { const m = meanOf(d.scores); return m !== null ? `${m.toFixed(1)}%` : "—"; })()}</td>
+                    </tr>
+                  );
+                })}
+                <tr className="border-t-2 border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] font-semibold">
+                  <td className="px-3 py-2" colSpan={2}>Average Quarter Scoring</td>
+                  {timeCharterByDept.overallByPeriod.map((v, j) => (
+                    <td key={timeCharterByDept.periods[j].id} className="text-right px-3 py-2 tnum">{v !== null ? `${v.toFixed(1)}%` : "—"}</td>
+                  ))}
+                  <td className="text-right px-3 py-2 tnum">{overallAvg !== null ? `${overallAvg.toFixed(1)}%` : "—"}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

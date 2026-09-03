@@ -151,6 +151,16 @@ def cp_rows():
     vals = series(a, "flat", decimals=1, spread=0.03) if a is not None else fresh_series(4.5, "flat", decimals=1, seed_key="client_satisfaction")
     rows.append(("record", "client_satisfaction", "External Client Satisfaction", "", "External Client Satisfaction", vals))
 
+    rows.append(("section", "Time Charter Compliance (KPI 6 support, % per department)", None))
+    for dept in [
+        "Administration & Security", "Credit", "Finance", "Guarantee Schemes - Claims", "Human Resources",
+        "Information Technology", "Legal Affairs", "Operational Excellence", "Secretarial Services",
+        "Syarikat Jaminan Kredit Perumahan (SJKP)", "Syarikat Jaminan Pembiayaan Perniagaan (SJPP)",
+    ]:
+        a = anchors.get(("time_charter_dept_score", dept, ""))
+        vals = series(a, "flat", decimals=1, spread=0.02, floor=0) if a is not None else fresh_series(97, "flat", decimals=1, floor=0, seed_key=dept)
+        rows.append(("metric", "time_charter_dept_score", dept, "", dept, vals))
+
     # Only weight/weighted -- the two numeric fields this template can carry (see excelTemplate.ts:
     # a metric row's uploaded value is a single number, no text). score/computation stay text-only,
     # entered in-app -- RecruitmentIndexScorecard.tsx already computes a sensible score % and
@@ -371,6 +381,7 @@ SCREEN_FOR = {
     "Managed Entities Rating (KPI 3 support)": "CP004 Mandate & Governance — Managed Entities Performance Summary table",
     "Governance Index (KPI 4 support)": "CP004 Mandate & Governance — Governance Index panel",
     "Client Satisfaction (KPI 5 support)": "CP005 Customer — External Client Satisfaction",
+    "Time Charter Compliance (KPI 6 support, % per department)": "CP005 Customer — Time Charter Compliance department scoring + drilldown",
     "Recruitment Efficiency Index (KPI 9 support)": "CP007 Organisational Capacity · RP001 Section B — component scorecard",
     "Bumiputera Procurement (KPI 11 support, RM mil)": "CP008 Bumiputera Empowerment — Procurement tab",
     "Bumiputera Training (KPI 13 support)": "CP008 Bumiputera Empowerment — Training tab",
@@ -446,9 +457,8 @@ def build_workbook(qi: int, pillar: str) -> openpyxl.Workbook:
         ("NOT COVERED HERE", 12, True, NAVY),
         ("Initiative lists (Process/Tech/People Development Programme), related-party transactions, and the PBT/CIR", 11, False, "333333"),
         ("drill-down breakdown stay entered directly in-app — they're free-form catalogs, not one number per quarter.", 11, False, "333333"),
-        ("Time Charter Compliance (CP005) and the Variance Commentary notes (PFH003) are also entered directly in-app —", 11, False, "333333"),
-        ("both are a status/commentary word or sentence per line, not a number, so they don't fit this template's one-number-", 11, False, "333333"),
-        ("per-quarter column.", 11, False, "333333"),
+        ("The Variance Commentary notes (PFH003) are also entered directly in-app — a commentary sentence per line, not a", 11, False, "333333"),
+        ("number, so it doesn't fit this template's one-number-per-quarter column.", 11, False, "333333"),
     ]
     for i, (text, size, bold, color) in enumerate(lines, start=1):
         c = instructions.cell(row=i, column=1, value=text)

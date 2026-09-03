@@ -146,7 +146,7 @@ insert into fact_kpi_results (kpi_id, entity_id, period_id, ytd_target, ytd_actu
   ('KPI3', 'HQ','Q1FY26', 4.5,  4.2,  'not-met', null),
   ('KPI4', 'HQ','Q1FY26', null, null, 'not-measurable', 'Annual assessment scheduled Q4'),
   ('KPI5', 'HQ','Q1FY26', null, null, 'not-measurable', 'Bi-annual survey — next in Q2'),
-  ('KPI6', 'HQ','Q1FY26', null, null, 'not-measurable', 'Baseline monitoring framework in progress'),
+  ('KPI6', 'HQ','Q1FY26', 95.0, 97.6, 'met', null),
   ('KPI7', 'HQ','Q1FY26', null, null, 'not-measurable', 'Initiatives planned to complete from Q3'),
   ('KPI8', 'HQ','Q1FY26', 6, 3, 'not-met', null),
   ('KPI9', 'HQ','Q1FY26', 80.0, 84.4, 'met', null),
@@ -476,6 +476,17 @@ insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimensi
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'recruitment_index', 'Offer Acceptance Rate', 'score', null, '9 / 11');
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'recruitment_index', 'Offer Acceptance Rate', 'weighted', 0.164, '9 report-for-duty of 11 offers made');
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'recruitment_index', 'Offer Acceptance Rate', 'computation', null, '9 / 11 x 20%');
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'time_charter_dept_score', 'Administration & Security', '', 100.0, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'time_charter_dept_score', 'Credit', '', 100.0, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'time_charter_dept_score', 'Finance', '', 96.4, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'time_charter_dept_score', 'Guarantee Schemes - Claims', '', 99.7, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'time_charter_dept_score', 'Human Resources', '', 99.0, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'time_charter_dept_score', 'Information Technology', '', 98.0, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'time_charter_dept_score', 'Legal Affairs', '', 100.0, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'time_charter_dept_score', 'Operational Excellence', '', 97.0, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'time_charter_dept_score', 'Secretarial Services', '', 100.0, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'time_charter_dept_score', 'Syarikat Jaminan Kredit Perumahan (SJKP)', '', 100.0, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'time_charter_dept_score', 'Syarikat Jaminan Pembiayaan Perniagaan (SJPP)', '', 83.4, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'resigned', 'count', '', 6, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q2FY25', 'resigned', 'count', '', 4, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q3FY25', 'resigned', 'count', '', 5, null);
@@ -597,10 +608,6 @@ insert into detail_records (id, entity_id, period_id, record_type, label, catego
 insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0007', 'HQ', 'Q1FY26', 'tech_initiative', 'Secondary Internet Lease Line', 'Q2-Q3', null, null, 'Planned | Memo approval', null);
 insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0008', 'HQ', 'Q1FY26', 'tech_initiative', 'Single Sign-On for Internal Apps', 'Q2-Q4', null, null, 'Planned | RFI finalisation', null);
 insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0009', 'HQ', 'Q1FY26', 'tech_initiative', 'Phishing Simulation Subscription', 'Q1-Q2', null, null, 'In Progress | Evaluation', null);
-insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0010', 'HQ', 'Q1FY26', 'time_charter_compliance', 'Client Enquiries', '2 working days', null, null, 'On Track', null);
-insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0011', 'HQ', 'Q1FY26', 'time_charter_compliance', 'Management Requests', '5 working days', null, null, 'On Track', null);
-insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0012', 'HQ', 'Q1FY26', 'time_charter_compliance', 'Stakeholder Reporting', '3 working days', null, null, 'Monitoring', null);
-insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0013', 'HQ', 'Q1FY26', 'time_charter_compliance', 'Complaint Resolution', '14 working days', null, null, 'On Track', null);
 insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0014', 'HQ', 'Q1FY26', 'governance_index', 'Audit closure against observations due', null, 0.85, null, 'Progress reporting only in Q1', null);
 insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0015', 'HQ', 'Q1FY26', 'governance_index', 'Satisfactory rating (>=3) in audit findings', null, 3.0, null, 'Progress reporting only in Q1', null);
 insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0016', 'HQ', 'Q1FY26', 'governance_index', 'Implementation of Risk Action Plan within timeline', null, 0.8, null, 'Progress reporting only in Q1', null);

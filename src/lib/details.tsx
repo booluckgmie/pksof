@@ -420,17 +420,31 @@ export function useDetails() {
     };
   }, [metrics, entityId]);
 
+  /** Quarter-over-quarter comparison table, matching the client's own RPT report format — RM'000
+   * figures grouped under a category (dimension, e.g. "A. Subsidiary companies") and a sub-heading
+   * plus party code packed into dimension2 as "subheading|party" (the two free-text dimension
+   * slots aren't enough for a 3-level hierarchy on their own). Newest quarter first, same reading
+   * order as the source report. */
   const relatedPartyTransactions = useMemo(() => {
-    const rows = recordRows("related_party_txn");
-    const available = periodsWithData(rows, entityId, () => true);
-    const eff = latestPeriodWithData(available);
-    return rows
-      .filter((r) => r.periodId === eff)
-      .map((r) => {
-        const [nature, basis] = (r.textNote ?? "|").split(" | ");
-        return { txn: r.label, party: r.category ?? "", nature: nature ?? "", value: r.valueNum ?? 0, quarter: r.periodId, basis: basis ?? "", approved: r.flag ?? false };
-      });
-  }, [records, entityId]);
+    const rows = metricRows("related_party_txn");
+    const available = [...periodsWithData(rows, entityId, () => true)];
+    const periodsUsed = periods.filter((p) => available.includes(p.id)).slice().reverse();
+    const keys = [...new Set(rows.map((r) => `${r.dimension}::${r.dimension2}`))];
+    const items = keys.map((key) => {
+      const [category, rest] = key.split("::");
+      const [subheading, party] = rest.split("|");
+      return {
+        category,
+        subheading,
+        party,
+        valuesByPeriod: periodsUsed.map((p) => rows.find((r) => r.periodId === p.id && r.dimension === category && r.dimension2 === rest)?.value ?? null),
+      };
+    });
+    return {
+      periods: periodsUsed.map((p) => ({ id: p.id, label: p.label })),
+      items,
+    };
+  }, [metrics, entityId]);
 
   // ── Initiatives / compliance ────────────────────────────────────────────
 
@@ -460,11 +474,29 @@ export function useDetails() {
     return { fyTarget: row?.valueNum ?? 4.7, ytdActual: row?.valueNum2 ?? null, note: row?.textNote ?? "" };
   }, [records, entityId]);
 
-  const timeCharterCompliance = useMemo(() => {
-    const rows = recordRows("time_charter_compliance");
-    const eff = latestPeriodWithData(periodsWithData(rows, entityId, () => true));
-    return rows.filter((r) => r.periodId === eff).map((r) => ({ service: r.label, targetSla: r.category ?? "", status: (r.textNote ?? "Monitoring") as "On Track" | "Monitoring" }));
-  }, [records, entityId]);
+  /** Per-department quarterly scoring — replaces the old flat SLA-target list. One row per
+   * department per quarter (metric_key "time_charter_dept_score", dimension = department name,
+   * value = that quarter's score), so the screen can both trend the Group average by quarter and
+   * drill into any single department's own quarterly trend. */
+  const timeCharterByDept = useMemo(() => {
+    const rows = metricRows("time_charter_dept_score");
+    const available = [...periodsWithData(rows, entityId, () => true)];
+    const periodsUsed = periods.filter((p) => available.includes(p.id));
+    const departments = [...new Set(rows.map((r) => r.dimension))];
+    const byDepartment = departments.map((department) => ({
+      department,
+      scores: periodsUsed.map((p) => rows.find((r) => r.periodId === p.id && r.dimension === department)?.value ?? null),
+    }));
+    const overallByPeriod = periodsUsed.map((p) => {
+      const vals = rows.filter((r) => r.periodId === p.id).map((r) => r.value).filter((v): v is number => v !== null);
+      return vals.length > 0 ? vals.reduce((s, v) => s + v, 0) / vals.length : null;
+    });
+    return {
+      periods: periodsUsed.map((p) => ({ id: p.id, label: p.label.replace(" FY", " ") })),
+      departments: byDepartment,
+      overallByPeriod,
+    };
+  }, [metrics, entityId]);
 
   const governanceIndex = useMemo(() => {
     const rows = recordRows("governance_index");
@@ -547,7 +579,7 @@ export function useDetails() {
     gradeGenderCrossTabFor, departmentHeadcountFor, recruitmentIndexByPeriod,
     resignedByPeriod, turnoverTrend, bumiputeraTrainingByPeriod,
     quarterlyTrend, monthlyTrendFor, actualVsBudget, varianceCommentary, balanceSheet, relatedPartyTransactions,
-    managedEntityRatings, clientSatisfaction, timeCharterCompliance, governanceIndex,
+    managedEntityRatings, clientSatisfaction, timeCharterByDept, governanceIndex,
     processInitiatives, techInitiatives, bumiputeraProcurement, peopleDevRecordsFor,
     pbtBreakdown, cirBreakdown,
   };
