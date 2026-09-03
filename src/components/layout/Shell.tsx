@@ -45,16 +45,22 @@ function PillarNav({ current, onNavigate, isRestrictedPillar }: { current: Scree
 /** Always-visible brand mark, doubles as the "back to overview" affordance — the sidebar's
  * own Prokhas mark only exists once logged in, so guests browsing the public dashboards had
  * no persistent way back to Main other than a breadcrumb buried in each screen's content. */
-function BrandHome({ current, onNavigate }: { current: ScreenId; onNavigate: (id: ScreenId) => void }) {
-  const onMain = current === "MAIN";
+/** The one button that's always a safe, working "reset" — regardless of what screen or which
+ * entity's context you're currently viewing, it always lands back on Prokhas' own Main Screen.
+ * Previously it only called onNavigate("MAIN"), which is a no-op once already on MAIN — the exact
+ * state a Managed Entity drill-down leaves you in (still entityId=that entity), so the button
+ * looked "off" and did nothing. It also always renders as active (no disabled-looking state),
+ * since it's meant to work as a safety net from anywhere, including when it would be a no-op. */
+function BrandHome({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
+  const { entityId, setEntityId } = useSession();
   return (
     <button
-      onClick={() => onNavigate("MAIN")}
+      onClick={() => {
+        if (entityId !== "HQ") setEntityId("HQ");
+        onNavigate("MAIN");
+      }}
       title="Back to Main Screen"
-      className={cn(
-        "flex items-center gap-2 shrink-0 rounded-md pl-1.5 pr-2.5 py-1 -ml-1.5 transition-colors",
-        onMain ? "cursor-default" : "hover:bg-[hsl(var(--pk-surface-2))]"
-      )}
+      className="flex items-center gap-2 shrink-0 rounded-md pl-1.5 pr-2.5 py-1 -ml-1.5 transition-colors hover:bg-[hsl(var(--pk-surface-2))]"
     >
       <img src={prokhasLogo} alt="Prokhas" className="h-6 w-auto shrink-0" />
       <span className="hidden sm:block leading-tight text-left border-l border-[hsl(var(--pk-border))] pl-2.5 ml-0.5">
@@ -111,7 +117,7 @@ export function Shell({
                 <Menu className="h-5 w-5" />
               </button>
             )}
-            <BrandHome current={current} onNavigate={onNavigate} />
+            <BrandHome onNavigate={onNavigate} />
           </div>
           <PillarNav current={current} onNavigate={onNavigate} isRestrictedPillar={isRestrictedPillar} />
           <div className="flex items-center gap-2.5 shrink-0">
