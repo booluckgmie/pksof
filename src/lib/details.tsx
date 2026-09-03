@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { fetchDetailMetrics, fetchDetailRecords, type DetailMetricRow, type DetailRecordRow } from "@/lib/api/details";
 import { useSession } from "@/lib/session";
-import { periods, monthsForQuarter, type MonthPeriodId } from "@/data/periods";
+import { periods, periodById, monthsForQuarter, type MonthPeriodId } from "@/data/periods";
 import type { EntityId, PeriodId } from "@/types";
 import type { InitiativeStatus } from "@/data/initiatives";
 
@@ -363,6 +363,83 @@ export function useDetails() {
     });
   }
 
+  const REVENUE_SOURCE_LABELS: Record<string, string> = {
+    danaharta_mgmt_fee: "Management fee from Danaharta — investment activities",
+    govco_mgmt_fee: "Management fee from GovCo",
+    sjkp_mgmt_fee: "Management fee from SJKP",
+    sjpp_mgmt_fee: "Management fee from SJPP",
+    danainfra_mgmt_fee: "Management fee from DanaInfra",
+    sap_services_fee: "Fee from SAP services",
+    outsourcing_services_fee: "Fee from Outsourcing services",
+    secretarial_services_fee: "Fee from Secretarial services",
+    corporate_advisory_fee: "Fee from Corporate Advisory services",
+    credit_advisory_fee: "Fee from Credit Advisory services",
+    acquired_loans_income: "Income from acquired loans (PAM)",
+  };
+  const EXPENSE_CATEGORY_LABELS: Record<string, string> = {
+    admin_expenses: "Administrative expenses",
+    personnel_expenses: "Personnel expenses",
+    professional_fees: "Professional fees",
+    depreciation: "Depreciation",
+    depreciation_rou: "Depreciation of RoU asset",
+    other_expenses: "Other Expenses",
+    interest_expense_lease: "Interest expense (lease liability)",
+    impairment_receivables: "Provision for / (reversal of) impairment loss on receivables",
+  };
+
+  /** One quarter's full income-statement, RM'000 — combines financial_trend (revenue, pbt) with
+   * pl_detail's components below the line (finance/other income, tax, PAT, dividend). Total
+   * Income and Expenses are derived (Total Income = Revenue + Finance Income + Other Income;
+   * Expenses = PBT − Total Income), not stored separately, so they can never drift out of sync
+   * with the two source figures. Returns null if either source is missing for this dim2. */
+  function readQuarterPl(periodId: PeriodId, dim2: "actual" | "budget") {
+    const forP = metricRows("pl_detail").filter((r) => r.periodId === periodId && r.dimension2 === dim2);
+    if (forP.length === 0) return null;
+    // Revenue and Expenses come from the sum of their own breakdown (revenue_by_source /
+    // expense_by_category) rather than financial_trend — financial_trend only ever carries one
+    // (actual) figure per quarter, so reading it for a "budget" snapshot would silently reuse the
+    // actual PBT/revenue for budget too. Summing the breakdowns keeps actual and budget genuinely
+    // independent, and both are cross-checked to reconcile with the client's own reported totals.
+    const revenueRows = metricRows("revenue_by_source").filter((r) => r.periodId === periodId && r.dimension2 === dim2);
+    const expenseRows = metricRows("expense_by_category").filter((r) => r.periodId === periodId && r.dimension2 === dim2);
+    if (revenueRows.length === 0 || expenseRows.length === 0) return null;
+    const revenue = revenueRows.reduce((s, r) => s + (r.value ?? 0), 0);
+    const expenses = expenseRows.reduce((s, r) => s + (r.value ?? 0), 0);
+    const financeIncome = forP.find((r) => r.dimension === "finance_income")?.value ?? null;
+    const otherIncome = forP.find((r) => r.dimension === "other_income")?.value ?? null;
+    const taxation = forP.find((r) => r.dimension === "taxation")?.value ?? null;
+    const profitAfterTax = forP.find((r) => r.dimension === "profit_after_tax")?.value ?? null;
+    const dividend = forP.find((r) => r.dimension === "dividend")?.value ?? null;
+    const totalIncome = financeIncome !== null && otherIncome !== null ? revenue + financeIncome + otherIncome : null;
+    const pbt = totalIncome !== null ? totalIncome + expenses : null;
+    const netProfit = profitAfterTax !== null && dividend !== null ? profitAfterTax + dividend : null;
+    return { revenue, financeIncome, otherIncome, totalIncome, expenses, pbt, taxation, profitAfterTax, dividend, netProfit };
+  }
+
+  function readBreakdown(periodId: PeriodId, dim2: "actual" | "budget", metricKey: string, labels: Record<string, string>) {
+    const rows = metricRows(metricKey).filter((r) => r.periodId === periodId && r.dimension2 === dim2);
+    return Object.entries(labels).map(([key, label]) => ({ key, label, value: rows.find((r) => r.dimension === key)?.value ?? null }));
+  }
+
+  /** Powers PFH002's revamped "Current Quarter vs Preceding Quarter" and "Actual vs Budget"
+   * tables, each with a Revenue/Expenses drill-down — everything RM'000, everything derived from
+   * financial_trend + pl_detail + revenue_by_source + expense_by_category so there's one source
+   * of truth per figure. `periodId` is whatever quarter is currently selected; QoQ compares it to
+   * the immediately preceding quarter, Budget compares it to its own budget dim2 (present only
+   * where a budget figure has actually been entered — not every quarter has one). */
+  function financialResultsFor(periodId: PeriodId) {
+    const idx = periods.findIndex((p) => p.id === periodId);
+    const priorId = idx > 0 ? periods[idx - 1].id : null;
+    const current = readQuarterPl(periodId, "actual");
+    const prior = priorId ? readQuarterPl(priorId, "actual") : null;
+    const budget = readQuarterPl(periodId, "budget");
+    return {
+      current,
+      qoq: prior && priorId ? { compareLabel: periodById(priorId).label, compare: prior, revenue: readBreakdown(periodId, "actual", "revenue_by_source", REVENUE_SOURCE_LABELS), revenueCompare: readBreakdown(priorId, "actual", "revenue_by_source", REVENUE_SOURCE_LABELS), expenses: readBreakdown(periodId, "actual", "expense_by_category", EXPENSE_CATEGORY_LABELS), expensesCompare: readBreakdown(priorId, "actual", "expense_by_category", EXPENSE_CATEGORY_LABELS) } : null,
+      budget: budget ? { compare: budget, revenue: readBreakdown(periodId, "actual", "revenue_by_source", REVENUE_SOURCE_LABELS), revenueCompare: readBreakdown(periodId, "budget", "revenue_by_source", REVENUE_SOURCE_LABELS), expenses: readBreakdown(periodId, "actual", "expense_by_category", EXPENSE_CATEGORY_LABELS), expensesCompare: readBreakdown(periodId, "budget", "expense_by_category", EXPENSE_CATEGORY_LABELS) } : null,
+    };
+  }
+
   const actualVsBudget = useMemo(() => {
     const rows = metricRows("actual_vs_budget");
     const eff = latestPeriodWithData(periodsWithData(rows, entityId, () => true));
@@ -578,7 +655,7 @@ export function useDetails() {
     gradeBreakdownFor, ageBreakdownFor, ageGenderBreakdownFor, averageAgeByPeriod,
     gradeGenderCrossTabFor, departmentHeadcountFor, recruitmentIndexByPeriod,
     resignedByPeriod, turnoverTrend, bumiputeraTrainingByPeriod,
-    quarterlyTrend, monthlyTrendFor, actualVsBudget, varianceCommentary, balanceSheet, relatedPartyTransactions,
+    quarterlyTrend, monthlyTrendFor, actualVsBudget, financialResultsFor, varianceCommentary, balanceSheet, relatedPartyTransactions,
     managedEntityRatings, clientSatisfaction, timeCharterByDept, governanceIndex,
     processInitiatives, techInitiatives, bumiputeraProcurement, peopleDevRecordsFor,
     pbtBreakdown, cirBreakdown,
