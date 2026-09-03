@@ -613,12 +613,24 @@ insert into detail_records (id, entity_id, period_id, record_type, label, catego
 insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0016', 'HQ', 'Q1FY26', 'governance_index', 'Implementation of Risk Action Plan within timeline', null, 0.8, null, 'Progress reporting only in Q1', null);
 insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0017', 'HQ', 'Q1FY26', 'governance_index', 'Completion of Anti-Corruption Strategy initiatives', null, 0.8, null, 'No initiatives due in Q1', null);
 insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0018', 'HQ', 'Q1FY26', 'governance_index', 'Zero cases under MACC', null, 0, null, '0 cases recorded to date', null);
-insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0019', 'HQ', 'Q1FY26', 'related_party_txn', 'Management fee — SJPP', 'SJPP', 31.9, null, 'Management Fee Income | Approved Basis', true);
-insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0020', 'HQ', 'Q1FY26', 'related_party_txn', 'Management fee — SJKP', 'SJKP', 3.1, null, 'Management Fee Income | Approved Basis', true);
-insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0021', 'HQ', 'Q1FY26', 'related_party_txn', 'Management fee — DanaInfra', 'DanaInfra', 3.0, null, 'Management Fee Income | Approved Basis', true);
-insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0022', 'HQ', 'Q1FY26', 'related_party_txn', 'Advisory / outsourcing', 'DanaHarta', 0.1, null, 'Professional Services | Market Rate', true);
-insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0023', 'HQ', 'Q1FY26', 'related_party_txn', 'Management fee — GovCo', 'GovCo', 0.1, null, 'Management Fee Income | Approved Basis', false);
 insert into detail_records (id, entity_id, period_id, record_type, label, category, value_num, value_num2, text_note, flag) values ('SEED-0024', 'HQ', 'Q1FY26', 'client_satisfaction', 'External Client Satisfaction', null, 4.7, null, 'Bi-annual client survey — next round scheduled Q2 FY2026', null);
+
+-- Related Party Transactions (PFH005) — quarter-over-quarter, RM'000, matching the client's own
+-- RPT report format: category (dimension) + "subheading|party" (dimension2).
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'related_party_txn', 'A. Subsidiary companies', 'Management fee|PAMSB', 10277, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'related_party_txn', 'B. Related corporations', 'Management fee|PDNB', 245, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'related_party_txn', 'B. Related corporations', 'Management fee|SJPP', 35705, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'related_party_txn', 'B. Related corporations', 'Management fee|SJKP', 3587, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'related_party_txn', 'B. Related corporations', 'Management fee|DINB', 3300, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'related_party_txn', 'B. Related corporations', 'Management fee|GOVCO', 125, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'related_party_txn', 'B. Related corporations', 'Advisory / outsourcing services|DINB', 7, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'related_party_txn', 'A. Subsidiary companies', 'Management fee|PAMSB', 3503, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'related_party_txn', 'B. Related corporations', 'Management fee|PDNB', 249, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'related_party_txn', 'B. Related corporations', 'Management fee|SJPP', 34928, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'related_party_txn', 'B. Related corporations', 'Management fee|SJKP', 3355, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'related_party_txn', 'B. Related corporations', 'Management fee|DINB', 3300, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'related_party_txn', 'B. Related corporations', 'Management fee|GOVCO', 125, null);
+insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'related_party_txn', 'B. Related corporations', 'Advisory / outsourcing services|DINB', 7, null);
 
 -- People Development Programme (CP009) — not measured in Q1, progress-only reporting.
 -- category is one of PEOPLE_DEV_SUB_AREAS in src/lib/details.tsx; text_note packs
