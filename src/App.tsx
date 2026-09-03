@@ -34,6 +34,8 @@ import { Glossary } from "@/pages/Glossary";
 import { screens, type ScreenId } from "@/lib/nav";
 import { Toaster } from "@/components/ui/sonner";
 import { ScreenErrorBoundary } from "@/components/pk/ScreenErrorBoundary";
+import { entities, entityById } from "@/data/entities";
+import type { EntityId, Module } from "@/types";
 
 const SCREEN_MAP: Record<ScreenId, React.ComponentType<{ onNavigate: (id: ScreenId) => void }>> = {
   MAIN: Main,
@@ -50,9 +52,15 @@ const SCREEN_MAP: Record<ScreenId, React.ComponentType<{ onNavigate: (id: Screen
 const HQ_ONLY_GROUPS = new Set(["cp", "fh", "rp"]);
 /** Requires a real sign-in — browsing every other screen doesn't. */
 const LOGIN_REQUIRED_SCREENS = new Set<ScreenId>(["DATA_ENTRY", "VERIFY_PUBLISH", "SETTINGS"]);
+/** Maps a screen's nav group onto the Entity.modules code it corresponds to. */
+const GROUP_MODULE: Partial<Record<string, Module>> = { cp: "CP", fh: "FH", rp: "RP" };
 
 function isScreenId(v: string | null): v is ScreenId {
   return !!v && Object.prototype.hasOwnProperty.call(screens, v);
+}
+
+function isEntityId(v: string | null): v is EntityId {
+  return !!v && entities.some((e) => e.id === v);
 }
 
 /** Main has no `?screen=` param at all — a bare root URL should stay a clean root URL. */
@@ -61,11 +69,18 @@ function readScreenFromUrl(): ScreenId {
   return isScreenId(s) ? s : "MAIN";
 }
 
+/** Deep-links / Back-Forward can carry which entity was being viewed too, e.g. `?entity=SJPP`. */
+function readEntityFromUrl(): EntityId {
+  const e = new URLSearchParams(window.location.search).get("entity");
+  return isEntityId(e) ? e : "HQ";
+}
+
 function AuthedApp() {
-  const { loggedIn, isRestrictedPillar, homeEntityName, role } = useSession();
+  const { loggedIn, isRestrictedPillar, homeEntityName, role, entityId, entityName, setEntityId } = useSession();
   const [screen, setScreen] = useState<ScreenId>(() => readScreenFromUrl());
   const [loginOpen, setLoginOpen] = useState(false);
   const prevLoggedIn = useRef(loggedIn);
+  const entityFromUrlApplied = useRef(false);
 
   // Every navigation updates the address bar so the browser's Back/Forward buttons move between
   // screens, and any screen can be copied out of the address bar as a link straight back to it.
@@ -82,9 +97,30 @@ function AuthedApp() {
 
   // Back/Forward doesn't re-run navigate() — it moves the URL directly, so read it back into state.
   useEffect(() => {
-    const onPopState = () => setScreen(readScreenFromUrl());
+    const onPopState = () => {
+      setScreen(readScreenFromUrl());
+      setEntityId(readEntityFromUrl());
+    };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Backspace is the browser's "go back" key on most platforms, but browsers only honour it as
+  // history navigation while focus sits in a text field — everywhere else on the page it's a
+  // no-op, which reads as "back is broken" on a dashboard that's mostly buttons and tables. Wire
+  // it to the same history the Back button already drives, except while actually typing.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Backspace") return;
+      const el = document.activeElement as HTMLElement | null;
+      const typing = el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable);
+      if (typing) return;
+      e.preventDefault();
+      window.history.back();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
   // Sign-in and sign-out both land back on Main — never carries a gated screen across the switch.
@@ -95,9 +131,37 @@ function AuthedApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loggedIn]);
 
+  // Apply a deep-linked `?entity=` once on mount (after that, entityId is session-driven).
+  useEffect(() => {
+    if (entityFromUrlApplied.current) return;
+    entityFromUrlApplied.current = true;
+    const e = readEntityFromUrl();
+    if (e !== "HQ") setEntityId(e);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keeps the current history entry's `entity` param in sync with session state whenever it
+  // changes, from any source (CP004's drill-down, the sidebar) — a `replace`, not a `push`, so it
+  // rides along with whatever navigation already pushed the entry, rather than adding its own.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const current = url.searchParams.get("entity");
+    if ((current ?? "HQ") === entityId) return;
+    if (entityId === "HQ") url.searchParams.delete("entity");
+    else url.searchParams.set("entity", entityId);
+    window.history.replaceState({ screen, entity: entityId }, "", url);
+  }, [entityId, screen]);
+
   const loginRequired = LOGIN_REQUIRED_SCREENS.has(screen) && !loggedIn;
   const settingsBlocked = screen === "SETTINGS" && loggedIn && role !== "admin";
-  const blocked = (isRestrictedPillar && HQ_ONLY_GROUPS.has(screens[screen].group)) || settingsBlocked || loginRequired;
+  const group = screens[screen].group;
+  const groupModule = GROUP_MODULE[group];
+  // Corporate Performance is Prokhas' own scorecard — a Managed Entity has no CP dashboards of
+  // its own, only Financial Health and Resource & People. This applies purely from the entity
+  // currently being viewed, independent of login/role, so it also covers CP004's own
+  // "drill into a Managed Entity" flow.
+  const entityBlocksGroup = !!groupModule && !entityById(entityId).modules.includes(groupModule);
+  const blocked = (isRestrictedPillar && HQ_ONLY_GROUPS.has(group)) || entityBlocksGroup || settingsBlocked || loginRequired;
   const Screen = SCREEN_MAP[screen];
 
   return (
@@ -108,20 +172,32 @@ function AuthedApp() {
             <Lock className="h-4 w-4 text-[hsl(var(--pk-ink-faint))]" />
           </div>
           <div className="font-head text-lg font-semibold text-[hsl(var(--pk-ink))]">
-            {loginRequired ? "Sign in required" : settingsBlocked ? "System Administrator only" : `Not part of ${homeEntityName}'s pillar`}
+            {loginRequired
+              ? "Sign in required"
+              : settingsBlocked
+                ? "System Administrator only"
+                : entityBlocksGroup && !isRestrictedPillar
+                  ? `Not part of ${entityName}'s dashboards`
+                  : `Not part of ${homeEntityName}'s pillar`}
           </div>
           <p className="text-sm text-[hsl(var(--pk-ink-faint))] max-w-[46ch]">
             {loginRequired
               ? "Uploading data and verifying/publishing submissions needs a real sign-in — browsing the dashboards doesn't."
               : settingsBlocked
                 ? "Organisation-wide settings are restricted to the System Administrator role."
-                : `This dashboard belongs to Prokhas' own scorecard. Your login is scoped to ${homeEntityName} and can't view it.`}
+                : entityBlocksGroup && !isRestrictedPillar
+                  ? `Corporate Performance is Prokhas' own scorecard for managing the Group — ${entityName} doesn't have one of its own, only its Financial Health and Resource & People dashboards.`
+                  : `This dashboard belongs to Prokhas' own scorecard. Your login is scoped to ${homeEntityName} and can't view it.`}
           </p>
           <button
-            onClick={() => (loginRequired ? setLoginOpen(true) : navigate("MAIN"))}
+            onClick={() => {
+              if (loginRequired) { setLoginOpen(true); return; }
+              if (entityBlocksGroup && !isRestrictedPillar && entityId !== "HQ") setEntityId("HQ");
+              navigate("MAIN");
+            }}
             className="mt-1 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] text-xs font-medium px-3 py-1.5 hover:opacity-90 transition-opacity"
           >
-            {loginRequired ? "Sign in" : "Back to Main Screen"}
+            {loginRequired ? "Sign in" : entityBlocksGroup && !isRestrictedPillar ? "Back to Prokhas Group view" : "Back to Main Screen"}
           </button>
         </div>
       ) : (

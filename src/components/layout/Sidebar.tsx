@@ -6,7 +6,7 @@ import {
 import { cn } from "@/lib/utils";
 import { cpNav, fhNav, rpNav, screens, type ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
-import { entities } from "@/data/entities";
+import { entityById } from "@/data/entities";
 import { YearQuarterDropdowns } from "@/components/pk/PeriodPicker";
 
 const CP_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -54,14 +54,9 @@ function GroupLabel({ children }: { children: React.ReactNode }) {
 }
 
 /** Entity + reporting period pickers, moved into the sidebar so they read as global session context rather than a per-page filter. */
-function SidebarFilters({ current }: { current: ScreenId }) {
+function SidebarFilters() {
   const { entityId, setEntityId, periodId, setPeriodId, pillarLocked, entityName } = useSession();
-  const onMain = current === "MAIN";
-  // Managed Entities have no data yet, so there's nothing real to pick — a dropdown of
-  // disabled options is just noise. Only render a real <select> once more than one entity
-  // actually has something behind it.
-  const selectableEntities = entities.filter((e) => e.id === "HQ");
-  const hasChoice = selectableEntities.length > 1;
+  const viewingManagedEntity = !pillarLocked && entityId !== "HQ";
 
   return (
     <div className="px-4 py-3 border-b border-white/10 flex flex-col gap-2.5 shrink-0">
@@ -72,28 +67,20 @@ function SidebarFilters({ current }: { current: ScreenId }) {
             <Lock className="h-3 w-3 text-white/40 shrink-0" />
             <span className="truncate">{entityName}</span>
           </div>
-        ) : onMain ? (
+        ) : viewingManagedEntity ? (
           <>
             <div className="text-sm font-medium text-white truncate">{entityName}</div>
-            <p className="text-[10.5px] text-white/35 mt-1 leading-snug">Main shows the Group rollup — switch entity from within a perspective screen.</p>
-          </>
-        ) : hasChoice ? (
-          <>
-            <select
-              value={entityId}
-              onChange={(e) => setEntityId(e.target.value as never)}
-              className="w-full bg-white/5 border border-white/10 rounded-md px-2 py-1.5 text-sm font-medium text-white outline-none cursor-pointer focus:border-white/30"
+            <button
+              onClick={() => setEntityId("HQ")}
+              className="mt-1.5 text-[11px] font-medium text-[hsl(var(--pk-accent-lt))] hover:underline"
             >
-              {selectableEntities.map((e) => (
-                <option key={e.id} value={e.id} className="text-[hsl(var(--pk-ink))]">{e.name}</option>
-              ))}
-            </select>
-            <p className="text-[10.5px] text-white/35 mt-1 leading-snug">Managed Entities join once their own figures are seeded.</p>
+              ← Back to Prokhas Group view
+            </button>
           </>
         ) : (
           <>
             <div className="text-sm font-medium text-white truncate">{entityName}</div>
-            <p className="text-[10.5px] text-white/35 mt-1 leading-snug">Managed Entities join once their own figures are seeded.</p>
+            <p className="text-[10.5px] text-white/35 mt-1 leading-snug">Drill in from a Managed Entity's row (e.g. CP004) to view its own dashboards.</p>
           </>
         )}
       </div>
@@ -117,7 +104,8 @@ export function Sidebar({
   mobileOpen?: boolean;
   onCloseMobile?: () => void;
 }) {
-  const { role, roleLabel, userName, canEnterData, canVerify, logout, isRestrictedPillar, homeEntityName } = useSession();
+  const { role, roleLabel, userName, canEnterData, canVerify, logout, isRestrictedPillar, homeEntityName, entityId, entityName } = useSession();
+  const entityModules = entityById(entityId).modules;
   // "Main/admin users" get the full perspective submenu; "normal" upload/verify roles get a
   // slim sidebar (Main + their own Data Governance items) — they can still reach every screen
   // as a guest would, via Main's own subpage dropdowns, without the full tree taking up space.
@@ -162,7 +150,7 @@ export function Sidebar({
           </button>
         </div>
 
-        <SidebarFilters current={current} />
+        <SidebarFilters />
 
         <nav className="flex-1 overflow-y-auto px-0 pb-4">
           <div className="pt-3 px-2">
@@ -180,14 +168,37 @@ export function Sidebar({
             </div>
           ) : isAdminTier ? (
             <>
-              <GroupLabel>Corporate Performance</GroupLabel>
-              <TagRow ids={cpNav} icons={CP_ICONS} current={current} onNavigate={navigate} />
+              {entityId !== "HQ" && (
+                <div className="mx-2 mt-4 rounded-md border border-white/10 border-l-2 border-l-[hsl(var(--pk-warn-lt))] bg-white/5 px-2.5 py-2.5">
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.12em] text-white/45 font-semibold">
+                    <Lock className="h-3 w-3" />Viewing {entityName}
+                  </div>
+                  <p className="text-[11.5px] text-white/55 mt-1.5 leading-snug">
+                    Corporate Performance is Prokhas' own scorecard — hidden while viewing a Managed Entity's own dashboards.
+                  </p>
+                </div>
+              )}
 
-              <GroupLabel>Financial Health</GroupLabel>
-              <TagRow ids={fhNav} icons={FH_ICONS} current={current} onNavigate={navigate} />
+              {entityModules.includes("CP") && (
+                <>
+                  <GroupLabel>Corporate Performance</GroupLabel>
+                  <TagRow ids={cpNav} icons={CP_ICONS} current={current} onNavigate={navigate} />
+                </>
+              )}
 
-              <GroupLabel>Resource &amp; People</GroupLabel>
-              <TagRow ids={rpNav} icons={RP_ICONS} current={current} onNavigate={navigate} />
+              {entityModules.includes("FH") && (
+                <>
+                  <GroupLabel>Financial Health</GroupLabel>
+                  <TagRow ids={fhNav} icons={FH_ICONS} current={current} onNavigate={navigate} />
+                </>
+              )}
+
+              {entityModules.includes("RP") && (
+                <>
+                  <GroupLabel>Resource &amp; People</GroupLabel>
+                  <TagRow ids={rpNav} icons={RP_ICONS} current={current} onNavigate={navigate} />
+                </>
+              )}
             </>
           ) : (
             <div className="mx-2 mt-4 rounded-md border border-white/10 bg-white/5 px-2.5 py-2.5">

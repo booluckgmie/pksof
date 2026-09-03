@@ -9,6 +9,7 @@ import { useWorkflow } from "@/lib/workflow";
 import { kpis } from "@/data/kpis";
 import { entitySnapshot } from "@/data/factSeed";
 import { periodById } from "@/data/periods";
+import { entityById } from "@/data/entities";
 
 const STATUS_TONE: Record<string, { rail: string; lt: string; label: string }> = {
   "on-track": { rail: "hsl(var(--pk-good))", lt: "hsl(var(--pk-good-lt))", label: "On track" },
@@ -33,6 +34,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const kpi9 = latestValue("KPI9", entityId, periodId);
   const kpi12 = latestValue("KPI12", entityId, periodId);
 
+  const entityModules = entityById(entityId).modules;
   const groupSnap = entitySnapshot[entityId] ?? entitySnapshot.HQ;
   const groupTone = STATUS_TONE[groupSnap.status] ?? STATUS_TONE["on-track"];
   const overallTone = groupSnap.status === "on-track" ? "good" : groupSnap.status === "at-risk" ? "bad" : "pending";
@@ -114,39 +116,45 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
-          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4 flex flex-col gap-3">
-            <button onClick={() => onNavigate("CP001")} className="group flex items-center justify-between">
-              <span className="flex items-center gap-2 font-head font-bold text-[hsl(var(--pk-ink))]"><LayoutGrid className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Corporate Performance</span>
-              <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
-            </button>
-            <div className="grid grid-cols-2 gap-2">
-              <StatCard label="Overall Achievement" value={`${overall.toFixed(1)}%`} tone={overallTone} />
-              <StatCard label="KPIs Tracked" value={String(kpis.length)} />
+        <div className={`grid grid-cols-1 gap-4 mt-5 ${entityModules.length >= 3 ? "md:grid-cols-3" : entityModules.length === 2 ? "md:grid-cols-2" : ""}`}>
+          {entityModules.includes("CP") && (
+            <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4 flex flex-col gap-3">
+              <button onClick={() => onNavigate("CP001")} className="group flex items-center justify-between">
+                <span className="flex items-center gap-2 font-head font-bold text-[hsl(var(--pk-ink))]"><LayoutGrid className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Corporate Performance</span>
+                <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
+              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <StatCard label="Overall Achievement" value={`${overall.toFixed(1)}%`} tone={overallTone} />
+                <StatCard label="KPIs Tracked" value={String(kpis.length)} />
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4 flex flex-col gap-3">
-            <button onClick={() => onNavigate("PFH001")} className="group flex items-center justify-between">
-              <span className="flex items-center gap-2 font-head font-bold text-[hsl(var(--pk-ink))]"><Wallet className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Financial Health</span>
-              <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
-            </button>
-            <div className="grid grid-cols-2 gap-2">
-              <StatCard label="PBT (KPI 1)" value={kpi1.ytdActual !== null ? `RM ${kpi1.ytdActual.toFixed(1)}m` : "—"} tone={kpi1.status === "met" ? "good" : kpi1.status === "not-met" ? "bad" : "default"} />
-              <StatCard label="Cost-to-Income" value={kpi2.ytdActual !== null ? `${kpi2.ytdActual.toFixed(1)}%` : "—"} tone={kpi2.status === "met" ? "good" : kpi2.status === "not-met" ? "bad" : "default"} />
+          {entityModules.includes("FH") && (
+            <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4 flex flex-col gap-3">
+              <button onClick={() => onNavigate("PFH001")} className="group flex items-center justify-between">
+                <span className="flex items-center gap-2 font-head font-bold text-[hsl(var(--pk-ink))]"><Wallet className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Financial Health</span>
+                <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
+              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <StatCard label="PBT (KPI 1)" value={kpi1.ytdActual !== null ? `RM ${kpi1.ytdActual.toFixed(1)}m` : "—"} tone={kpi1.status === "met" ? "good" : kpi1.status === "not-met" ? "bad" : "default"} />
+                <StatCard label="Cost-to-Income" value={kpi2.ytdActual !== null ? `${kpi2.ytdActual.toFixed(1)}%` : "—"} tone={kpi2.status === "met" ? "good" : kpi2.status === "not-met" ? "bad" : "default"} />
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4 flex flex-col gap-3">
-            <button onClick={() => onNavigate("RP001")} className="group flex items-center justify-between">
-              <span className="flex items-center gap-2 font-head font-bold text-[hsl(var(--pk-ink))]"><Users2 className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Resource &amp; People</span>
-              <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
-            </button>
-            <div className="grid grid-cols-2 gap-2">
-              <StatCard label="Recruitment Index" value={kpi9.ytdActual !== null ? `${kpi9.ytdActual.toFixed(1)}%` : "—"} tone={kpi9.status === "met" ? "good" : "default"} />
-              <StatCard label="Bumiputera Comp." value={kpi12.ytdActual !== null ? `${kpi12.ytdActual.toFixed(1)}%` : "—"} tone={kpi12.status === "met" ? "good" : "default"} />
+          {entityModules.includes("RP") && (
+            <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4 flex flex-col gap-3">
+              <button onClick={() => onNavigate("RP001")} className="group flex items-center justify-between">
+                <span className="flex items-center gap-2 font-head font-bold text-[hsl(var(--pk-ink))]"><Users2 className="h-4 w-4 text-[hsl(var(--pk-accent))]" />Resource &amp; People</span>
+                <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
+              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <StatCard label="Recruitment Index" value={kpi9.ytdActual !== null ? `${kpi9.ytdActual.toFixed(1)}%` : "—"} tone={kpi9.status === "met" ? "good" : "default"} />
+                <StatCard label="Bumiputera Comp." value={kpi12.ytdActual !== null ? `${kpi12.ytdActual.toFixed(1)}%` : "—"} tone={kpi12.status === "met" ? "good" : "default"} />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
