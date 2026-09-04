@@ -84,8 +84,8 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         ]}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
-        <div className="lg:col-span-1 flex flex-col gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-6 gap-5 items-start">
+        <div className="lg:col-span-2 flex flex-col gap-5">
           <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5">
             <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
               <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 5 · Weight 7.5% · bi-annual</div>
@@ -156,7 +156,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </div>
 
         {timeCharterByDept.periods.length > 0 && (
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-4">
             <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5 h-full">
               <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Summary of Results — click a department to chart its own trend</div>
               <div className="rounded-lg border border-[hsl(var(--pk-border))] overflow-x-auto">
