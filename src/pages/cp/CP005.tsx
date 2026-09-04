@@ -84,73 +84,81 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         ]}
       />
 
-      <div className="flex flex-col gap-5">
-        <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5">
-          <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 5 · Weight 7.5% · bi-annual</div>
-            <StatusChip status={kpi5.status} />
-          </div>
-          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">External Client Satisfaction</div>
-          <div className={cn("tnum font-head text-2xl font-semibold mb-3", kpi5.ytdActual !== null ? "text-[hsl(var(--pk-ink))]" : "text-[hsl(var(--pk-ink-faint))]")}>
-            {kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
-            <span className="text-sm font-head font-normal text-[hsl(var(--pk-ink-faint))]"> / target {kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}</span>
-          </div>
-          <KpiMetricStrip
-            weight="7.5%"
-            fy={fy}
-            periodLabel={periodLabel}
-            fyTarget={kpi5FyTarget.toFixed(1)}
-            ytdTarget={kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}
-            ytdActual={kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
-            achievement={kpi5.weighted !== null ? `${(kpi5.weighted * 100).toFixed(1)}%` : "—"}
-            status={kpi5.status}
-          />
-          {kpi5.ytdActual === null && (
-            <p className="text-xs text-[hsl(var(--pk-ink-faint))] mb-1">{kpi5.note ?? "Not yet reported for this period."}</p>
-          )}
-          <div className="mt-2 pt-4 border-t border-[hsl(var(--pk-border))]">
-            <div className="flex items-center justify-between flex-wrap gap-1.5 mb-2">
-              <div className="text-[11px] font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Historical trend — bi-annual survey rounds only</div>
-              <DurationFilterBar duration={duration} onChange={setDuration} total={fullSatisfactionTrend.length} label="" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+        <div className="lg:col-span-1 flex flex-col gap-5">
+          <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5">
+            <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 5 · Weight 7.5% · bi-annual</div>
+              <StatusChip status={kpi5.status} />
             </div>
-            <StackedBarTrend data={satisfactionTrend} />
-          </div>
-        </section>
-
-        <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5">
-          <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 6 · Weight 7.5% · quarterly</div>
-            <StatusChip status={kpi6.status} />
-          </div>
-          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Time Charter Compliance</div>
-          <KpiMetricStrip
-            weight="7.5%"
-            fy={fy}
-            periodLabel={periodLabel}
-            fyTarget={`${kpi6FyTarget.toFixed(1)}%`}
-            ytdTarget={kpi6.ytdTarget !== null ? `${kpi6.ytdTarget.toFixed(1)}%` : "—"}
-            ytdActual={kpi6.ytdActual !== null ? `${kpi6.ytdActual.toFixed(1)}%` : "—"}
-            achievement={kpi6.weighted !== null ? `${(kpi6.weighted * 100).toFixed(1)}%` : "—"}
-            status={kpi6.status}
-          />
-          <p className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Group average across {timeCharterByDept.departments.length || "—"} departments, scored quarterly — full breakdown below.</p>
-
-          {timeCharterByDept.periods.length > 0 && (
+            <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">External Client Satisfaction</div>
+            <div className={cn("tnum font-head text-2xl font-semibold mb-3", kpi5.ytdActual !== null ? "text-[hsl(var(--pk-ink))]" : "text-[hsl(var(--pk-ink-faint))]")}>
+              {kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
+              <span className="text-sm font-head font-normal text-[hsl(var(--pk-ink-faint))]"> / target {kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}</span>
+            </div>
+            <KpiMetricStrip
+              weight="7.5%"
+              fy={fy}
+              periodLabel={periodLabel}
+              fyTarget={kpi5FyTarget.toFixed(1)}
+              ytdTarget={kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}
+              ytdActual={kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
+              achievement={kpi5.weighted !== null ? `${(kpi5.weighted * 100).toFixed(1)}%` : "—"}
+              status={kpi5.status}
+            />
+            {kpi5.ytdActual === null && (
+              <p className="text-xs text-[hsl(var(--pk-ink-faint))] mb-1">{kpi5.note ?? "Not yet reported for this period."}</p>
+            )}
             <div className="mt-2 pt-4 border-t border-[hsl(var(--pk-border))]">
               <div className="flex items-center justify-between flex-wrap gap-1.5 mb-2">
-                <div className="text-[11px] font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Scoring by quarter — {chartLabel}</div>
-                {selectedDept && (
-                  <button
-                    onClick={() => setSelectedDept(null)}
-                    className="text-[11px] font-medium text-[hsl(var(--pk-accent))] hover:opacity-75 transition-opacity"
-                  >
-                    Reset to Group average
-                  </button>
-                )}
+                <div className="text-[11px] font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Historical trend</div>
+                <DurationFilterBar duration={duration} onChange={setDuration} total={fullSatisfactionTrend.length} label="" />
               </div>
-              <LineTrend data={chartData} unit="%" />
+              <StackedBarTrend data={satisfactionTrend} />
+            </div>
+          </section>
 
-              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mt-5 mb-2">Summary of Results — click a department to chart its own trend</div>
+          <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5">
+            <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 6 · Weight 7.5% · quarterly</div>
+              <StatusChip status={kpi6.status} />
+            </div>
+            <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Time Charter Compliance</div>
+            <KpiMetricStrip
+              weight="7.5%"
+              fy={fy}
+              periodLabel={periodLabel}
+              fyTarget={`${kpi6FyTarget.toFixed(1)}%`}
+              ytdTarget={kpi6.ytdTarget !== null ? `${kpi6.ytdTarget.toFixed(1)}%` : "—"}
+              ytdActual={kpi6.ytdActual !== null ? `${kpi6.ytdActual.toFixed(1)}%` : "—"}
+              achievement={kpi6.weighted !== null ? `${(kpi6.weighted * 100).toFixed(1)}%` : "—"}
+              status={kpi6.status}
+            />
+            <p className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Group average across {timeCharterByDept.departments.length || "—"} departments, scored quarterly.</p>
+
+            {timeCharterByDept.periods.length > 0 && (
+              <div className="mt-2 pt-4 border-t border-[hsl(var(--pk-border))]">
+                <div className="flex items-center justify-between flex-wrap gap-1.5 mb-2">
+                  <div className="text-[11px] font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Scoring by quarter — {chartLabel}</div>
+                  {selectedDept && (
+                    <button
+                      onClick={() => setSelectedDept(null)}
+                      className="text-[11px] font-medium text-[hsl(var(--pk-accent))] hover:opacity-75 transition-opacity"
+                    >
+                      Reset to Group average
+                    </button>
+                  )}
+                </div>
+                <LineTrend data={chartData} unit="%" />
+              </div>
+            )}
+          </section>
+        </div>
+
+        {timeCharterByDept.periods.length > 0 && (
+          <div className="lg:col-span-2">
+            <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5 h-full">
+              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Summary of Results — click a department to chart its own trend</div>
               <div className="rounded-lg border border-[hsl(var(--pk-border))] overflow-x-auto">
                 <table className="w-full text-sm min-w-[560px]">
                   <thead>
@@ -194,9 +202,9 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                   </tbody>
                 </table>
               </div>
-            </div>
-          )}
-        </section>
+            </section>
+          </div>
+        )}
       </div>
     </div>
   );
