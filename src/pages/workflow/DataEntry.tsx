@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { PenLine, Send, UploadCloud, History, Files, CheckCircle2, AlertTriangle } from "lucide-react";
+import { PenLine, Send, UploadCloud, History, Files, CheckCircle2, AlertTriangle, Download, Loader2 } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { WorkflowChip } from "@/components/pk/StatusChip";
 import { InfoNote } from "@/components/pk/Misc";
 import { AuditTrailPanel } from "@/components/pk/AuditTrailPanel";
 import { UploadsPanel } from "@/components/pk/UploadsPanel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -16,7 +17,10 @@ import { periods, periodById } from "@/data/periods";
 import { parseWorkbook, type ParsedWorkbook } from "@/lib/excelTemplate";
 import { fetchDetailRecords, upsertDetailMetric, upsertDetailRecord, type DetailRecordRow } from "@/lib/api/details";
 import { insertUploadEvent, insertUploadEventRows } from "@/lib/api/uploads";
+import { downloadPillarTemplate } from "@/lib/downloadTemplate";
+import { MODULE_LABEL, MODULE_ORDER } from "@/lib/modules";
 import { cn } from "@/lib/utils";
+import type { Module, PeriodId } from "@/types";
 
 const EMPTY_PARSED: ParsedWorkbook = { kpiRows: [], metricRows: [], recordRows: [], periodsFound: [], sheetsFound: [] };
 
@@ -28,6 +32,52 @@ function errMessage(err: unknown): string {
     return (err as { message: string }).message;
   }
   return String(err);
+}
+
+/** Download-a-blank-template button — generated in the browser from the same TEMPLATE_FIELDS
+ * manifest the upload parser reads, for the currently active reporting period, so there's
+ * nothing for a reporting officer to keep a local copy of between quarters: the filename and
+ * contents are always this quarter's, from one place, on demand. A pillar-locked role only ever
+ * sees their own assigned pillar here, matching what their uploads are restricted to anyway. */
+function DownloadTemplateMenu({ assignedModule, periodId }: { assignedModule: Module | null; periodId: PeriodId }) {
+  const [pending, setPending] = useState<Module | null>(null);
+  const modules = assignedModule ? [assignedModule] : MODULE_ORDER;
+
+  const handleDownload = async (m: Module) => {
+    if (pending) return;
+    setPending(m);
+    try {
+      await downloadPillarTemplate(m, periodId);
+    } catch (err) {
+      toast.error("Couldn't build the template", { description: err instanceof Error ? err.message : "Something went wrong." });
+    } finally {
+      setPending(null);
+    }
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          disabled={pending !== null}
+          className="inline-flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-3 py-1.5 text-[13px] font-medium text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors disabled:opacity-60"
+        >
+          {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          Download template
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.08em] text-[hsl(var(--pk-ink-faint))] font-semibold px-2 py-1">
+          {periodById(periodId).label} — blank template
+        </DropdownMenuLabel>
+        {modules.map((m) => (
+          <DropdownMenuItem key={m} onClick={() => handleDownload(m)} className="gap-2.5 py-2 cursor-pointer">
+            <span className="text-[13px] font-medium">{MODULE_LABEL[m]}</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
 interface UploadResultSummary {
@@ -115,7 +165,7 @@ function UploadResultDialog({ result, onClose }: { result: UploadResultSummary |
 }
 
 export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, userName, assignedModule, assignedModuleLabel } = useSession();
+  const { entityId, userName, assignedModule, assignedModuleLabel, periodId } = useSession();
   const { submit, submissions, editSubmission } = useWorkflow();
   const { refresh } = useDetails();
 
@@ -302,16 +352,19 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
     <div>
       <ScreenHeader id="DATA_ENTRY" subtitle="Upload the 3-pillar Excel template — each quarter column in the file is written to its own reporting period, in one pass." onNavigate={onNavigate} />
 
-      <div className="flex items-center gap-1 border border-[hsl(var(--pk-border))] rounded-lg p-1 w-fit bg-[hsl(var(--pk-surface))] mb-5">
-        <button onClick={() => setTab("upload")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "upload" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
-          <UploadCloud className="h-3.5 w-3.5" />New Upload
-        </button>
-        <button onClick={() => setTab("audit")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "audit" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
-          <History className="h-3.5 w-3.5" />Audit trail
-        </button>
-        <button onClick={() => setTab("uploads")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "uploads" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
-          <Files className="h-3.5 w-3.5" />Upload History
-        </button>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div className="flex items-center gap-1 border border-[hsl(var(--pk-border))] rounded-lg p-1 w-fit bg-[hsl(var(--pk-surface))]">
+          <button onClick={() => setTab("upload")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "upload" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
+            <UploadCloud className="h-3.5 w-3.5" />New Upload
+          </button>
+          <button onClick={() => setTab("audit")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "audit" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
+            <History className="h-3.5 w-3.5" />Audit trail
+          </button>
+          <button onClick={() => setTab("uploads")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "uploads" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
+            <Files className="h-3.5 w-3.5" />Upload History
+          </button>
+        </div>
+        <DownloadTemplateMenu assignedModule={assignedModule} periodId={periodId} />
       </div>
 
       {tab === "audit" ? (
@@ -419,7 +472,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
               </span>
             </div>
           )}
-          <InfoNote>Parsed entirely in your browser — the file itself isn't uploaded anywhere. KPI values go through the checker queue; everything else saves directly to the dashboards. Sheets recognized: Corporate Performance, Financial Health, Resource & People. Initiative catalogs, related-party transactions, and the PBT/CIR breakdown drill-down aren't in this template — those stay entered directly in-app. Monthly-resolution financial figures (feeding PFH002's Quarterly/Monthly toggle) also aren't covered yet.</InfoNote>
+          <InfoNote>Parsed entirely in your browser — the file itself isn't uploaded anywhere. KPI values go through the checker queue; everything else saves directly to the dashboards. Sheets recognized: Corporate Performance, Financial Health, Resource & People. Initiative catalogs (Process/Tech Initiatives, People Development Programme) stay entered directly in-app — each row is a name, a date range and a status, not one number per quarter. Monthly-resolution financial figures (feeding PFH002's Quarterly/Monthly toggle) also aren't covered yet.</InfoNote>
         </div>
 
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 h-fit">
