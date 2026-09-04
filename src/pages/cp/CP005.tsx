@@ -93,7 +93,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">External Client Satisfaction</div>
           <div className={cn("tnum font-head text-2xl font-semibold mb-2", kpi5.ytdActual !== null ? "text-[hsl(var(--pk-ink))]" : "text-[hsl(var(--pk-ink-faint))]")}>
             {kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
-            <span className="text-sm font-sans font-normal text-[hsl(var(--pk-ink-faint))]"> / target {kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}</span>
+            <span className="text-sm font-head font-normal text-[hsl(var(--pk-ink-faint))]"> / target {kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}</span>
           </div>
           <KpiMetricStrip
             weight="7.5%"

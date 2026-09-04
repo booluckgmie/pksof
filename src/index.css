@@ -108,13 +108,13 @@
   body {
     @apply bg-background text-foreground;
     background: hsl(var(--pk-paper));
-    font-family: Arial, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+    font-family: "Inter", Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 }
 
 .font-head {
-  font-family: Arial, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+  font-family: "Inter", Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
   letter-spacing: -0.02em;
 }
 .font-mono-pk {
