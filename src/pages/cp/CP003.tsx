@@ -77,6 +77,8 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             fyTarget={`RM ${kpi1FyTarget.toFixed(1)}m`}
             ytdTarget={kpi1.ytdTarget !== null ? `RM ${kpi1.ytdTarget.toFixed(1)}m` : "—"}
             ytdActual={kpi1.ytdActual !== null ? `RM ${kpi1.ytdActual.toFixed(1)}m` : "—"}
+            achievement={kpi1.weighted !== null ? `${(kpi1.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi1.status}
           />
 
           <button
@@ -116,6 +118,8 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             fyTarget={`${kpi2FyTarget.toFixed(1)}%`}
             ytdTarget={kpi2.ytdTarget !== null ? `${kpi2.ytdTarget.toFixed(1)}%` : "—"}
             ytdActual={kpi2.ytdActual !== null ? `${kpi2.ytdActual.toFixed(1)}%` : "—"}
+            achievement={kpi2.weighted !== null ? `${(kpi2.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi2.status}
           />
 
           <button

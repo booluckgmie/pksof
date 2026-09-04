@@ -68,6 +68,8 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             fyTarget={String(kpi7FyTarget)}
             ytdTarget={kpi7.ytdTarget !== null ? String(kpi7.ytdTarget) : "—"}
             ytdActual={kpi7.ytdActual !== null ? String(kpi7.ytdActual) : "—"}
+            achievement={kpi7.weighted !== null ? `${(kpi7.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi7.status}
           />
         </div>
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
@@ -83,6 +85,8 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             fyTarget={String(kpi8FyTarget)}
             ytdTarget={kpi8.ytdTarget !== null ? String(kpi8.ytdTarget) : "—"}
             ytdActual={kpi8.ytdActual !== null ? String(kpi8.ytdActual) : "—"}
+            achievement={kpi8.weighted !== null ? `${(kpi8.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi8.status}
           />
         </div>
       </div>

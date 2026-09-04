@@ -103,6 +103,8 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               fyTarget={kpi5FyTarget.toFixed(1)}
               ytdTarget={kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}
               ytdActual={kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
+              achievement={kpi5.weighted !== null ? `${(kpi5.weighted * 100).toFixed(1)}%` : "—"}
+              status={kpi5.status}
             />
             {kpi5.ytdActual === null && (
               <p className="text-xs text-[hsl(var(--pk-ink-faint))] mb-1">{kpi5.note ?? "Not yet reported for this period."}</p>
@@ -129,6 +131,8 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               fyTarget={`${kpi6FyTarget.toFixed(1)}%`}
               ytdTarget={kpi6.ytdTarget !== null ? `${kpi6.ytdTarget.toFixed(1)}%` : "—"}
               ytdActual={kpi6.ytdActual !== null ? `${kpi6.ytdActual.toFixed(1)}%` : "—"}
+              achievement={kpi6.weighted !== null ? `${(kpi6.weighted * 100).toFixed(1)}%` : "—"}
+              status={kpi6.status}
             />
             <p className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Group average across {timeCharterByDept.departments.length || "—"} departments, scored quarterly.</p>
 

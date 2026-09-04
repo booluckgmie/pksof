@@ -106,6 +106,8 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               fyTarget={`${kpi12FyTarget.toFixed(1)}%`}
               ytdTarget={kpi12.ytdTarget !== null ? `${kpi12.ytdTarget.toFixed(1)}%` : "—"}
               ytdActual={kpi12.ytdActual !== null ? `${kpi12.ytdActual.toFixed(1)}%` : "—"}
+              achievement={kpi12.weighted !== null ? `${(kpi12.weighted * 100).toFixed(1)}%` : "—"}
+              status={kpi12.status}
             />
             <CategoryBar
               segments={[
@@ -142,6 +144,8 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             fyTarget={`RM ${kpi11FyTarget.toFixed(2)}m`}
             ytdTarget={kpi11.ytdTarget !== null ? `RM ${kpi11.ytdTarget.toFixed(2)}m` : "—"}
             ytdActual={kpi11.ytdActual !== null ? `RM ${kpi11.ytdActual.toFixed(2)}m` : "—"}
+            achievement={kpi11.weighted !== null ? `${(kpi11.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi11.status}
           />
           <div className="tnum font-head text-2xl font-semibold mb-4">RM {procTotal.toFixed(2)}m</div>
           <div className="flex flex-col gap-3">
@@ -177,6 +181,8 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             fyTarget={String(kpi13FyTarget)}
             ytdTarget={kpi13.ytdTarget !== null ? String(kpi13.ytdTarget) : "—"}
             ytdActual={kpi13.ytdActual !== null ? String(kpi13.ytdActual) : "—"}
+            achievement={kpi13.weighted !== null ? `${(kpi13.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi13.status}
           />
           <div className="grid grid-cols-3 gap-2 text-center">
             <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.poolIdentified}</div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">Pool identified</div></div>

@@ -63,6 +63,8 @@ export function RecruitmentIndexScorecard({
         fyTarget={`${fyTarget.toFixed(1)}%`}
         ytdTarget={kpi9.ytdTarget !== null ? `${kpi9.ytdTarget.toFixed(1)}%` : "N/A"}
         ytdActual={kpi9.ytdActual !== null ? `${kpi9.ytdActual.toFixed(1)}%` : "—"}
+        achievement={kpi9.weighted !== null ? `${(kpi9.weighted * 100).toFixed(1)}%` : "—"}
+        status={kpi9.status}
       />
 
       {recruitmentIndex && totalWeighted !== null ? (
