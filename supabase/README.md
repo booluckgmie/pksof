@@ -53,14 +53,17 @@ publishable (anon) key — both are on the Supabase dashboard under Settings →
   the exact per-chart data structures the screens expect. There's no maker-checker queue behind
   this data (see the security note below) — writes from Data Entry's "Workforce & Financial
   Snapshot" tab or an Excel upload save immediately.
-- **Entry-only, no display yet**: `revenue_by_source`, `expense_by_category`,
-  `admin_expense_detail`, `personnel_expense_detail`, `pl_detail`, and `receivables_aging` —
-  line-item figures added to close the gap between the dashboard and the client's own Q1 2026
-  MEC report deck (revenue by counterparty, admin/personnel expense breakdowns, P&L items below
-  PBT, receivables aging buckets). The 3-pillar Excel template (below) writes these exactly like
-  any other `detail_metrics` row, but `src/lib/details.tsx` doesn't reshape them into chart data
-  yet, so nothing renders on a dashboard screen from these fields today. Deliberately left out of
-  this pass: the deposit/placement schedule and receivables aging by named client — both are
+- **Now displayed**: `revenue_by_source`, `expense_by_category`, and `pl_detail` all carry an
+  `actual`/`budget` split in `dimension2` and feed PFH002's revamped "Current Quarter vs
+  Preceding Quarter" and "Actual vs Budget" tables (see `readQuarterPl`/`readBreakdown` in
+  `src/lib/details.tsx`) — the Excel template writes both columns for each line.
+- **Entry-only, no display yet**: `admin_expense_detail`, `personnel_expense_detail`, and
+  `receivables_aging` — line-item figures added to close the gap between the dashboard and the
+  client's own Q1 2026 MEC report deck (admin/personnel expense breakdowns, receivables aging
+  buckets). The 3-pillar Excel template (below) writes these exactly like any other
+  `detail_metrics` row, but `src/lib/details.tsx` doesn't reshape them into chart data yet, so
+  nothing renders on a dashboard screen from these fields today. Deliberately left out of this
+  pass: the deposit/placement schedule and receivables aging by named client — both are
   multi-row datasets that belong in `detail_records` (like `related_party_txn`/initiatives), and
   no entry UI exists for those. Also left out: the monthly forecast schedule, a forward-budgeting
   artifact, a different kind of thing from the quarterly actuals this app reports.

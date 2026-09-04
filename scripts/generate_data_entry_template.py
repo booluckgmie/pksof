@@ -58,6 +58,117 @@ with open(SEED_SQL_PATH) as f:
 
 print(f"Parsed {len(anchors)} detail_metrics anchors, {len(kpi_anchors)} KPI anchors")
 
+
+def _parse_sql_tuple(s):
+    """Split a SQL VALUES (...) tuple's inner content on top-level commas, respecting
+    single-quoted strings (with '' as the escaped quote)."""
+    parts, cur, in_str, i = [], "", False, 0
+    while i < len(s):
+        c = s[i]
+        if in_str:
+            if c == "'" and (i + 1 >= len(s) or s[i + 1] != "'"):
+                in_str = False
+            elif c == "'" and s[i + 1] == "'":
+                cur += "'"
+                i += 1
+            else:
+                cur += c
+        else:
+            if c == "'":
+                in_str = True
+            elif c == ",":
+                parts.append(cur.strip())
+                cur = ""
+                i += 1
+                continue
+            else:
+                cur += c
+        i += 1
+    parts.append(cur.strip())
+    return parts
+
+
+def _sql_val(tok):
+    tok = tok.strip()
+    return None if tok.lower() == "null" else tok
+
+
+# record_anchors: (record_type, category_or_empty, label) -> (value_num, value_num2, text_note),
+# parsed the same way as the detail_metrics anchors above but for detail_records -- powers the
+# managed_entity_kpi / governance_kpi / financial_breakdown sections below, all of which need
+# more than a single (metric_key, dim, dim2) -> value lookup.
+record_anchors = {}
+with open(SEED_SQL_PATH) as f:
+    for line in f:
+        if "insert into detail_records" not in line or "'Q1FY26'" not in line:
+            continue
+        m = re.search(r"values \((.*)\);\s*$", line.strip())
+        if not m:
+            continue
+        toks = _parse_sql_tuple(m.group(1))
+        if len(toks) != 10:
+            continue
+        _id, _entity, period_id, record_type, label, category, value_num, value_num2, text_note, _flag = [_sql_val(t) for t in toks]
+        if period_id != "Q1FY26":
+            continue
+        record_anchors[(record_type, category or "", label)] = (
+            float(value_num) if value_num is not None else None,
+            float(value_num2) if value_num2 is not None else None,
+            text_note,
+        )
+
+print(f"Parsed {len(record_anchors)} detail_records anchors")
+
+# managed_entity_kpi's per-(entity, item) catalog -- entity + item description together identify
+# the row, matching supabase/seed.sql. New items are rare and still need adding here + in-app
+# (their "no|section|fyTarget|ytdTarget|ytdActual" text stays entered directly in CP004) before
+# Rating/Weighted for that item become uploadable through the template.
+MANAGED_ENTITY_KPI_ITEMS = [
+    ("SJPP", "Sessions with FIs, GoM agencies, & SME enablers (SMEs or business associations)"),
+    ("SJPP", "Processing of applications until GNL issued"),
+    ("SJPP", "Processing of issuance & renewal of guarantees request from the FIs"),
+    ("SJPP", "Issuance of GC for DPGS customers"),
+    ("SJPP", "Number of Malaysian businesses approved for SJPP-guaranteed financing"),
+    ("SJKP", "Processing and issuance of NOG for applications"),
+    ("SJKP", "Verification and reconciliation of monthly reports from participating FIs"),
+    ("SJKP", "Engagements with FIs and key stakeholders through regular sessions, events, and collaborations"),
+    ("SJKP", "Facilitate home financing access to segments identified in NB — assist 1st time house buyer to gain access to home financing under the SJKP schemes"),
+    ("DanaInfra", "Fundraising / financing activities (applicable for new mandate)"),
+    ("DanaInfra", "Disbursement of funds made on disbursement date (applicable for existing mandates)"),
+    ("DanaInfra", "Obtain optimal financing cost in fundraising"),
+    ("DanaHarta", "Finalisation of outstanding recovery / settlement cases within the period"),
+    ("DanaHarta", "Submission of quarterly recovery and compliance reports to relevant authorities"),
+    ("DanaHarta", "Engagement sessions with government agencies and financial institutions"),
+]
+
+# governance_kpi's 5 fixed components (20% weight each) -- same order as their "no" prefix in
+# textNote, matching supabase/seed.sql and CP004's own rendering order.
+GOVERNANCE_KPI_ITEMS = [
+    "Audit closure against the total audit observations due for implementation within the period",
+    "Achieve satisfactory rating (rating 3) in audit findings within the period",
+    "Implementation of Risk Action Plan (\"RAP\") within the timeline",
+    "Completion of Organisational Anti-Corruption Strategy (\"OACS\") initiatives as planned",
+    "Zero cases under Malaysian Anti-Corruption Commission (\"MACC\")",
+]
+
+# related_party_txn's category + "subheading|party" catalog, matching supabase/seed.sql exactly
+# (dimension2 packs "subheading|party" -- see details.tsx's relatedPartyTransactions comment).
+RELATED_PARTY_TXN_ROWS = [
+    ("A. Subsidiary companies", "Management fee|PAMSB", 10277),
+    ("B. Related corporations", "Management fee|PDNB", 245),
+    ("B. Related corporations", "Management fee|SJPP", 35705),
+    ("B. Related corporations", "Management fee|SJKP", 3587),
+    ("B. Related corporations", "Management fee|DINB", 3300),
+    ("B. Related corporations", "Management fee|GOVCO", 125),
+    ("B. Related corporations", "Advisory / outsourcing services|DINB", 7),
+]
+
+PBT_BREAKDOWN_ITEMS = ["Revenue", "Other Income", "Total Income", "Expenses", "Profit Before Tax"]
+CIR_BREAKDOWN_ITEMS = [
+    "Personnel expenses", "Administrative expenses", "Professional fees", "Depreciation",
+    "Other expenses", "Total Cost", "Total Income", "Cost-to-Income Ratio",
+]
+
 KPI_NAMES = {
     "KPI1": "Profit Before Tax (PBT)", "KPI2": "Cost-to-Income Ratio",
     "KPI3": "Managed Entities Rating", "KPI4": "Governance Index",
@@ -129,27 +240,34 @@ def cp_rows():
             vals[qi] = None if qi in skip else base_series[qi]
         rows.append(("kpi", kid, KPI_NAMES[kid], vals))
 
-    rows.append(("section", "Managed Entities Rating (KPI 3 support)", None))
-    for entity in ["SJPP", "SJKP", "DanaHarta", "DanaInfra", "GovCo"]:
-        for sub, dec, dirn in [("met", 0, "flat"), ("not_met", 0, "flat"), ("not_measured", 0, "flat"), ("achievement", 0, "flat")]:
-            a = anchors.get(("managed_entity_ratings", entity, sub))
-            vals = series(a, dirn, spread=0.15, decimals=dec, floor=0) if a is not None else fresh_series(3, dirn, decimals=dec, floor=0, seed_key=entity + sub)
-            rows.append(("metric", "managed_entity_ratings", entity, sub, f"{entity} — {sub.replace('_', ' ').title()}", vals))
+    # managed_entity_ratings (metric_key) and governance_index (record_type) were both retired
+    # from the live schema in favour of managed_entity_kpi / governance_kpi below -- the roll-up
+    # summary (met/not-met/achievement, or the governance total) is now derived entirely from
+    # those per-item rows rather than entered as its own separate figure.
+    rows.append(("section", "Managed Entities KPI Detail (KPI 3 support)", None))
+    for entity, item in MANAGED_ENTITY_KPI_ITEMS:
+        rating_a, weighted_a, _ = record_anchors.get(("managed_entity_kpi", entity, item), (None, None, None))
+        rating_vals = series(rating_a, "flat", spread=0.1, decimals=0, floor=1) if rating_a is not None else fresh_series(3, "flat", decimals=0, floor=1, seed_key=entity + item + "rating")
+        weighted_vals = series(weighted_a, "flat", spread=0.1, decimals=2, floor=0) if weighted_a is not None else fresh_series(0.2, "flat", decimals=2, floor=0, seed_key=entity + item + "weighted")
+        display = f"{entity} — {item}"
+        rows.append(("record", "managed_entity_kpi", item, entity, f"{display} — Rating", rating_vals, "valueNum"))
+        rows.append(("record", "managed_entity_kpi", item, entity, f"{display} — Weighted", weighted_vals, "valueNum2"))
 
-    rows.append(("section", "Governance Index (KPI 4 support)", None))
-    for item in [
-        "Audit closure against observations due", "Satisfactory rating (>=3) in audit findings",
-        "Implementation of Risk Action Plan within timeline", "Completion of Anti-Corruption Strategy initiatives",
-        "Zero cases under MACC",
-    ]:
-        a = anchors.get(("governance_index", item, ""))
-        vals = series(a, "flat", decimals=2, spread=0.05) if a is not None else fresh_series(0.8, "flat", decimals=2, seed_key=item)
-        rows.append(("record", "governance_index", item, "", item, vals))
+    # Only the weighted score (the number that actually drives the KPI4 roll-up) is templated --
+    # fyTarget/ytdActual/achievement are free text per item (some are percentages, some are
+    # "Rating 3.0", some are "0 cases", one goes "N/A -- No initiatives due" outside its window),
+    # not a uniform numeric cell, so those stay entered directly in-app (CP004).
+    rows.append(("section", "Governance KPI Detail (KPI 4 support)", None))
+    for item in GOVERNANCE_KPI_ITEMS:
+        _, weighted_a, _ = record_anchors.get(("governance_kpi", "", item), (None, None, None))
+        vals = series(weighted_a, "flat", decimals=1, spread=0.08, floor=0) if weighted_a is not None else fresh_series(15, "flat", decimals=1, floor=0, seed_key=item)
+        rows.append(("record", "governance_kpi", item, "", f"{item} — Weighted", vals, "valueNum2"))
 
     rows.append(("section", "Client Satisfaction (KPI 5 support)", None))
-    a = anchors.get(("client_satisfaction", "External Client Satisfaction", ""))
-    vals = series(a, "flat", decimals=1, spread=0.03) if a is not None else fresh_series(4.5, "flat", decimals=1, seed_key="client_satisfaction")
-    rows.append(("record", "client_satisfaction", "External Client Satisfaction", "", "External Client Satisfaction", vals))
+    cs_target, cs_actual, _ = record_anchors.get(("client_satisfaction", "", "External Client Satisfaction"), (None, None, None))
+    for label_suffix, field, a, base in [("FY TARGET", "valueNum", cs_target, 4.7), ("YTD ACTUAL", "valueNum2", cs_actual, 4.5)]:
+        vals = series(a, "flat", decimals=1, spread=0.03) if a is not None else fresh_series(base, "flat", decimals=1, seed_key="client_satisfaction" + field)
+        rows.append(("record", "client_satisfaction", "External Client Satisfaction", "", f"External Client Satisfaction — {label_suffix}", vals, field))
 
     rows.append(("section", "Time Charter Compliance (KPI 6 support, % per department)", None))
     for dept in [
@@ -218,8 +336,12 @@ def fh_rows():
         ("Fee from credit advisory services", "credit_advisory_fee", 0.7),
         ("Income from acquired loans (PAM)", "acquired_loans_income", 4.3),
     ]:
-        vals = fresh_series(base, "growth", decimals=2, seed_key=dim)
-        rows.append(("metric", "revenue_by_source", dim, "", label, vals))
+        # Actual and budget are two independent numbers per source (PFH002's Actual vs Budget
+        # drill-down needs both) -- dimension2 carries which one, matching the live schema.
+        for dim2, dirn in [("actual", "growth"), ("budget", "flat")]:
+            a = anchors.get(("revenue_by_source", dim, dim2))
+            vals = series(a, dirn, decimals=2, spread=0.08) if a is not None else fresh_series(base, dirn, decimals=2, seed_key=dim + dim2)
+            rows.append(("metric", "revenue_by_source", dim, dim2, f"{label} — {dim2.upper()}", vals))
 
     rows.append(("section", "Expense by Category (RM mil)", None))
     for label, dim, base in [
@@ -232,8 +354,10 @@ def fh_rows():
         ("Interest expense (lease liability)", "interest_expense_lease", 0.1),
         ("Provision for impairment loss on receivables", "impairment_receivables", 0.2),
     ]:
-        vals = fresh_series(base, "cost", decimals=2, seed_key=dim)
-        rows.append(("metric", "expense_by_category", dim, "", label, vals))
+        for dim2, dirn in [("actual", "cost"), ("budget", "flat")]:
+            a = anchors.get(("expense_by_category", dim, dim2))
+            vals = series(a, dirn, decimals=2, spread=0.08) if a is not None else fresh_series(base, dirn, decimals=2, seed_key=dim + dim2)
+            rows.append(("metric", "expense_by_category", dim, dim2, f"{label} — {dim2.upper()}", vals))
 
     rows.append(("section", "Administrative Expense Detail (RM '000)", None))
     admin_items = [
@@ -265,8 +389,10 @@ def fh_rows():
         ("Profit after tax", "profit_after_tax", 23.7, "growth"),
         ("Dividend", "dividend", 15.0, "flat"),
     ]:
-        vals = fresh_series(base, dirn, decimals=1, floor=-999, seed_key=dim)
-        rows.append(("metric", "pl_detail", dim, "", label, vals))
+        for dim2 in ("actual", "budget"):
+            a = anchors.get(("pl_detail", dim, dim2))
+            vals = series(a, dirn, decimals=1, spread=0.08, floor=-999) if a is not None else fresh_series(base, dirn, decimals=1, floor=-999, seed_key=dim + dim2)
+            rows.append(("metric", "pl_detail", dim, dim2, f"{label} — {dim2.upper()}", vals))
 
     rows.append(("section", "Balance Sheet Trend (RM mil)", None))
     for dim, label in [("shareholders_fund", "Shareholders' Fund"), ("total_liabilities", "Total Liabilities")]:
@@ -294,6 +420,34 @@ def fh_rows():
     ]:
         vals = fresh_series(base, "flat", decimals=0, seed_key=dim)
         rows.append(("metric", "receivables_aging", dim, "", label, vals))
+
+    # Real disclosed figures, not a projectable trend -- only the two quarters actually filed
+    # (Q4FY25, Q1FY26) get a value; every other column stays blank rather than fabricating a
+    # related-party transaction that never happened.
+    rows.append(("section", "Related Party Transactions (RM '000)", None))
+    for category, subheading_party, q4fy25_val in RELATED_PARTY_TXN_ROWS:
+        subheading, party = subheading_party.split("|")
+        q1fy26_val = anchors.get(("related_party_txn", category, subheading_party))
+        vals = [None, None, q4fy25_val, q1fy26_val, None]
+        rows.append(("metric", "related_party_txn", category, subheading_party, f"{subheading} — {party} ({category})", vals))
+
+    rows.append(("section", "PBT Breakdown (RM mil)", None))
+    for item in PBT_BREAKDOWN_ITEMS:
+        vn, vn2, note = record_anchors.get(("financial_breakdown", "PBT", item), (None, None, None))
+        ytd_target = float(note) if note not in (None, "") else None
+        fy_vals = series(vn, "flat", decimals=1, spread=0.05) if vn is not None else fresh_series(100, "flat", decimals=1, floor=-999, seed_key=item + "fy")
+        ytdt_vals = series(ytd_target, "flat", decimals=1, spread=0.05) if ytd_target is not None else fresh_series(90, "flat", decimals=1, floor=-999, seed_key=item + "ytdt")
+        ytda_vals = series(vn2, "growth", decimals=1, spread=0.08, floor=-999) if vn2 is not None else fresh_series(80, "growth", decimals=1, floor=-999, seed_key=item + "ytda")
+        rows.append(("record", "financial_breakdown", item, "PBT", f"{item} — FY Target", fy_vals, "valueNum"))
+        rows.append(("record", "financial_breakdown", item, "PBT", f"{item} — YTD Target", ytdt_vals, "textNote"))
+        rows.append(("record", "financial_breakdown", item, "PBT", f"{item} — YTD Actual", ytda_vals, "valueNum2"))
+
+    # CIR's rows only ever showed an actual-figures column (see details.tsx) -- no FY/YTD target.
+    rows.append(("section", "CIR Breakdown (RM mil)", None))
+    for item in CIR_BREAKDOWN_ITEMS:
+        _, vn2, _ = record_anchors.get(("financial_breakdown", "CIR", item), (None, None, None))
+        vals = series(vn2, "flat", decimals=1, spread=0.05, floor=-999) if vn2 is not None else fresh_series(15, "flat", decimals=1, floor=-999, seed_key=item + "cir")
+        rows.append(("record", "financial_breakdown", item, "CIR", f"{item} — YTD Actual (CIR)", vals, "valueNum2"))
     return rows
 
 
@@ -378,8 +532,8 @@ BORDER = Border(bottom=Side(style="thin", color="D9E2E8"))
 # Where each section's figures actually render — filled preparer's own reference, not parsed.
 SCREEN_FOR = {
     "KPI Scorecard": "Main · every CP/PFH/RP screen for that KPI's own perspective",
-    "Managed Entities Rating (KPI 3 support)": "CP004 Mandate & Governance — Managed Entities Performance Summary table",
-    "Governance Index (KPI 4 support)": "CP004 Mandate & Governance — Governance Index panel",
+    "Managed Entities KPI Detail (KPI 3 support)": "CP004 Mandate & Governance — Managed Entities Performance Summary table (per-entity, per-item Rating/Weighted; item catalog + targets stay in-app)",
+    "Governance KPI Detail (KPI 4 support)": "CP004 Mandate & Governance — Governance Index panel (Weighted score only; FY Target/YTD Actual/Achievement text stays in-app)",
     "Client Satisfaction (KPI 5 support)": "CP005 Customer — External Client Satisfaction",
     "Time Charter Compliance (KPI 6 support, % per department)": "CP005 Customer — Time Charter Compliance department scoring + drilldown",
     "Recruitment Efficiency Index (KPI 9 support)": "CP007 Organisational Capacity · RP001 Section B — component scorecard",
@@ -387,14 +541,17 @@ SCREEN_FOR = {
     "Bumiputera Training (KPI 13 support)": "CP008 Bumiputera Empowerment — Training tab",
     "Financial Trend (RM mil / %)": "CP003 Financial Perspective (PBT/CIR charts) · PFH002 Financial Results QoQ",
     "Actual vs Budget vs Prior Year (RM mil)": "PFH003 Actual vs Budget vs PY",
-    "Revenue by Source (RM mil)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
-    "Expense by Category (RM mil)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
+    "Revenue by Source (RM mil)": "PFH002 Financial Results — Revenue drill-down (Actual vs Budget)",
+    "Expense by Category (RM mil)": "PFH002 Financial Results — Expenses drill-down (Actual vs Budget)",
     "Administrative Expense Detail (RM '000)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
     "Personnel Expense Detail (RM '000)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
-    "P&L Detail below PBT (RM mil)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
+    "P&L Detail below PBT (RM mil)": "PFH002 Financial Results — income statement below PBT (Actual vs Budget)",
     "Balance Sheet Trend (RM mil)": "PFH004 Assets & Liabilities — balance sheet trend chart",
     "Balance Sheet Line Items (RM mil)": "PFH004 Assets & Liabilities — asset/liability breakdown",
     "Receivables Aging (RM '000)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
+    "Related Party Transactions (RM '000)": "PFH005 Related Party Transactions table (only quarters actually filed carry a figure — leave others blank)",
+    "PBT Breakdown (RM mil)": "CP003 Financial Perspective — PBT card drill-down",
+    "CIR Breakdown (RM mil)": "CP003 Financial Perspective — CIR card drill-down",
     "Headcount Summary": "RP001 Total Headcount · RP002 Approved Headcount · CP008 Composition tab · Main pillar snapshot",
     "Average Age": "RP001A Staff Demographics — Age Profile Summary donut",
     "Gender Breakdown": "RP001A Staff Demographics — Section A",
@@ -455,10 +612,16 @@ def build_workbook(qi: int, pillar: str) -> openpyxl.Workbook:
         ("Replace with real figures before using this for an actual reporting cycle.", 11, False, "333333"),
         ("", 11, False, "000000"),
         ("NOT COVERED HERE", 12, True, NAVY),
-        ("Initiative lists (Process/Tech/People Development Programme), related-party transactions, and the PBT/CIR", 11, False, "333333"),
-        ("drill-down breakdown stay entered directly in-app — they're free-form catalogs, not one number per quarter.", 11, False, "333333"),
+        ("Initiative lists (Process/Tech Initiatives, People Development Programme) stay entered directly in-app — each row", 11, False, "333333"),
+        ("is a name, a start/end date and a status, not one number per quarter.", 11, False, "333333"),
+        ("For Managed Entities KPI Detail and Governance KPI Detail, only the scored figures (Rating/Weighted) are here —", 11, False, "333333"),
+        ("the item catalog (No./Section/description) and its FY/YTD Target and YTD Actual wording (a mix of %, ratings and", 11, False, "333333"),
+        ("counts, not a uniform number) stay entered directly in-app on CP004.", 11, False, "333333"),
         ("The Variance Commentary notes (PFH003) are also entered directly in-app — a commentary sentence per line, not a", 11, False, "333333"),
         ("number, so it doesn't fit this template's one-number-per-quarter column.", 11, False, "333333"),
+        ("No conditional formatting or colour-coded cells are used anywhere in this workbook — every figure is a plain", 11, False, "333333"),
+        ("number, entered here and read as-is; status colours on the dashboard itself are computed from the value, not", 11, False, "333333"),
+        ("carried in the file.", 11, False, "333333"),
     ]
     for i, (text, size, bold, color) in enumerate(lines, start=1):
         c = instructions.cell(row=i, column=1, value=text)
@@ -503,7 +666,7 @@ def build_workbook(qi: int, pillar: str) -> openpyxl.Workbook:
             ws.cell(row=r, column=1, value=f"{kid} — {name}").font = Font(name="Calibri", size=10, bold=True)
             ws.cell(row=r, column=2, value="YTD Actual")
         elif entry[0] == "record":
-            _, record_type, label, category, display, vals = entry
+            _, record_type, label, category, display, vals, _record_field = entry
             ws.cell(row=r, column=1, value=display).font = Font(name="Calibri", size=10)
             ws.cell(row=r, column=2, value=category or "—")
         else:
@@ -589,8 +752,8 @@ def js_entry(sheet, entry):
         _, kid, name, _ = entry
         return f"  {{ sheet: '{sheet}', label: '{esc(f'{kid} — {name}')}', sub: 'YTD Actual', dest: 'kpi', kpiId: '{kid}' }},"
     if entry[0] == "record":
-        _, record_type, label, category, display, _ = entry
-        return f"  {{ sheet: '{sheet}', label: '{esc(display)}', sub: '{esc(category or '—')}', dest: 'record', recordType: '{record_type}', recordLabel: '{esc(label)}' }},"
+        _, record_type, label, category, display, _, record_field = entry
+        return f"  {{ sheet: '{sheet}', label: '{esc(display)}', sub: '{esc(category or '—')}', dest: 'record', recordType: '{record_type}', recordLabel: '{esc(label)}', recordField: '{record_field}' }},"
     _, metric_key, dim, dim2, display, _ = entry
     sub = esc(dim2) if dim2 else "—"
     return f"  {{ sheet: '{sheet}', label: '{esc(display)}', sub: '{sub}', dest: 'metric', metricKey: '{metric_key}', dimension: '{esc(dim)}', dimension2: '{esc(dim2)}' }},"
@@ -603,7 +766,7 @@ ts_lines = [
     "export type TemplateFieldDest =",
     "  | { dest: 'kpi'; kpiId: string }",
     "  | { dest: 'metric'; metricKey: string; dimension: string; dimension2: string }",
-    "  | { dest: 'record'; recordType: string; recordLabel: string };",
+    "  | { dest: 'record'; recordType: string; recordLabel: string; recordField: 'valueNum' | 'valueNum2' | 'textNote' };",
     "",
     "export const TEMPLATE_FIELDS: ({ sheet: string; label: string; sub: string } & TemplateFieldDest)[] = [",
 ]

@@ -14,7 +14,7 @@ import { useDetails } from "@/lib/details";
 import { kpiById } from "@/data/kpis";
 import { periods, periodById } from "@/data/periods";
 import { parseWorkbook, type ParsedWorkbook } from "@/lib/excelTemplate";
-import { upsertDetailMetric, upsertDetailRecord } from "@/lib/api/details";
+import { fetchDetailRecords, upsertDetailMetric, upsertDetailRecord, type DetailRecordRow } from "@/lib/api/details";
 import { insertUploadEvent, insertUploadEventRows } from "@/lib/api/uploads";
 import { cn } from "@/lib/utils";
 
@@ -207,21 +207,56 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
       }
       setSubmitProgress((p) => ({ ...p, done: p.done + 1 }));
     }
+    // A record can carry more than one uploadable number (e.g. managed_entity_kpi's Rating +
+    // Weighted, financial_breakdown's FY Target + YTD Target + YTD Actual) — group every parsed
+    // row back onto the one underlying detail_records row it belongs to (same recordType +
+    // category + label + period) before writing, and merge in whatever that row already has in
+    // the database for any column this upload didn't touch. Writing each parsed row separately
+    // would upsert a full row each time and null out every column but the one just uploaded.
+    // Reusing the *existing* row's id (found by that same natural key) rather than always
+    // minting a fresh `TPL-…` one also stops a re-upload from creating a duplicate row alongside
+    // one that was seeded or entered in-app under its own id.
+    type RecordGroup = {
+      recordType: string; label: string; category: string; periodId: (typeof parsed.recordRows)[number]["periodId"]; sheet: string;
+      fields: Partial<Record<"valueNum" | "valueNum2" | "textNote", number>>;
+    };
+    const recordGroups = new Map<string, RecordGroup>();
     for (const row of parsed.recordRows) {
+      const key = `${row.recordType}|${row.category}|${row.label}|${row.periodId}`;
+      let g = recordGroups.get(key);
+      if (!g) {
+        g = { recordType: row.recordType, label: row.label, category: row.category, periodId: row.periodId, sheet: row.sheet, fields: {} };
+        recordGroups.set(key, g);
+      }
+      g.fields[row.recordField] = row.value;
+    }
+    let existingRecords: DetailRecordRow[] = [];
+    if (recordGroups.size > 0) {
       try {
-        await upsertDetailRecord({
-          id: `TPL-${row.recordType}-${slug(row.label)}-${row.periodId}`,
-          entityId, periodId: row.periodId, recordType: row.recordType,
-          label: row.label, category: row.category || null, valueNum: row.value,
-        });
+        existingRecords = await fetchDetailRecords();
+      } catch (err) {
+        console.error("Couldn't load existing detail_records for merge — uploaded fields for multi-column records may overwrite untouched columns with blanks", err);
+      }
+    }
+    for (const g of recordGroups.values()) {
+      const existing = existingRecords.find(
+        (r) => r.entityId === entityId && r.recordType === g.recordType && (r.category ?? "") === g.category && r.label === g.label && r.periodId === g.periodId
+      );
+      const id = existing?.id ?? `TPL-${g.recordType}-${slug(g.category)}-${slug(g.label)}-${g.periodId}`;
+      const valueNum = g.fields.valueNum ?? existing?.valueNum ?? null;
+      const valueNum2 = g.fields.valueNum2 ?? existing?.valueNum2 ?? null;
+      const textNote = g.fields.textNote !== undefined ? String(g.fields.textNote) : (existing?.textNote ?? null);
+      const displayValue = g.fields.valueNum ?? g.fields.valueNum2 ?? g.fields.textNote ?? null;
+      try {
+        await upsertDetailRecord({ id, entityId, periodId: g.periodId, recordType: g.recordType, label: g.label, category: g.category || null, valueNum, valueNum2, textNote });
         detailSaved++;
-        auditRows.push({ id: nextAuditId(), uploadId, dest: "record", sheet: row.sheet, label: `${row.recordType}/${row.label}`, periodId: row.periodId, value: row.value, status: "saved" });
+        auditRows.push({ id: nextAuditId(), uploadId, dest: "record", sheet: g.sheet, label: `${g.recordType}/${g.label}`, periodId: g.periodId, value: displayValue, status: "saved" });
       } catch (err) {
         const description = errMessage(err);
-        toast.error(`Couldn't save ${row.recordType}/${row.label}`, { description });
-        auditRows.push({ id: nextAuditId(), uploadId, dest: "record", sheet: row.sheet, label: `${row.recordType}/${row.label}`, periodId: row.periodId, value: row.value, status: "failed", errorMessage: description });
+        toast.error(`Couldn't save ${g.recordType}/${g.label}`, { description });
+        auditRows.push({ id: nextAuditId(), uploadId, dest: "record", sheet: g.sheet, label: `${g.recordType}/${g.label}`, periodId: g.periodId, value: displayValue, status: "failed", errorMessage: description });
       }
-      setSubmitProgress((p) => ({ ...p, done: p.done + 1 }));
+      setSubmitProgress((p) => ({ ...p, done: p.done + Object.keys(g.fields).length }));
     }
     if (detailSaved > 0) await refresh();
 

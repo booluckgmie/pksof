@@ -31,6 +31,12 @@ export interface ParsedDetailRecordRow {
   recordType: string;
   label: string;
   category: string;
+  /** Which column of the underlying detail_records row this cell writes — a record can need more
+   * than one number (e.g. managed_entity_kpi's Rating + Weighted), so unlike a metric row a
+   * record row's value doesn't always mean the same column. See DataEntry.tsx's submit step,
+   * which groups rows back onto one record before writing so the columns not present in this
+   * upload aren't clobbered. */
+  recordField: "valueNum" | "valueNum2" | "textNote";
   periodId: PeriodId;
   value: number;
   sheet: string;
@@ -110,7 +116,7 @@ export async function parseWorkbook(file: File): Promise<ParsedWorkbook> {
         } else if (field.dest === "metric") {
           metricRows.push({ metricKey: field.metricKey, dimension: field.dimension, dimension2: field.dimension2, periodId, value, sheet: sheetName });
         } else {
-          recordRows.push({ recordType: field.recordType, label: field.recordLabel, category: sub === "—" ? "" : sub, periodId, value, sheet: sheetName });
+          recordRows.push({ recordType: field.recordType, label: field.recordLabel, category: sub === "—" ? "" : sub, recordField: field.recordField, periodId, value, sheet: sheetName });
         }
       }
     }
