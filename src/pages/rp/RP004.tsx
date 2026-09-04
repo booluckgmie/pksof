@@ -46,7 +46,7 @@ export function RP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weighted Achievement {kpi13.weighted !== null ? (kpi13.weighted * 100).toFixed(1) : "—"}%</div>
+            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weight 1.66%</div>
             <div className="font-head font-bold text-[hsl(var(--pk-ink))]">Bumiputera Training &amp; Development</div>
           </div>
           <StatusChip status={kpi13.status} />

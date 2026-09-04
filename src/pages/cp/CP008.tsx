@@ -95,7 +95,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 12 · Weighted Achievement {kpi12.weighted !== null ? (kpi12.weighted * 100).toFixed(1) : "—"}%</div>
+              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 12 · Weight 1.67%</div>
               <StatusChip status={kpi12.status} />
             </div>
             <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Composition</div>
@@ -131,7 +131,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       {tab === "procurement" && (
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 11 · Weighted Achievement {kpi11.weighted !== null ? (kpi11.weighted * 100).toFixed(1) : "—"}%</div>
+            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 11 · Weight 1.67%</div>
             <StatusChip status={kpi11.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Procurement</div>
@@ -166,7 +166,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       {tab === "training" && (
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weighted Achievement {kpi13.weighted !== null ? (kpi13.weighted * 100).toFixed(1) : "—"}%</div>
+            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weight 1.66%</div>
             <StatusChip status={kpi13.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Training</div>

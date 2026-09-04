@@ -51,7 +51,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           )}
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 3 · Weighted Achievement {kpi3.weighted !== null ? (kpi3.weighted * 100).toFixed(1) : "—"}%</div>
+            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 3 · Weight 7.5%</div>
             <StatusChip status={kpi3.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2 inline-flex items-center gap-1.5">
@@ -88,7 +88,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           )}
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 4 · Weighted Achievement {kpi4.weighted !== null ? (kpi4.weighted * 100).toFixed(1) : "—"}%</div>
+            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 4 · Weight 7.5%</div>
             <StatusChip status={kpi4.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2 inline-flex items-center gap-1.5">

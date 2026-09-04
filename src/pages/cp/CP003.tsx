@@ -61,7 +61,7 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-1">
             <div>
-              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 1 · Weighted Achievement {kpi1.weighted !== null ? (kpi1.weighted * 100).toFixed(1) : "—"}%</div>
+              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 1 · Weight {(kpiById("KPI1").weight * 100).toFixed(1)}%</div>
               <div className="font-head font-bold text-[hsl(var(--pk-ink))] inline-flex items-center gap-1.5">
                 Profit Before Tax (PBT)
                 <InfoTip title="Weighted Achievement">YTD Actual ÷ FY Target × Weight, capped at 12.5%.</InfoTip>
@@ -100,7 +100,7 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-1">
             <div>
-              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 2 · Weighted Achievement {kpi2.weighted !== null ? (kpi2.weighted * 100).toFixed(1) : "—"}% · lower is better</div>
+              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 2 · Weight {(kpiById("KPI2").weight * 100).toFixed(1)}% · lower is better</div>
               <div className="font-head font-bold text-[hsl(var(--pk-ink))] inline-flex items-center gap-1.5">
                 Cost-to-Income Ratio
                 <InfoTip title="Weighted Achievement">FY Target ÷ YTD Actual × Weight, capped at 12.5% — a lower actual than target scores full achievement.</InfoTip>

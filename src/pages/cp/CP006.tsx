@@ -57,7 +57,7 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 7 · Weighted Achievement {kpi7.weighted !== null ? (kpi7.weighted * 100).toFixed(1) : "—"}%</div>
+            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 7 · Weight 10.0%</div>
             <StatusChip status={kpi7.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Process Improvements</div>
@@ -72,7 +72,7 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </div>
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 8 · Weighted Achievement {kpi8.weighted !== null ? (kpi8.weighted * 100).toFixed(1) : "—"}%</div>
+            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 8 · Weight 10.0%</div>
             <StatusChip status={kpi8.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">New Technology Implementation</div>

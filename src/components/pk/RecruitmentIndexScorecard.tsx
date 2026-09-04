@@ -45,7 +45,7 @@ export function RecruitmentIndexScorecard({
     <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 9 · Weighted Achievement {kpi9.weighted !== null ? (kpi9.weighted * 100).toFixed(1) : "—"}%</div>
+          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 9 · Weight {weightPct}</div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] inline-flex items-center gap-1.5">
             Recruitment Efficiency Index
             <InfoTip title="Recruitment Efficiency Index">
