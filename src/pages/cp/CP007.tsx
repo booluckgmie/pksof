@@ -1,3 +1,4 @@
+import { BookUser, ChevronRight } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { RecruitmentIndexScorecard } from "@/components/pk/RecruitmentIndexScorecard";
 import type { ScreenId } from "@/lib/nav";
@@ -28,6 +29,21 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         periodLabel={period.label.replace(" FY", " ")}
         fyTarget={getFyTarget("KPI9", period.fy)}
       />
+
+      <button
+        type="button"
+        onClick={() => onNavigate("CP009")}
+        className="mt-4 w-full flex items-center justify-between gap-3 rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card px-4 py-3 text-left hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <BookUser className="h-4 w-4 text-[hsl(var(--pk-accent))] shrink-0" />
+          <div className="min-w-0">
+            <div className="text-sm font-medium text-[hsl(var(--pk-ink))]">People Development Programme</div>
+            <div className="text-[11.5px] text-[hsl(var(--pk-ink-faint))]">KPI 10 · the other half of Organisational Capacity — CP009</div>
+          </div>
+        </div>
+        <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] shrink-0" />
+      </button>
     </div>
   );
 }

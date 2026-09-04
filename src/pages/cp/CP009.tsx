@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, X } from "lucide-react";
+import { Plus, Pencil, Trash2, X, GraduationCap, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { InfoNote, InitiativeStatusDot } from "@/components/pk/Misc";
@@ -88,6 +88,21 @@ export function CP009({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <InfoNote>
         Talent Management, Succession Management, Performance Management and Talent/Culture Engagement, by reporting period. {canEnterData ? "Add, edit or remove entries below for the currently selected reporting period." : "Read-only for your role — Reporting Officer or System Administrator can edit."}
       </InfoNote>
+
+      <button
+        type="button"
+        onClick={() => onNavigate("CP007")}
+        className="mt-3 w-full flex items-center justify-between gap-3 rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card px-4 py-3 text-left hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <GraduationCap className="h-4 w-4 text-[hsl(var(--pk-accent))] shrink-0" />
+          <div className="min-w-0">
+            <div className="text-sm font-medium text-[hsl(var(--pk-ink))]">Recruitment Efficiency Index</div>
+            <div className="text-[11.5px] text-[hsl(var(--pk-ink-faint))]">KPI 9 · the other half of Organisational Capacity — CP007</div>
+          </div>
+        </div>
+        <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] shrink-0" />
+      </button>
 
       <div className="flex flex-col gap-4 mt-4">
         {PEOPLE_DEV_SUB_AREAS.map((subArea) => {
