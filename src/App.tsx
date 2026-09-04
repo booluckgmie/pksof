@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Lock } from "lucide-react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { SessionProvider, useSession } from "@/lib/session";
 import { WorkflowProvider } from "@/lib/workflow";
 import { DetailsProvider } from "@/lib/details";
@@ -219,6 +220,7 @@ function App() {
             <DetailsProvider>
               <AuthedApp />
               <Toaster position="bottom-right" richColors />
+              <SpeedInsights />
             </DetailsProvider>
           </WorkflowProvider>
         </SessionProvider>
