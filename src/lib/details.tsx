@@ -525,24 +525,40 @@ export function useDetails() {
 
   // ── Initiatives / compliance ────────────────────────────────────────────
 
-  const managedEntityRatings = useMemo(() => {
-    const rows = metricRows("managed_entity_ratings");
-    const eff = latestPeriodWithData(periodsWithData(rows, entityId, () => true));
-    const forPeriod = eff ? rows.filter((r) => r.periodId === eff) : [];
-    const entities = [...new Set(forPeriod.map((r) => r.dimension))];
-    return entities.map((entity) => {
-      const sub = forPeriod.filter((r) => r.dimension === entity);
-      const met = sub.find((r) => r.dimension2 === "met")?.value ?? 0;
-      const notMet = sub.find((r) => r.dimension2 === "not_met")?.value ?? 0;
-      const notMeasured = sub.find((r) => r.dimension2 === "not_measured")?.value ?? 0;
-      const achievementRow = sub.find((r) => r.dimension2 === "achievement");
-      return {
-        entity, met, notMet, notMeasured, total: met + notMet + notMeasured,
-        achievement: achievementRow?.value ?? 0,
-        status: (achievementRow?.note ?? "On track") as "On track" | "Attention",
-      };
+  /** Per-KPI breakdown behind each Managed Entity's own quarterly rating (No/Section/KPI/FY
+   * Target/YTD Target/YTD Actual/Rating/Weighted Rating) — category holds the entity name
+   * ("SJPP", "SJKP", …), textNote packs "no|section|fyTarget|ytdTarget|ytdActual" pipe-delimited
+   * (same convention as related_party_txn / initiativeListFor), valueNum/valueNum2 are the
+   * Rating (1-5) and Weighted Rating. The roll-up summary table (met/not-met/achievement/status)
+   * is derived entirely from these rows rather than stored separately, so the two can't drift. */
+  function managedEntityKpiRows(periodId: PeriodId) {
+    const rows = recordRows("managed_entity_kpi");
+    const available = periodsWithData(rows, entityId, () => true);
+    const eff = resolvePeriod(periodId, available);
+    return eff ? rows.filter((r) => r.periodId === eff) : [];
+  }
+
+  function managedEntityKpiDetailFor(entity: string, periodId: PeriodId) {
+    return managedEntityKpiRows(periodId)
+      .filter((r) => r.category === entity)
+      .map((r) => {
+        const [no = "", section = "", fyTarget = "", ytdTarget = "", ytdActual = ""] = (r.textNote ?? "").split("|");
+        return { no, section, label: r.label, fyTarget, ytdTarget, ytdActual, rating: r.valueNum ?? 0, weighted: r.valueNum2 ?? 0 };
+      });
+  }
+
+  function managedEntityRatingsFor(periodId: PeriodId) {
+    const rows = managedEntityKpiRows(periodId);
+    const entitiesPresent = [...new Set(rows.map((r) => r.category).filter((c): c is string => !!c))];
+    return entitiesPresent.map((entity) => {
+      const ratings = rows.filter((r) => r.category === entity).map((r) => r.valueNum ?? 0);
+      const met = ratings.filter((r) => r >= 4).length;
+      const notMet = ratings.filter((r) => r < 4).length;
+      const achievement = ratings.length ? Math.round((ratings.reduce((s, r) => s + r, 0) / ratings.length / 5) * 100) : 0;
+      const status: "On track" | "Attention" = ratings.some((r) => r <= 1) ? "Attention" : "On track";
+      return { entity, met, notMet, notMeasured: 0, total: ratings.length, achievement, status };
     });
-  }, [metrics, entityId]);
+  }
 
   const clientSatisfaction = useMemo(() => {
     const rows = recordRows("client_satisfaction");
@@ -575,11 +591,24 @@ export function useDetails() {
     };
   }, [metrics, entityId]);
 
-  const governanceIndex = useMemo(() => {
-    const rows = recordRows("governance_index");
-    const eff = latestPeriodWithData(periodsWithData(rows, entityId, () => true));
-    return rows.filter((r) => r.periodId === eff).map((r) => ({ item: r.label, target: r.valueNum ?? 0, note: r.textNote ?? "" }));
-  }, [records, entityId]);
+  /** Governance Index component breakdown (No/KPI/FY Target/YTD Actual/Achievement/Weighted
+   * Achievement) — five equally-weighted (20% each) components; textNote packs
+   * "no|fyTarget|ytdActual|achievement" (achievement blank when a component isn't due yet this
+   * quarter, e.g. OACS initiatives in Q1 — its full 20% weight still carries through unpenalised,
+   * matching how the client's own report treats "not yet due" versus an actual miss). */
+  function governanceKpiFor(periodId: PeriodId) {
+    const rows = recordRows("governance_kpi");
+    const available = periodsWithData(rows, entityId, () => true);
+    const eff = resolvePeriod(periodId, available);
+    if (!eff) return [];
+    return rows
+      .filter((r) => r.periodId === eff)
+      .map((r) => {
+        const [no = "0", fyTarget = "", ytdActual = "", achievement = ""] = (r.textNote ?? "").split("|");
+        return { no: Number(no), label: r.label, fyTarget, ytdActual, achievement, weighted: r.valueNum2 ?? 0 };
+      })
+      .sort((a, b) => a.no - b.no);
+  }
 
   /** Drill-down line items behind a headline KPI card (PBT's income-statement breakdown, CIR's
    * cost breakdown) — category distinguishes which breakdown a row belongs to. valueNum = FY
@@ -656,7 +685,7 @@ export function useDetails() {
     gradeGenderCrossTabFor, departmentHeadcountFor, recruitmentIndexByPeriod,
     resignedByPeriod, turnoverTrend, bumiputeraTrainingByPeriod,
     quarterlyTrend, monthlyTrendFor, actualVsBudget, financialResultsFor, varianceCommentary, balanceSheet, relatedPartyTransactions,
-    managedEntityRatings, clientSatisfaction, timeCharterByDept, governanceIndex,
+    managedEntityRatingsFor, managedEntityKpiDetailFor, clientSatisfaction, timeCharterByDept, governanceKpiFor,
     processInitiatives, techInitiatives, bumiputeraProcurement, peopleDevRecordsFor,
     pbtBreakdown, cirBreakdown,
   };
