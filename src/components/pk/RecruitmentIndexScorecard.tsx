@@ -106,12 +106,14 @@ export function RecruitmentIndexScorecard({
               </tbody>
             </table>
           </div>
-          <div className="mt-3 flex flex-col gap-0.5">
-            {recruitmentIndex.map((m) => (
-              <div key={m.metric} className="text-[11px] text-[hsl(var(--pk-ink-faint))]">
-                <span className="font-medium text-[hsl(var(--pk-ink-soft))]">{m.metric}:</span> {m.note}
-              </div>
-            ))}
+          <div className="mt-3 flex flex-col gap-1.5">
+            <div className="text-[11px] font-medium text-[hsl(var(--pk-ink-soft))]">Notes:</div>
+            <div className="text-[11px] text-[hsl(var(--pk-ink-faint))]">
+              i. Scoring (out of 5): 1 – 75 days (score 5), 76 – 150 days (score 4), 151 – 225 days (score 3), 226 – 300 days (score 2), &gt;300 days (score 1)
+            </div>
+            <div className="text-[11px] text-[hsl(var(--pk-ink-faint))]">
+              ii. Scoring (out of 5): 90 – 100% (score 5), 80 – 89% (score 4), 70 – 79% days (score 3), 50 – 69% days (score 2), &lt;50% (score 1)
+            </div>
           </div>
           <p className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">MRF: Manpower Requisition Form.</p>
         </>
