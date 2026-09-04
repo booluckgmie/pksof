@@ -97,7 +97,6 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               <span className="text-sm font-head font-normal text-[hsl(var(--pk-ink-faint))]"> / target {kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}</span>
             </div>
             <KpiMetricStrip
-              weight="7.5%"
               fy={fy}
               periodLabel={periodLabel}
               fyTarget={kpi5FyTarget.toFixed(1)}
@@ -125,7 +124,6 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </div>
             <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Time Charter Compliance</div>
             <KpiMetricStrip
-              weight="7.5%"
               fy={fy}
               periodLabel={periodLabel}
               fyTarget={`${kpi6FyTarget.toFixed(1)}%`}

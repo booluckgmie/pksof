@@ -71,7 +71,6 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
 
           <KpiMetricStrip
-            weight={`${(kpiById("KPI1").weight * 100).toFixed(1)}%`}
             fy={fy}
             periodLabel={periodLabel}
             fyTarget={`RM ${kpi1FyTarget.toFixed(1)}m`}
@@ -112,7 +111,6 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
 
           <KpiMetricStrip
-            weight={`${(kpiById("KPI2").weight * 100).toFixed(1)}%`}
             fy={fy}
             periodLabel={periodLabel}
             fyTarget={`${kpi2FyTarget.toFixed(1)}%`}

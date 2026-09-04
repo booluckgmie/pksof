@@ -100,7 +100,6 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </div>
             <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Composition</div>
             <KpiMetricStrip
-              weight="1.67%"
               fy={fy}
               periodLabel={periodLabel}
               fyTarget={`${kpi12FyTarget.toFixed(1)}%`}
@@ -138,7 +137,6 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Procurement</div>
           <KpiMetricStrip
-            weight="1.67%"
             fy={fy}
             periodLabel={periodLabel}
             fyTarget={`RM ${kpi11FyTarget.toFixed(2)}m`}
@@ -175,7 +173,6 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Training</div>
           <KpiMetricStrip
-            weight="1.66%"
             fy={fy}
             periodLabel={periodLabel}
             fyTarget={String(kpi13FyTarget)}

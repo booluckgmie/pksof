@@ -57,7 +57,6 @@ export function RecruitmentIndexScorecard({
       </div>
 
       <KpiMetricStrip
-        weight={weightPct}
         fy={fy}
         periodLabel={periodLabel}
         fyTarget={`${fyTarget.toFixed(1)}%`}

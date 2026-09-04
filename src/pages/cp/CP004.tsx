@@ -63,7 +63,6 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi3.ytdTarget ?? "—"}</span>
           </div>
           <KpiMetricStrip
-            weight="7.5%"
             fy={fy}
             periodLabel={periodLabel}
             fyTarget={kpi3FyTarget.toFixed(1)}
@@ -102,7 +101,6 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi4.ytdTarget !== null ? `${kpi4.ytdTarget.toFixed(1)}%` : "—"}</span>
           </div>
           <KpiMetricStrip
-            weight="7.5%"
             fy={fy}
             periodLabel={periodLabel}
             fyTarget={`${kpi4FyTarget.toFixed(1)}%`}

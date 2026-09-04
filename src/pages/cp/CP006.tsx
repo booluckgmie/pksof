@@ -62,7 +62,6 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Process Improvements</div>
           <KpiMetricStrip
-            weight="10.0%"
             fy={fy}
             periodLabel={periodLabel}
             fyTarget={String(kpi7FyTarget)}
@@ -79,7 +78,6 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">New Technology Implementation</div>
           <KpiMetricStrip
-            weight="10.0%"
             fy={fy}
             periodLabel={periodLabel}
             fyTarget={String(kpi8FyTarget)}
