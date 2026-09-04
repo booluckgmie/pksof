@@ -41,7 +41,7 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const displayName = userId.trim() || "demo.user";
+    const displayName = userId.trim() || "reporting.officer";
     login({ role, userName: displayName, homeEntity, periodId: latestPeriodId, assignedModule: roleDef.moduleLocked ? assignedModule : null });
     onOpenChange(false);
     setUserId("");
@@ -54,7 +54,7 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
         <DialogHeader>
           <DialogTitle className="font-head">Sign in</DialogTitle>
           <DialogDescription>
-            For authorised uploaders and reviewers only — any Corporate ID/password works in this prototype. Browsing the dashboards doesn't require signing in.
+            For uploading or reviewing data. Browsing the dashboards doesn't require signing in.
           </DialogDescription>
         </DialogHeader>
 
@@ -103,7 +103,7 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
           <div className="h-px bg-[hsl(var(--pk-border))]" />
 
           <label className="flex flex-col gap-1">
-            <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Sign in as (demo role)</span>
+            <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Role</span>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}
@@ -113,12 +113,11 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
                 <option key={r.id} value={r.id}>{r.label}</option>
               ))}
             </select>
-            <span className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mt-0.5">{roleDef.description}</span>
           </label>
 
           {roleDef.pillarLocked && (
             <label className="flex flex-col gap-1">
-              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Assigned entity</span>
+              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Entity</span>
               <div className="flex items-center gap-2 rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-2">
                 <Building2 className="h-4 w-4 text-[hsl(var(--pk-ink-faint))]" />
                 <select
@@ -131,13 +130,12 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
                   ))}
                 </select>
               </div>
-              <span className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mt-0.5">Entity isolation — this role sees only its assigned entity.</span>
             </label>
           )}
 
           {roleDef.moduleLocked && (
             <label className="flex flex-col gap-1">
-              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Assigned pillar</span>
+              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Pillar</span>
               <div className="flex items-center gap-2 rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-2">
                 <LayoutGrid className="h-4 w-4 text-[hsl(var(--pk-ink-faint))]" />
                 <select
@@ -150,7 +148,6 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
                   ))}
                 </select>
               </div>
-              <span className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mt-0.5">Pillar isolation — Data Entry only accepts uploads for this one CP/FH/RP sheet.</span>
             </label>
           )}
 
