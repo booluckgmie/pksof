@@ -69,8 +69,6 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             fyTarget={kpi3FyTarget.toFixed(1)}
             ytdTarget={kpi3.ytdTarget !== null ? kpi3.ytdTarget.toFixed(1) : "—"}
             ytdActual={kpi3.ytdActual !== null ? kpi3.ytdActual.toFixed(1) : "—"}
-            achievement={kpi3.weighted !== null ? `${(kpi3.weighted * 100).toFixed(1)}%` : "—"}
-            status={kpi3.status}
           />
           <div className="flex items-center justify-end">
             <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
@@ -108,8 +106,6 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             fyTarget={`${kpi4FyTarget.toFixed(1)}%`}
             ytdTarget={kpi4.ytdTarget !== null ? `${kpi4.ytdTarget.toFixed(1)}%` : "—"}
             ytdActual={kpi4.ytdActual !== null ? `${kpi4.ytdActual.toFixed(1)}%` : "—"}
-            achievement={kpi4.weighted !== null ? `${(kpi4.weighted * 100).toFixed(1)}%` : "—"}
-            status={kpi4.status}
           />
           <div className="flex items-center justify-end">
             <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
