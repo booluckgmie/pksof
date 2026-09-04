@@ -19,8 +19,11 @@ const ACCENT = "FF0E8F5C";
 const LIGHT = "FFEAF3EF";
 const WHITE = "FFFFFFFF";
 const BODY = "FF333333";
-const VALUE_TEXT = "FF1B4D3E";
-const VALUE_FILL = "FFFBFDFC";
+// A visibly yellow "input cell" convention (matching Excel's own built-in "Input" cell style) —
+// static, not value-driven, so it doesn't conflict with "no conditional/colour-coded cells": it
+// marks *where to type*, not what the number means.
+const VALUE_TEXT = "FF9C6500";
+const VALUE_FILL = "FFFFEB9C";
 const REMARK_TEXT = "FF6B7B76";
 const BORDER_COLOR = "FFD9E2E8";
 const THIN_BOTTOM = { bottom: { style: "thin" as const, color: { argb: BORDER_COLOR } } };
@@ -101,11 +104,12 @@ export async function downloadPillarTemplate(module: Module, periodId: PeriodId,
     { text: "HOW TO USE", size: 12, bold: true, color: NAVY },
     { text: "1. Every row is pre-filled with its current figure for this quarter, where one is already on file — correct or complete it rather than re-typing from scratch.", size: 11, bold: false, color: BODY },
     { text: "2. Leave a cell blank if that figure genuinely wasn't measured this quarter (e.g. an annual KPI outside Q4) rather than entering a placeholder.", size: 11, bold: false, color: BODY },
-    { text: "3. Upload this file from Data Entry — the quarter it writes to is read from the column header, not a dropdown.", size: 11, bold: false, color: BODY },
+    { text: "3. Upload this file from Data Entry — the quarter it writes to is read from the column header (cell C3), not a dropdown.", size: 11, bold: false, color: BODY },
     { text: "4. The KPI Scorecard section (Corporate Performance sheet only) routes through the checker queue; every other row saves directly.", size: 11, bold: false, color: BODY },
+    { text: "5. Reusing this file for a different quarter: retype the quarter in the title (A1) and the column header (C3) to match — e.g. \"Q3 FY2026\" — then update the shaded value column. Both cells are unlocked for exactly this.", size: 11, bold: false, color: BODY },
     { text: "", size: 11, bold: false, color: BODY },
     { text: "SHEET IS PROTECTED", size: 12, bold: true, color: NAVY },
-    { text: "Row labels, sub-categories, headers and the reference remark column are locked so they can't be renamed or reordered by accident. Only the value column (and the note column on KPI rows) accepts edits. Preparers who genuinely need to change the sheet layout can turn this off from Excel's Review → Unprotect Sheet menu — no password is set.", size: 11, bold: false, color: BODY },
+    { text: "Row labels, sub-categories, headers and the reference remark column are locked so they can't be renamed or reordered by accident. Only the shaded value column (yellow — the note column too on KPI rows), the title, and the quarter-label header accept edits. Preparers who genuinely need to change the sheet layout can turn this off from Excel's Review → Unprotect Sheet menu — no password is set.", size: 11, bold: false, color: BODY },
     { text: "", size: 11, bold: false, color: BODY },
     { text: "NOT COVERED HERE", size: 12, bold: true, color: NAVY },
     { text: "Initiative lists (Process/Tech Initiatives, People Development Programme) stay entered directly in-app — each row is a name, a date range and a status, not one number per quarter.", size: 11, bold: false, color: BODY },
@@ -123,6 +127,10 @@ export async function downloadPillarTemplate(module: Module, periodId: PeriodId,
   const title = ws.getCell("A1");
   title.value = `${sheetName} — ${period.label}`;
   title.font = { name: "Calibri", size: 14, bold: true, color: { argb: NAVY } };
+  // Left editable so this same file can be repurposed for a different quarter later — the title
+  // is cosmetic, but the quarter-label header cell below (also unlocked) is what the upload
+  // parser actually reads to decide which reporting period the values are written to.
+  title.protection = { locked: false };
 
   const headerRow = 3;
   const headers = ["Metric", "Sub / Category", period.label, "Displayed on Dashboard", "Note to checker"];
@@ -132,6 +140,10 @@ export async function downloadPillarTemplate(module: Module, periodId: PeriodId,
     cell.font = { name: "Calibri", size: 10, bold: true, color: { argb: WHITE } };
     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: NAVY } };
     cell.alignment = { horizontal: i > 1 ? "center" : "left", vertical: "middle", wrapText: true };
+    // The quarter-label column header (column C) is what excelTemplate.ts's parser actually
+    // matches against a real period label — unlocked so it can be retyped to reuse this file for
+    // a different quarter, matching the title cell above.
+    if (i === 2) cell.protection = { locked: false };
   });
   ws.getRow(headerRow).height = 30;
 
