@@ -136,13 +136,13 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
             <table className="w-full text-sm min-w-[560px]">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
-                  <th className="text-left font-medium px-3 py-2">Entity</th>
-                  <th className="text-right font-medium px-3 py-2">KPI Met</th>
-                  <th className="text-right font-medium px-3 py-2">Not Met</th>
-                  <th className="text-right font-medium px-3 py-2">Not Measured</th>
-                  <th className="text-right font-medium px-3 py-2">Achievement</th>
-                  <th className="text-left font-medium px-3 py-2">Status</th>
+                <tr className="text-[11px] uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+                  <th className="text-left font-medium px-3 py-2.5">Entity</th>
+                  <th className="text-right font-medium px-3 py-2.5">KPI Met</th>
+                  <th className="text-right font-medium px-3 py-2.5">Not Met</th>
+                  <th className="text-right font-medium px-3 py-2.5">Not Measured</th>
+                  <th className="text-right font-medium px-3 py-2.5">Achievement</th>
+                  <th className="text-left font-medium px-3 py-2.5">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -178,14 +178,14 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                             <div className="bg-[hsl(var(--pk-accent-soft))] px-3 py-3">
                               <table className="w-full text-[12.5px]">
                                 <thead>
-                                  <tr className="text-[hsl(var(--pk-ink-faint))]">
-                                    <th className="text-left font-medium py-1 pr-2 w-8">No</th>
-                                    <th className="text-left font-medium py-1 pr-2">KPI</th>
-                                    <th className="text-right font-medium py-1 px-2">FY Target</th>
-                                    <th className="text-right font-medium py-1 px-2">YTD Target</th>
-                                    <th className="text-right font-medium py-1 px-2">YTD Actual</th>
-                                    <th className="text-right font-medium py-1 px-2">Rating</th>
-                                    <th className="text-right font-medium py-1 pl-2">Weighted Rating</th>
+                                  <tr className="text-[11px] uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+                                    <th className="text-left font-medium py-1.5 pl-2 pr-2 w-8">No</th>
+                                    <th className="text-left font-medium py-1.5 pr-2">KPI</th>
+                                    <th className="text-right font-medium py-1.5 px-2">FY Target</th>
+                                    <th className="text-right font-medium py-1.5 px-2">YTD Target</th>
+                                    <th className="text-right font-medium py-1.5 px-2">YTD Actual</th>
+                                    <th className="text-right font-medium py-1.5 px-2">Rating</th>
+                                    <th className="text-right font-medium py-1.5 pl-2 pr-2">Weighted Rating</th>
                                   </tr>
                                 </thead>
                                 <tbody>
