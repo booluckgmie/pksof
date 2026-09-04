@@ -679,7 +679,7 @@ export function useDetails() {
   }
 
   return {
-    loading, refresh, getMetricValue,
+    loading, refresh, getMetricValue, records,
     headcountSummaryByPeriod, headcountTrend, genderBreakdownByPeriod,
     gradeBreakdownFor, ageBreakdownFor, ageGenderBreakdownFor, averageAgeByPeriod,
     gradeGenderCrossTabFor, departmentHeadcountFor, recruitmentIndexByPeriod,

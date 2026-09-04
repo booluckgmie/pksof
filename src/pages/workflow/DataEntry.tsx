@@ -17,7 +17,7 @@ import { periods, periodById } from "@/data/periods";
 import { parseWorkbook, type ParsedWorkbook } from "@/lib/excelTemplate";
 import { fetchDetailRecords, upsertDetailMetric, upsertDetailRecord, type DetailRecordRow } from "@/lib/api/details";
 import { insertUploadEvent, insertUploadEventRows } from "@/lib/api/uploads";
-import { downloadPillarTemplate } from "@/lib/downloadTemplate";
+import { downloadPillarTemplate, type TemplateValueLookup } from "@/lib/downloadTemplate";
 import { MODULE_LABEL, MODULE_ORDER } from "@/lib/modules";
 import { cn } from "@/lib/utils";
 import type { Module, PeriodId } from "@/types";
@@ -34,12 +34,13 @@ function errMessage(err: unknown): string {
   return String(err);
 }
 
-/** Download-a-blank-template button — generated in the browser from the same TEMPLATE_FIELDS
- * manifest the upload parser reads, for the currently active reporting period, so there's
- * nothing for a reporting officer to keep a local copy of between quarters: the filename and
- * contents are always this quarter's, from one place, on demand. A pillar-locked role only ever
- * sees their own assigned pillar here, matching what their uploads are restricted to anyway. */
-function DownloadTemplateMenu({ assignedModule, periodId }: { assignedModule: Module | null; periodId: PeriodId }) {
+/** Download-this-quarter's-template button — generated in the browser from the same
+ * TEMPLATE_FIELDS manifest the upload parser reads, pre-filled with each row's current live
+ * value for the active reporting period, so there's nothing for a reporting officer to keep a
+ * local copy of between quarters: the filename, row list and starting figures are always this
+ * quarter's, from one place, on demand. A pillar-locked role only ever sees their own assigned
+ * pillar here, matching what their uploads are restricted to anyway. */
+function DownloadTemplateMenu({ assignedModule, periodId, lookup }: { assignedModule: Module | null; periodId: PeriodId; lookup: TemplateValueLookup }) {
   const [pending, setPending] = useState<Module | null>(null);
   const modules = assignedModule ? [assignedModule] : MODULE_ORDER;
 
@@ -47,7 +48,7 @@ function DownloadTemplateMenu({ assignedModule, periodId }: { assignedModule: Mo
     if (pending) return;
     setPending(m);
     try {
-      await downloadPillarTemplate(m, periodId);
+      await downloadPillarTemplate(m, periodId, lookup);
     } catch (err) {
       toast.error("Couldn't build the template", { description: err instanceof Error ? err.message : "Something went wrong." });
     } finally {
@@ -68,7 +69,7 @@ function DownloadTemplateMenu({ assignedModule, periodId }: { assignedModule: Mo
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.08em] text-[hsl(var(--pk-ink-faint))] font-semibold px-2 py-1">
-          {periodById(periodId).label} — blank template
+          {periodById(periodId).label} — pre-filled template
         </DropdownMenuLabel>
         {modules.map((m) => (
           <DropdownMenuItem key={m} onClick={() => handleDownload(m)} className="gap-2.5 py-2 cursor-pointer">
@@ -166,8 +167,9 @@ function UploadResultDialog({ result, onClose }: { result: UploadResultSummary |
 
 export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, userName, assignedModule, assignedModuleLabel, periodId } = useSession();
-  const { submit, submissions, editSubmission } = useWorkflow();
-  const { refresh } = useDetails();
+  const { submit, submissions, editSubmission, latestValue } = useWorkflow();
+  const { refresh, getMetricValue, records } = useDetails();
+  const templateLookup: TemplateValueLookup = { entityId, getMetricValue, records, latestValue };
 
   const [fileName, setFileName] = useState<string | null>(null);
   const [parsing, setParsing] = useState(false);
@@ -364,7 +366,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
             <Files className="h-3.5 w-3.5" />Upload History
           </button>
         </div>
-        <DownloadTemplateMenu assignedModule={assignedModule} periodId={periodId} />
+        <DownloadTemplateMenu assignedModule={assignedModule} periodId={periodId} lookup={templateLookup} />
       </div>
 
       {tab === "audit" ? (
