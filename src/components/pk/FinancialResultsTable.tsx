@@ -103,14 +103,21 @@ export function FinancialResultsTable({
     <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-hidden">
       <div className="px-4 pt-3.5 pb-1 font-head font-bold text-[hsl(var(--pk-ink))]">{title}</div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[640px]">
+        <table className="w-full text-sm table-fixed">
+          <colgroup>
+            <col />
+            <col className="w-[17%]" />
+            <col className="w-[17%]" />
+            <col className="w-[19%]" />
+            <col className="w-[11%]" />
+          </colgroup>
           <thead>
             <tr className="text-[11px] uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
-              <th className="text-left font-medium px-3 py-2.5">RM'000</th>
-              <th className="text-right font-medium px-3 py-2.5">{currentLabel}</th>
-              <th className="text-right font-medium px-3 py-2.5">{compareLabel}</th>
-              <th className="text-right font-medium px-3 py-2.5">Variance RM'000</th>
-              <th className="text-right font-medium px-3 py-2.5">%</th>
+              <th className="text-left font-medium px-2 py-2.5">RM'000</th>
+              <th className="text-right font-medium px-2 py-2.5 leading-tight">{currentLabel}</th>
+              <th className="text-right font-medium px-2 py-2.5 leading-tight">{compareLabel}</th>
+              <th className="text-right font-medium px-2 py-2.5 leading-tight">Variance<br />RM'000</th>
+              <th className="text-right font-medium px-2 py-2.5">%</th>
             </tr>
           </thead>
           <tbody>
@@ -130,16 +137,16 @@ export function FinancialResultsTable({
                       isDrillable && "cursor-pointer hover:bg-[hsl(var(--pk-surface-2))]"
                     )}
                   >
-                    <td className={cn("px-3 py-2", r.bold ? "font-bold text-[hsl(var(--pk-ink))]" : "text-[hsl(var(--pk-ink-soft))]", r.indent && "pl-6")}>
+                    <td className={cn("px-2 py-2", r.bold ? "font-bold text-[hsl(var(--pk-ink))]" : "text-[hsl(var(--pk-ink-soft))]", r.indent && "pl-6")}>
                       <span className="inline-flex items-center gap-1.5">
                         {r.label}
                         {isDrillable && <ChevronRight className={cn("h-3.5 w-3.5 text-[hsl(var(--pk-ink-faint))] transition-transform", isOpenRow && "rotate-90")} />}
                       </span>
                     </td>
-                    <td className={cn("text-right px-3 py-2 tnum", r.bold && "font-bold")}>{fmt(cur)}</td>
-                    <td className={cn("text-right px-3 py-2 tnum", r.bold && "font-bold")}>{fmt(cmp)}</td>
-                    <td className="text-right px-3 py-2 tnum italic">{fmt(v.abs)}</td>
-                    <td className="text-right px-3 py-2 tnum italic">{fmtPct(v.pct)}</td>
+                    <td className={cn("text-right px-2 py-2 tnum", r.bold && "font-bold")}>{fmt(cur)}</td>
+                    <td className={cn("text-right px-2 py-2 tnum", r.bold && "font-bold")}>{fmt(cmp)}</td>
+                    <td className="text-right px-2 py-2 tnum italic">{fmt(v.abs)}</td>
+                    <td className="text-right px-2 py-2 tnum italic">{fmtPct(v.pct)}</td>
                   </tr>
                   {isOpenRow && (() => {
                     const { items, compareItems, totalLabel } = breakdownFor(r.drill!);
@@ -153,20 +160,20 @@ export function FinancialResultsTable({
                           const iv = variance(it.value, cmpV);
                           return (
                             <tr key={it.key} className="border-t border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-accent-soft))]">
-                              <td className="px-3 py-1.5 pl-9 text-[12.5px] text-[hsl(var(--pk-ink-soft))]">{it.label}</td>
-                              <td className="text-right px-3 py-1.5 tnum text-[12.5px]">{fmt(it.value)}</td>
-                              <td className="text-right px-3 py-1.5 tnum text-[12.5px]">{fmt(cmpV)}</td>
-                              <td className="text-right px-3 py-1.5 tnum italic text-[12.5px]">{fmt(iv.abs)}</td>
-                              <td className="text-right px-3 py-1.5 tnum italic text-[12.5px]">{fmtPct(iv.pct)}</td>
+                              <td className="px-2 py-1.5 pl-9 text-[12.5px] text-[hsl(var(--pk-ink-soft))]">{it.label}</td>
+                              <td className="text-right px-2 py-1.5 tnum text-[12.5px]">{fmt(it.value)}</td>
+                              <td className="text-right px-2 py-1.5 tnum text-[12.5px]">{fmt(cmpV)}</td>
+                              <td className="text-right px-2 py-1.5 tnum italic text-[12.5px]">{fmt(iv.abs)}</td>
+                              <td className="text-right px-2 py-1.5 tnum italic text-[12.5px]">{fmtPct(iv.pct)}</td>
                             </tr>
                           );
                         })}
                         <tr className="border-t border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-accent-soft))] font-semibold">
-                          <td className="px-3 py-1.5 pl-9 text-[12.5px]">{totalLabel}</td>
-                          <td className="text-right px-3 py-1.5 tnum text-[12.5px]">{fmt(totalCur)}</td>
-                          <td className="text-right px-3 py-1.5 tnum text-[12.5px]">{fmt(totalCmp)}</td>
-                          <td className="text-right px-3 py-1.5 tnum italic text-[12.5px]">{fmt(totalV.abs)}</td>
-                          <td className="text-right px-3 py-1.5 tnum italic text-[12.5px]">{fmtPct(totalV.pct)}</td>
+                          <td className="px-2 py-1.5 pl-9 text-[12.5px]">{totalLabel}</td>
+                          <td className="text-right px-2 py-1.5 tnum text-[12.5px]">{fmt(totalCur)}</td>
+                          <td className="text-right px-2 py-1.5 tnum text-[12.5px]">{fmt(totalCmp)}</td>
+                          <td className="text-right px-2 py-1.5 tnum italic text-[12.5px]">{fmt(totalV.abs)}</td>
+                          <td className="text-right px-2 py-1.5 tnum italic text-[12.5px]">{fmtPct(totalV.pct)}</td>
                         </tr>
                       </>
                     );
