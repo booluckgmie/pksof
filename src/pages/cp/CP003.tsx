@@ -14,13 +14,18 @@ import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
 import { useKpiTargets } from "@/lib/kpiTargets";
+import { useCurrentPeriodId } from "@/lib/orgSettings";
 import { kpiById } from "@/data/kpis";
 import { periodById } from "@/data/periods";
 import { cn } from "@/lib/utils";
 import type { PeriodId } from "@/types";
 
 export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId, setPeriodId } = useSession();
+  const { entityId } = useSession();
+  // Local to this screen only, by design — the Reporting period filter here is independent of
+  // every other screen's own filter and of the sidebar's global one; it starts on the current
+  // quarter and never lets you pick a future, not-yet-reported one (see periodsUpTo/PeriodPicker.tsx).
+  const [periodId, setPeriodId] = useState<PeriodId>(useCurrentPeriodId());
   const { latestValue } = useWorkflow();
   const { quarterlyTrend: fullTrend, pbtBreakdown, cirBreakdown } = useDetails();
   const { getFyTarget } = useKpiTargets();

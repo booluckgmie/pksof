@@ -10,6 +10,7 @@ import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
 import { useKpiTargets } from "@/lib/kpiTargets";
+import { useCurrentPeriodId } from "@/lib/orgSettings";
 import { kpiById } from "@/data/kpis";
 import { periods, periodById } from "@/data/periods";
 import { cn } from "@/lib/utils";
@@ -22,7 +23,9 @@ const TABS = [
 ] as const;
 
 export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId, setPeriodId } = useSession();
+  const { entityId } = useSession();
+  // Local to this screen only — see CP003's own Reporting period filter for why.
+  const [periodId, setPeriodId] = useState<PeriodId>(useCurrentPeriodId());
   const { latestValue } = useWorkflow();
   const { bumiputeraProcurement, bumiputeraTrainingByPeriod, headcountSummaryByPeriod } = useDetails();
   const { getFyTarget } = useKpiTargets();

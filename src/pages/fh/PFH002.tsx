@@ -7,9 +7,9 @@ import { FinancialResultsTable } from "@/components/pk/FinancialResultsTable";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
-import { useSession } from "@/lib/session";
 import { useDetails } from "@/lib/details";
-import { periods, periodById } from "@/data/periods";
+import { useCurrentPeriodId } from "@/lib/orgSettings";
+import { periods, periodById, periodsUpTo } from "@/data/periods";
 import type { PeriodId } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -17,11 +17,13 @@ const fmtM = (v: number | null) => (v === null ? "—" : `RM${(Math.abs(v) / 100
 const pctOf = (delta: number | null, base: number | null) => (delta === null || base === null || base === 0 ? null : (delta / Math.abs(base)) * 100);
 
 export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { periodId: sessionPeriodId, setPeriodId } = useSession();
+  const currentPeriodId = useCurrentPeriodId();
+  // Local to this screen only — see CP003's own Reporting period filter for why.
+  const [periodId, setPeriodId] = useState<PeriodId>(currentPeriodId);
   const { quarterlyTrend: fullTrend, monthlyTrendFor, financialResultsFor } = useDetails();
   const { duration, setDuration, filtered: quarterlyTrend } = useDurationFilter(fullTrend);
   const [granularity, setGranularity] = useState<"quarterly" | "monthly">("quarterly");
-  const [monthQuarter, setMonthQuarter] = useState<PeriodId>(sessionPeriodId);
+  const [monthQuarter, setMonthQuarter] = useState<PeriodId>(periodId);
   const monthlyRaw = monthlyTrendFor(monthQuarter);
   const monthlyEnteredCount = monthlyRaw.filter((m) => m.pbt !== null || m.netMargin !== null).length;
   const monthlyPbt = monthlyRaw.filter((m) => m.pbt !== null).map((m) => ({ label: m.period, value: m.pbt as number }));
@@ -33,8 +35,8 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     { section: "COST METRICS", metric: "Cost-to-Income Ratio (%)", values: quarterlyTrend.map((q) => q.cir) },
   ];
 
-  const period = periodById(sessionPeriodId);
-  const results = financialResultsFor(sessionPeriodId);
+  const period = periodById(periodId);
+  const results = financialResultsFor(periodId);
 
   return (
     <div>
@@ -43,7 +45,7 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <div className="mb-4 flex items-center gap-2">
         <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
-        <PeriodPickerCompact periodId={sessionPeriodId} onChange={setPeriodId} />
+        <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
       </div>
 
       {results.current && results.budget && (() => {
@@ -55,7 +57,7 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         const incomePct = pctOf(incomeDelta, b.totalIncome);
         const expenseDelta = c.expenses !== null && b.expenses !== null ? c.expenses - b.expenses : null;
         const expensePct = pctOf(expenseDelta, b.expenses);
-        const isRealQuarter = sessionPeriodId === "Q1FY26";
+        const isRealQuarter = periodId === "Q1FY26";
         return (
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
             <div className="font-head font-bold text-[hsl(var(--pk-ink))] text-center mb-1">YTD Actual vs YTD Budget ({period.label})</div>
@@ -157,7 +159,7 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               onChange={(e) => setMonthQuarter(e.target.value as PeriodId)}
               className="text-[11px] rounded-md border border-[hsl(var(--pk-border))] px-2 py-1 bg-[hsl(var(--pk-surface))] outline-none"
             >
-              {periods.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+              {periodsUpTo(currentPeriodId).map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
           )}
         </div>

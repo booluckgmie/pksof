@@ -34,6 +34,15 @@ export const periods: Period[] = [
 
 export const periodById = (id: string) => periods.find((p) => p.id === id)!;
 
+/** Every period up to and including `currentPeriodId`, in the same chronological order as
+ * `periods` — the boundary every viewer-facing period picker filters its options to, so nobody
+ * can select a future quarter nothing's been reported for yet. Falls back to the full list if
+ * `currentPeriodId` isn't found (shouldn't happen — defensive only). */
+export function periodsUpTo(currentPeriodId: PeriodId): Period[] {
+  const idx = periods.findIndex((p) => p.id === currentPeriodId);
+  return idx === -1 ? periods : periods.slice(0, idx + 1);
+}
+
 /** [start, end) calendar-quarter date range for a period, derived from its fy + quarter (FY = calendar year). */
 function periodDateRange(p: Period, fyEndMonth: number): [Date, Date] {
   const year = parseInt(p.fy.replace("FY", ""), 10);

@@ -1,17 +1,18 @@
 import { useState } from "react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 import { ChevronDown, X, Layers } from "lucide-react";
-import { periods, periodById } from "@/data/periods";
-import type { PeriodId } from "@/types";
+import { periodById, periodsUpTo } from "@/data/periods";
+import { useCurrentPeriodId } from "@/lib/orgSettings";
+import type { Period, PeriodId } from "@/types";
 import { cn } from "@/lib/utils";
 
-const FY_LIST = Array.from(new Set(periods.map((p) => p.fy)));
-
 /** Picking a new FY keeps the same quarter number if that quarter exists yet, otherwise falls
- * back to the first quarter the new FY actually has — never lands on an invalid period. */
-function periodForFy(fy: string, keepQuarter: number): PeriodId {
-  const sameQuarter = periods.find((p) => p.fy === fy && p.quarter === keepQuarter);
-  return (sameQuarter ?? periods.find((p) => p.fy === fy)!).id;
+ * back to the first quarter the new FY actually has — never lands on an invalid period. Only
+ * ever chooses among `visible` (the current-quarter-capped list), so switching years can't jump
+ * forward into a not-yet-reported quarter either. */
+function periodForFy(visible: Period[], fy: string, keepQuarter: number): PeriodId {
+  const sameQuarter = visible.find((p) => p.fy === fy && p.quarter === keepQuarter);
+  return (sameQuarter ?? visible.find((p) => p.fy === fy) ?? visible[visible.length - 1]).id;
 }
 
 /** Two plain dropdowns — Year, then Quarter within that year — replacing a single long
@@ -27,8 +28,10 @@ export function YearQuarterDropdowns({
   dark?: boolean;
   className?: string;
 }) {
+  const visible = periodsUpTo(useCurrentPeriodId());
+  const fyList = Array.from(new Set(visible.map((p) => p.fy)));
   const period = periodById(periodId);
-  const quartersInFy = periods.filter((p) => p.fy === period.fy);
+  const quartersInFy = visible.filter((p) => p.fy === period.fy);
   const selectClass = dark
     ? "flex-1 min-w-0 bg-white/5 border border-white/10 rounded-md px-2 py-1.5 text-sm font-medium text-white outline-none cursor-pointer focus:border-white/30"
     : "flex-1 min-w-0 bg-[hsl(var(--pk-surface))] border border-[hsl(var(--pk-border))] rounded-md px-2 py-1.5 text-sm font-medium text-[hsl(var(--pk-ink))] outline-none cursor-pointer focus:border-[hsl(var(--pk-accent))]";
@@ -38,10 +41,10 @@ export function YearQuarterDropdowns({
     <div className={cn("flex items-center gap-1.5", className)}>
       <select
         value={period.fy}
-        onChange={(e) => onChange(periodForFy(e.target.value, period.quarter))}
+        onChange={(e) => onChange(periodForFy(visible, e.target.value, period.quarter))}
         className={selectClass}
       >
-        {FY_LIST.map((fy) => (
+        {fyList.map((fy) => (
           <option key={fy} value={fy} className={optionClass}>{fy}</option>
         ))}
       </select>
@@ -70,17 +73,19 @@ export function PeriodPickerCompact({
   onChange: (id: PeriodId) => void;
   className?: string;
 }) {
+  const visible = periodsUpTo(useCurrentPeriodId());
+  const fyList = Array.from(new Set(visible.map((p) => p.fy)));
   const period = periodById(periodId);
-  const quartersInFy = periods.filter((p) => p.fy === period.fy);
+  const quartersInFy = visible.filter((p) => p.fy === period.fy);
 
   return (
     <div className={cn("flex items-center gap-2 flex-wrap", className)}>
       <select
         value={period.fy}
-        onChange={(e) => onChange(periodForFy(e.target.value, period.quarter))}
+        onChange={(e) => onChange(periodForFy(visible, e.target.value, period.quarter))}
         className="bg-[hsl(var(--pk-surface))] border border-[hsl(var(--pk-border))] rounded-md px-2 py-1 text-[12.5px] font-medium text-[hsl(var(--pk-ink))] outline-none cursor-pointer focus:border-[hsl(var(--pk-accent))]"
       >
-        {FY_LIST.map((fy) => (
+        {fyList.map((fy) => (
           <option key={fy} value={fy}>{fy}</option>
         ))}
       </select>
@@ -117,6 +122,8 @@ export function ComparePeriodsPicker({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const visible = periodsUpTo(useCurrentPeriodId());
+  const fyList = Array.from(new Set(visible.map((p) => p.fy)));
   const toggle = (id: PeriodId) => {
     onChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
   };
@@ -145,11 +152,11 @@ export function ComparePeriodsPicker({
           sideOffset={6}
           className="z-50 w-56 rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-floating p-2.5 max-h-80 overflow-y-auto"
         >
-          {FY_LIST.map((fy) => (
+          {fyList.map((fy) => (
             <div key={fy} className="mb-2 last:mb-0">
               <div className="text-[10px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-1">{fy}</div>
               <div className="grid grid-cols-4 gap-1">
-                {periods.filter((p) => p.fy === fy).map((p) => (
+                {visible.filter((p) => p.fy === fy).map((p) => (
                   <button
                     key={p.id}
                     onClick={() => toggle(p.id)}

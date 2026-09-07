@@ -10,6 +10,7 @@ import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
 import { useKpiTargets } from "@/lib/kpiTargets";
+import { useCurrentPeriodId } from "@/lib/orgSettings";
 import { periods, periodById } from "@/data/periods";
 import { useMemo, useState } from "react";
 import type { PeriodId } from "@/types";
@@ -23,7 +24,9 @@ function meanOf(values: (number | null)[]): number | null {
 }
 
 export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId, setPeriodId } = useSession();
+  const { entityId } = useSession();
+  // Local to this screen only — see CP003's own Reporting period filter for why.
+  const [periodId, setPeriodId] = useState<PeriodId>(useCurrentPeriodId());
   const [compareIds, setCompareIds] = useState<PeriodId[]>([]);
   const [selectedDept, setSelectedDept] = useState<string | null>(null);
   const { latestValue } = useWorkflow();

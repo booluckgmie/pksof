@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import { FISCAL_YEAR_END_MONTH } from "@/data/periods";
+import { FISCAL_YEAR_END_MONTH, resolveCurrentPeriodId } from "@/data/periods";
 import { fetchFiscalYearEndMonth, updateFiscalYearEndMonth } from "@/lib/api/orgSettings";
+import type { PeriodId } from "@/types";
 
 interface OrgSettingsContextValue {
   fiscalYearEndMonth: number;
@@ -52,4 +53,13 @@ export function useOrgSettings() {
   const ctx = useContext(OrgSettingsContext);
   if (!ctx) throw new Error("useOrgSettings must be used within OrgSettingsProvider");
   return ctx;
+}
+
+/** The most recently completed reporting quarter, as of right now — the one true "current
+ * quarter" boundary every period picker in the app caps itself to, so nobody can filter forward
+ * into a quarter that hasn't been reported on yet. Reactive to the live fiscal-year-end setting,
+ * same as LoginDialog's own default-period calculation. */
+export function useCurrentPeriodId(): PeriodId {
+  const { fiscalYearEndMonth } = useOrgSettings();
+  return useMemo(() => resolveCurrentPeriodId(new Date(), fiscalYearEndMonth), [fiscalYearEndMonth]);
 }

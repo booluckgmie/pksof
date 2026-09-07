@@ -13,10 +13,13 @@ import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
+import { useCurrentPeriodId } from "@/lib/orgSettings";
 import type { PeriodId } from "@/types";
 
 export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId, setPeriodId } = useSession();
+  const { entityId } = useSession();
+  // Local to this screen only — see CP003's own Reporting period filter for why.
+  const [periodId, setPeriodId] = useState<PeriodId>(useCurrentPeriodId());
   const [compareIds, setCompareIds] = useState<PeriodId[]>([]);
   const [openBreakdown, setOpenBreakdown] = useState<{ pbt: boolean; cir: boolean }>({ pbt: false, cir: false });
   const { latestValue } = useWorkflow();
