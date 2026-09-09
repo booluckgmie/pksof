@@ -5,6 +5,7 @@ import { StatusChip } from "@/components/pk/StatusChip";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { InitiativeStatusDot, StatusLegend } from "@/components/pk/Misc";
 import { GanttChart } from "@/components/pk/GanttChart";
+import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -37,7 +38,8 @@ function InitiativeTable({ title, weight, rows }: { title: string; weight: strin
 }
 
 export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId } = useSession();
+  const { entityId } = useSession();
+  const [periodId, setPeriodId] = useLocalPeriodId();
   const { latestValue } = useWorkflow();
   const { processInitiatives, techInitiatives } = useDetails();
   const { getFyTarget } = useKpiTargets();
@@ -52,7 +54,7 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="CP006" subtitle="Internal Business Process performance with strategic initiative tracking. Weight 20.0% · 2 KPIs." onNavigate={onNavigate} />
+      <ScreenHeader id="CP006" subtitle="Internal Business Process performance with strategic initiative tracking. Weight 20.0% · 2 KPIs." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">

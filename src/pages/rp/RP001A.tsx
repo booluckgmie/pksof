@@ -1,13 +1,9 @@
-import { useState } from "react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatCard } from "@/components/pk/Misc";
 import { SplitBar, GroupedBarTrend, Donut } from "@/components/pk/Charts";
-import { periodById, periodsUpTo } from "@/data/periods";
-import { periodForFy } from "@/components/pk/PeriodPicker";
-import { useCurrentPeriodId } from "@/lib/orgSettings";
+import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useDetails } from "@/lib/details";
-import type { PeriodId } from "@/types";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-2">{children}</div>;
@@ -31,21 +27,6 @@ const AGE_BAND_COLORS: Record<string, string> = {
   "51+": "hsl(var(--pk-navy))",
 };
 
-function LabeledPeriodSelect({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-[10px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold">{label}</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-2.5 py-1.5 text-sm font-medium text-[hsl(var(--pk-ink))] outline-none cursor-pointer focus:border-[hsl(var(--pk-accent))]"
-      >
-        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
-    </div>
-  );
-}
-
 function GradeCard({ label, code, count, pct, total }: { label: string; code?: string; count: number; pct: number; total?: boolean }) {
   return (
     <div className={total ? "rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-4 py-3" : "rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card px-4 py-3"}>
@@ -58,10 +39,7 @@ function GradeCard({ label, code, count, pct, total }: { label: string; code?: s
 }
 
 export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const currentPeriodId = useCurrentPeriodId();
-  // Local to this screen only, capped at the current quarter — same pattern as CP003/CP005/
-  // CP008/PFH001/PFH002's own Reporting period filters (see periodsUpTo/useCurrentPeriodId).
-  const [periodId, setPeriodId] = useState<PeriodId>(currentPeriodId);
+  const [periodId, setPeriodId] = useLocalPeriodId();
   const {
     genderBreakdownByPeriod, ageGenderBreakdownFor, gradeGenderCrossTabFor,
     gradeBreakdownFor, ageBreakdownFor, headcountSummaryByPeriod, averageAgeByPeriod,
@@ -75,11 +53,6 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const averageAge = averageAgeByPeriod[periodId];
   const totalEmployees = headcountSummary.totalEmployees || 1;
 
-  const visible = periodsUpTo(currentPeriodId);
-  const fyList = Array.from(new Set(visible.map((p) => p.fy)));
-  const period = periodById(periodId);
-  const quartersInFy = visible.filter((p) => p.fy === period.fy);
-
   const crossTabTotal = {
     male: gradeGenderCrossTab.reduce((s, r) => s + r.male, 0),
     female: gradeGenderCrossTab.reduce((s, r) => s + r.female, 0),
@@ -91,22 +64,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         id="RP001A"
         subtitle="Resource & People · Headcount by Gender, Grade, Age Group and Job Band Level."
         onNavigate={onNavigate}
-        right={
-          <div className="flex items-end gap-3">
-            <LabeledPeriodSelect
-              label="Financial Year"
-              value={period.fy}
-              onChange={(fy) => setPeriodId(periodForFy(visible, fy, period.quarter))}
-              options={fyList.map((fy) => ({ value: fy, label: fy }))}
-            />
-            <LabeledPeriodSelect
-              label="Quarter"
-              value={periodId}
-              onChange={(id) => setPeriodId(id as PeriodId)}
-              options={quartersInFy.map((p) => ({ value: p.id, label: `Q${p.quarter}` }))}
-            />
-          </div>
-        }
+        right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />}
       />
 
       <SectionLabel>Section A — Breakdown by Gender</SectionLabel>

@@ -1,6 +1,7 @@
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { InfoTip } from "@/components/pk/InfoTip";
+import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -20,14 +21,15 @@ function fmt(v: number | null, unit: string) {
 }
 
 export function CP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId } = useSession();
+  const { entityId } = useSession();
+  const [periodId, setPeriodId] = useLocalPeriodId();
   const { latestValue } = useWorkflow();
 
   let totalWeighted = 0;
 
   return (
     <div>
-      <ScreenHeader id="CP002" subtitle="All KPI performance grouped by the six perspectives for the selected period." onNavigate={onNavigate} />
+      <ScreenHeader id="CP002" subtitle="All KPI performance grouped by the six perspectives for the selected period." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
         <table className="w-full text-sm min-w-[900px]">

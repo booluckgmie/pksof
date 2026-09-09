@@ -4,6 +4,7 @@ import { StatCard } from "@/components/pk/Misc";
 import { CategoryBar, BarTrend } from "@/components/pk/Charts";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { RecruitmentIndexScorecard } from "@/components/pk/RecruitmentIndexScorecard";
+import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -17,7 +18,8 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId } = useSession();
+  const { entityId } = useSession();
+  const [periodId, setPeriodId] = useLocalPeriodId();
   const { latestValue } = useWorkflow();
   const { headcountSummaryByPeriod, headcountTrend: fullHeadcountTrend, recruitmentIndexByPeriod } = useDetails();
   const { getFyTarget } = useKpiTargets();
@@ -29,7 +31,7 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="RP001" subtitle="Resource & People · Demographics and Recruitment Efficiency Index. Perspective weight fixed at 20%." onNavigate={onNavigate} />
+      <ScreenHeader id="RP001" subtitle="Resource & People · Demographics and Recruitment Efficiency Index. Perspective weight fixed at 20%." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <SectionLabel>Section A — Demographics: Total Headcount</SectionLabel>
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-5">

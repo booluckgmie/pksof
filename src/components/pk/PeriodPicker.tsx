@@ -15,6 +15,58 @@ export function periodForFy(visible: Period[], fy: string, keepQuarter: number):
   return (sameQuarter ?? visible.find((p) => p.fy === fy) ?? visible[visible.length - 1]).id;
 }
 
+/** A screen's own Reporting period, independent of every other screen's and of the sidebar's
+ * global one, starting on the current quarter — the pattern every page-local period picker in
+ * this app follows (see CP003/CP005/CP008/PFH001/PFH002/RP001A). One line instead of repeating
+ * `useCurrentPeriodId()` + `useState` at every call site. */
+export function useLocalPeriodId(): [PeriodId, (id: PeriodId) => void] {
+  const currentPeriodId = useCurrentPeriodId();
+  return useState<PeriodId>(currentPeriodId);
+}
+
+function LabeledSelect({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-[10px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-2.5 py-1.5 text-sm font-medium text-[hsl(var(--pk-ink))] outline-none cursor-pointer focus:border-[hsl(var(--pk-accent))]"
+      >
+        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </div>
+  );
+}
+
+/** "Financial Year" / "Quarter" as two individually-labeled dropdowns, stacked label-over-select
+ * — the client's own sketch for a screen's Reporting period filter (see RP001A). Self-caps at
+ * the current quarter, same as every other period picker here. Meant for ScreenHeader's `right`
+ * slot on screens that don't already have their own "Reporting period" filter. */
+export function FinancialYearQuarterPicker({ periodId, onChange, className }: { periodId: PeriodId; onChange: (id: PeriodId) => void; className?: string }) {
+  const visible = periodsUpTo(useCurrentPeriodId());
+  const fyList = Array.from(new Set(visible.map((p) => p.fy)));
+  const period = periodById(periodId);
+  const quartersInFy = visible.filter((p) => p.fy === period.fy);
+
+  return (
+    <div className={cn("flex items-end gap-3", className)}>
+      <LabeledSelect
+        label="Financial Year"
+        value={period.fy}
+        onChange={(fy) => onChange(periodForFy(visible, fy, period.quarter))}
+        options={fyList.map((fy) => ({ value: fy, label: fy }))}
+      />
+      <LabeledSelect
+        label="Quarter"
+        value={periodId}
+        onChange={(id) => onChange(id as PeriodId)}
+        options={quartersInFy.map((p) => ({ value: p.id, label: `Q${p.quarter}` }))}
+      />
+    </div>
+  );
+}
+
 /** Two plain dropdowns — Year, then Quarter within that year — replacing a single long
  * FY-grouped `<optgroup>` select. Used in the Sidebar's global period filter. */
 export function YearQuarterDropdowns({

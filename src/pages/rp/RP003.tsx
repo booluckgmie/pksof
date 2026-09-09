@@ -4,6 +4,7 @@ import { StatusChip } from "@/components/pk/StatusChip";
 import { InfoTip } from "@/components/pk/InfoTip";
 import { LineTrend, CategoryBar } from "@/components/pk/Charts";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
+import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -12,7 +13,8 @@ import { useDetails, industryBenchmark } from "@/lib/details";
 const INDUSTRY_BENCHMARK_SOURCE = "Placeholder reference figure for this prototype — not yet tied to a cited source. Replace with the actual published industry turnover benchmark (e.g. sector HR association or MOF benchmarking report) once confirmed.";
 
 export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId } = useSession();
+  const { entityId } = useSession();
+  const [periodId, setPeriodId] = useLocalPeriodId();
   const { latestValue } = useWorkflow();
   const { headcountSummaryByPeriod, turnoverTrend: fullTurnoverTrend, resignedByPeriod } = useDetails();
   const kpi12 = latestValue("KPI12", entityId, periodId);
@@ -23,7 +25,7 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="RP003" subtitle="Resource & People · Turnover analysis and Bumiputera Composition." onNavigate={onNavigate} />
+      <ScreenHeader id="RP003" subtitle="Resource & People · Turnover analysis and Bumiputera Composition." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
         <StatCard label="Total Employees" value={String(headcountSummary.totalEmployees)} />

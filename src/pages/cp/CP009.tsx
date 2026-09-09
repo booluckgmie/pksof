@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { InfoNote, InitiativeStatusDot } from "@/components/pk/Misc";
 import { StatusChip } from "@/components/pk/StatusChip";
+import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails, PEOPLE_DEV_SUB_AREAS, type PeopleDevRecord, type PeopleDevSubArea } from "@/lib/details";
@@ -30,7 +31,8 @@ let seq = 1;
 const newRecordId = () => `PDP-${Date.now().toString(36)}-${String(seq++).padStart(3, "0")}`;
 
 export function CP009({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId, canEnterData } = useSession();
+  const { entityId, canEnterData } = useSession();
+  const [periodId, setPeriodId] = useLocalPeriodId();
   const { latestValue } = useWorkflow();
   const { peopleDevRecordsFor, refresh } = useDetails();
   const kpi10 = latestValue("KPI10", entityId, periodId);
@@ -75,7 +77,7 @@ export function CP009({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="CP009" subtitle="Organisational Capacity performance: People Development Programme. Weight 10.0%." onNavigate={onNavigate} />
+      <ScreenHeader id="CP009" subtitle="Organisational Capacity performance: People Development Programme. Weight 10.0%." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4 flex items-center justify-between">
         <div>

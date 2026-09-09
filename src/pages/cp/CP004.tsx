@@ -4,6 +4,7 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { InfoTip } from "@/components/pk/InfoTip";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
+import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import { cn } from "@/lib/utils";
 import { anonymizedEntityLabel } from "@/lib/anonymize";
 import type { ScreenId } from "@/lib/nav";
@@ -14,7 +15,8 @@ import { useKpiTargets } from "@/lib/kpiTargets";
 import { periodById } from "@/data/periods";
 
 export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId, isRestrictedPillar, homeEntityName } = useSession();
+  const { entityId, isRestrictedPillar, homeEntityName } = useSession();
+  const [periodId, setPeriodId] = useLocalPeriodId();
   const { latestValue } = useWorkflow();
   const { managedEntityRatingsFor, managedEntityKpiDetailFor, governanceKpiFor } = useDetails();
   const managedEntityRatings = managedEntityRatingsFor(periodId);
@@ -37,7 +39,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="CP004" subtitle="Mandate & Governance performance, including the managed-entity KPI summary. Weight 15.0%." onNavigate={onNavigate} />
+      <ScreenHeader id="CP004" subtitle="Mandate & Governance performance, including the managed-entity KPI summary. Weight 15.0%." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div

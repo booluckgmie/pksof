@@ -5,6 +5,7 @@ import { StatCard, InitiativeStatusDot } from "@/components/pk/Misc";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { InfoTip } from "@/components/pk/InfoTip";
 import { MonthTimeline } from "@/components/pk/GanttChart";
+import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -17,7 +18,8 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId } = useSession();
+  const { entityId } = useSession();
+  const [periodId, setPeriodId] = useLocalPeriodId();
   const { latestValue } = useWorkflow();
   const { headcountSummaryByPeriod, departmentHeadcountFor } = useDetails();
   const kpi10 = latestValue("KPI10", entityId, periodId);
@@ -29,7 +31,7 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="RP002" subtitle="Resource & People · Approved establishment and People Development Programme." onNavigate={onNavigate} />
+      <ScreenHeader id="RP002" subtitle="Resource & People · Approved establishment and People Development Programme." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div className="flex items-center gap-1.5 mb-2">
         <SectionLabel>Section A — Demographics: Approved Headcount</SectionLabel>

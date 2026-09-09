@@ -2,6 +2,7 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { Gauge } from "@/components/pk/Gauge";
 import { PerspectiveCard } from "@/components/pk/PerspectiveCard";
 import { InfoTip } from "@/components/pk/InfoTip";
+import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -15,7 +16,8 @@ const PERSPECTIVE_SCREEN: Record<string, ScreenId> = {
 };
 
 export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId } = useSession();
+  const { entityId } = useSession();
+  const [periodId, setPeriodId] = useLocalPeriodId();
   const { latestValue } = useWorkflow();
   const period = periodById(periodId);
   const getResult = (kpiId: string) => latestValue(kpiId, entityId, periodId);
@@ -24,7 +26,7 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="CP001" subtitle="Consolidated achievement across all six Strategic Perspectives, with drill-down to KPI detail." onNavigate={onNavigate} />
+      <ScreenHeader id="CP001" subtitle="Consolidated achievement across all six Strategic Perspectives, with drill-down to KPI detail." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div
         role="button"

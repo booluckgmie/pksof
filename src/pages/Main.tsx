@@ -3,6 +3,7 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatCard } from "@/components/pk/Misc";
 import { InfoNote } from "@/components/pk/Misc";
 import { NoDataState } from "@/components/pk/DataOrigin";
+import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -18,7 +19,8 @@ const STATUS_TONE: Record<string, { rail: string; lt: string; label: string }> =
 };
 
 export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId, isRestrictedPillar, entityName, canEnterData } = useSession();
+  const { entityId, isRestrictedPillar, entityName, canEnterData } = useSession();
+  const [periodId, setPeriodId] = useLocalPeriodId();
   const { latestValue } = useWorkflow();
   const period = periodById(periodId);
 
@@ -49,6 +51,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             : "Consolidated organisational performance overview across the Group."
         }
         onNavigate={onNavigate}
+        right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />}
       />
 
       {/* Hero panel — group status + entity strip */}

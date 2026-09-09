@@ -1,6 +1,7 @@
 import { BookUser, ChevronRight } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { RecruitmentIndexScorecard } from "@/components/pk/RecruitmentIndexScorecard";
+import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -10,7 +11,8 @@ import { kpiById } from "@/data/kpis";
 import { periodById } from "@/data/periods";
 
 export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { entityId, periodId } = useSession();
+  const { entityId } = useSession();
+  const [periodId, setPeriodId] = useLocalPeriodId();
   const { latestValue } = useWorkflow();
   const { recruitmentIndexByPeriod } = useDetails();
   const { getFyTarget } = useKpiTargets();
@@ -20,7 +22,7 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="CP007" subtitle="Organisational Capacity performance: Recruitment Efficiency Index. Weight 10.0%." onNavigate={onNavigate} />
+      <ScreenHeader id="CP007" subtitle="Organisational Capacity performance: Recruitment Efficiency Index. Weight 10.0%." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
       <RecruitmentIndexScorecard
         kpi9={kpi9}
         recruitmentIndex={recruitmentIndex}
