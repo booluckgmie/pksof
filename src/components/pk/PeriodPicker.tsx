@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
  * back to the first quarter the new FY actually has — never lands on an invalid period. Only
  * ever chooses among `visible` (the current-quarter-capped list), so switching years can't jump
  * forward into a not-yet-reported quarter either. */
-function periodForFy(visible: Period[], fy: string, keepQuarter: number): PeriodId {
+export function periodForFy(visible: Period[], fy: string, keepQuarter: number): PeriodId {
   const sameQuarter = visible.find((p) => p.fy === fy && p.quarter === keepQuarter);
   return (sameQuarter ?? visible.find((p) => p.fy === fy) ?? visible[visible.length - 1]).id;
 }

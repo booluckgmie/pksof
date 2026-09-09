@@ -283,3 +283,72 @@ export function SplitBar({ segments }: { segments: { label: string; value: numbe
     </div>
   );
 }
+
+/** A ring composition chart with the total centered in the hole and each slice's own value/share
+ * labeled in place — used sparingly (this dashboard's default is CategoryBar/SplitBar precisely
+ * to avoid pie/donut charts) but adopted here to match the client's own sketch for this one
+ * panel. Slices under `minLabelFraction` skip their in-ring label rather than overlap illegibly. */
+export function Donut({
+  segments,
+  centerValue,
+  centerLabel,
+  minLabelFraction = 0.07,
+}: {
+  segments: { label: string; value: number; color: string }[];
+  centerValue: string;
+  centerLabel: string;
+  minLabelFraction?: number;
+}) {
+  const total = segments.reduce((s, x) => s + x.value, 0) || 1;
+  const CX = 100;
+  const CY = 100;
+  const R = 62;
+  const STROKE = 34;
+  const CIRC = 2 * Math.PI * R;
+
+  let cumulative = 0;
+  const arcs = segments.map((s) => {
+    const frac = s.value / total;
+    const startFrac = cumulative;
+    cumulative += frac;
+    const midAngle = (startFrac + frac / 2) * 2 * Math.PI - Math.PI / 2;
+    const labelR = R;
+    return {
+      ...s,
+      frac,
+      dash: frac * CIRC,
+      offset: -startFrac * CIRC,
+      labelX: CX + labelR * Math.cos(midAngle),
+      labelY: CY + labelR * Math.sin(midAngle),
+    };
+  });
+
+  return (
+    <svg viewBox="0 0 200 200" className="w-full h-auto" role="img" aria-label="Donut composition chart">
+      {arcs.map((a) => (
+        <circle
+          key={a.label}
+          cx={CX}
+          cy={CY}
+          r={R}
+          fill="none"
+          stroke={a.color}
+          strokeWidth={STROKE}
+          strokeDasharray={`${a.dash} ${CIRC - a.dash}`}
+          strokeDashoffset={a.offset}
+          transform={`rotate(-90 ${CX} ${CY})`}
+        >
+          <title>{a.label}: {a.value} ({(a.frac * 100).toFixed(1)}%)</title>
+        </circle>
+      ))}
+      {arcs.filter((a) => a.frac >= minLabelFraction).map((a) => (
+        <g key={`${a.label}-label`}>
+          <text x={a.labelX} y={a.labelY - 4} textAnchor="middle" fontSize={13} fontWeight={700} className="fill-white tnum">{a.value}</text>
+          <text x={a.labelX} y={a.labelY + 10} textAnchor="middle" fontSize={9.5} fontWeight={500} className="fill-white/85 tnum">{(a.frac * 100).toFixed(1)}%</text>
+        </g>
+      ))}
+      <text x={CX} y={CY - 6} textAnchor="middle" fontSize={22} fontWeight={700} className="fill-[hsl(var(--pk-ink))] tnum">{centerValue}</text>
+      <text x={CX} y={CY + 15} textAnchor="middle" fontSize={10.5} className="fill-[hsl(var(--pk-ink-faint))]">{centerLabel}</text>
+    </svg>
+  );
+}
