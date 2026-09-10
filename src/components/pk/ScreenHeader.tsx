@@ -31,7 +31,7 @@ export function ScreenHeader({
   const showBreadcrumb = breadcrumbTrail(id).length > 1;
 
   return (
-    <div className="flex flex-col gap-3 pb-4 mb-5 border-b border-[hsl(var(--pk-border))]">
+    <div data-screen-chrome className="flex flex-col gap-3 pb-4 mb-5 border-b border-[hsl(var(--pk-border))]">
       <div className="flex items-center justify-between gap-3">
         {showBreadcrumb && <Breadcrumb current={id} onNavigate={onNavigate} />}
         <div className="flex items-center gap-2 ml-auto">

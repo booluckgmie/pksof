@@ -35,6 +35,7 @@ import { Glossary } from "@/pages/Glossary";
 import { screens, type ScreenId } from "@/lib/nav";
 import { Toaster } from "@/components/ui/sonner";
 import { ScreenErrorBoundary } from "@/components/pk/ScreenErrorBoundary";
+import { FhExportBundle } from "@/components/pk/FhExportBundle";
 import { entities, entityById } from "@/data/entities";
 import type { EntityId, Module } from "@/types";
 
@@ -207,6 +208,7 @@ function AuthedApp() {
         </ScreenErrorBoundary>
       )}
       <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
+      <FhExportBundle />
     </Shell>
   );
 }

@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 export function FhTabs({ current, onNavigate }: { current: ScreenId; onNavigate: (id: ScreenId) => void }) {
   return (
-    <div className="flex items-center gap-1 border-b border-[hsl(var(--pk-border))] mb-5 overflow-x-auto">
+    <div data-screen-chrome className="flex items-center gap-1 border-b border-[hsl(var(--pk-border))] mb-5 overflow-x-auto">
       {fhNav.map((id) => (
         <button
           key={id}
