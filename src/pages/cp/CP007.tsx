@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
+import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { RecruitmentIndexCardHeader, RecruitmentIndexTable } from "@/components/pk/RecruitmentIndexScorecard";
+import { PeopleDevPlanTable } from "@/components/pk/PeopleDevPlanTable";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
@@ -12,6 +14,8 @@ import { useDetails } from "@/lib/details";
 import { useKpiTargets } from "@/lib/kpiTargets";
 import { kpiById } from "@/data/kpis";
 import { periodById } from "@/data/periods";
+
+type Expanded = "kpi9" | "kpi10" | null;
 
 export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId } = useSession();
@@ -24,10 +28,10 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const recruitmentIndex = recruitmentIndexByPeriod[periodId];
   const period = periodById(periodId);
   const kpi10FyTarget = getFyTarget("KPI10", period.fy);
-  const [expanded, setExpanded] = useState(false);
-  const toggle = () => setExpanded((e) => !e);
-  const onToggleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+  const [expanded, setExpanded] = useState<Expanded>(null);
+  const toggle = (key: Exclude<Expanded, null>) => setExpanded((e) => (e === key ? null : key));
+  const onToggleKeyDown = (key: Exclude<Expanded, null>) => (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(key); }
   };
 
   return (
@@ -38,11 +42,11 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div
           role="button"
           tabIndex={0}
-          onClick={toggle}
-          onKeyDown={onToggleKeyDown}
+          onClick={() => toggle("kpi9")}
+          onKeyDown={onToggleKeyDown("kpi9")}
           className={cn(
             "text-left rounded-lg border bg-[hsl(var(--pk-surface))] shadow-card p-4 cursor-pointer transition-colors",
-            expanded ? "border-[hsl(var(--pk-accent))]" : "border-[hsl(var(--pk-border))] hover:bg-[hsl(var(--pk-surface-2))]"
+            expanded === "kpi9" ? "border-[hsl(var(--pk-accent))]" : "border-[hsl(var(--pk-border))] hover:bg-[hsl(var(--pk-surface-2))]"
           )}
         >
           <RecruitmentIndexCardHeader
@@ -55,16 +59,21 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           />
           <div className="flex items-center justify-end">
             <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
-              {expanded ? "Hide details" : "View details"}
-              <ChevronDown className={cn("h-3 w-3 transition-transform", expanded && "rotate-180")} />
+              {expanded === "kpi9" ? "Hide details" : "View details"}
+              <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "kpi9" && "rotate-180")} />
             </span>
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => onNavigate("CP009")}
-          className="text-left rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => toggle("kpi10")}
+          onKeyDown={onToggleKeyDown("kpi10")}
+          className={cn(
+            "text-left rounded-lg border bg-[hsl(var(--pk-surface))] shadow-card p-4 cursor-pointer transition-colors",
+            expanded === "kpi10" ? "border-[hsl(var(--pk-accent))]" : "border-[hsl(var(--pk-border))] hover:bg-[hsl(var(--pk-surface-2))]"
+          )}
         >
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 10 · Weight {`${(kpiById("KPI10").weight * 100).toFixed(1)}%`}</div>
@@ -75,21 +84,33 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <span className="tnum font-head text-2xl font-semibold">{kpi10.ytdActual !== null ? `${kpi10.ytdActual.toFixed(1)}%` : "—"}</span>
             <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi10FyTarget.toFixed(1)}%</span>
           </div>
-          <p className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mb-3">
-            {kpi10.ytdActual !== null ? `${period.label} completion ${kpi10.ytdActual.toFixed(1)}% against the annual target.` : "Progress reporting only — see CP009 for the full programme breakdown."}
-          </p>
+          <KpiMetricStrip
+            fy={period.fy}
+            periodLabel={period.label.replace(" FY", " ")}
+            fyTarget={`${kpi10FyTarget.toFixed(1)}%`}
+            ytdTarget={kpi10.ytdTarget !== null ? `${kpi10.ytdTarget.toFixed(1)}%` : "—"}
+            ytdActual={kpi10.ytdActual !== null ? `${kpi10.ytdActual.toFixed(1)}%` : "—"}
+            achievement={kpi10.weighted !== null ? `${(kpi10.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi10.status}
+          />
           <div className="flex items-center justify-end">
             <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
-              Open People Development Programme
-              <ChevronRight className="h-3 w-3" />
+              {expanded === "kpi10" ? "Hide details" : "View details"}
+              <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "kpi10" && "rotate-180")} />
             </span>
           </div>
-        </button>
+        </div>
       </div>
 
-      {expanded && (
+      {expanded === "kpi9" && (
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
           <RecruitmentIndexTable recruitmentIndex={recruitmentIndex} />
+        </div>
+      )}
+
+      {expanded === "kpi10" && (
+        <div className="mb-4">
+          <PeopleDevPlanTable periodId={periodId} kpi10YtdActual={kpi10.ytdActual} />
         </div>
       )}
     </div>
