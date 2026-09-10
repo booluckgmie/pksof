@@ -46,7 +46,7 @@ export function CP009({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         )}
       >
         <div className="flex items-center justify-between mb-2">
-          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 10 · Weight {`${(kpiById("KPI10").weight * 100).toFixed(1)}%`}</div>
+          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 10 · Weight {`${(kpiById("KPI10").weight * 100).toFixed(1)}%`}</div>
           <StatusChip status={kpi10.status} />
         </div>
         <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">People Development Programme</div>
@@ -64,7 +64,7 @@ export function CP009({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           status={kpi10.status}
         />
         <div className="flex items-center justify-end">
-          <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
+          <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
             {expanded ? "Hide details" : "View details"}
             <ChevronDown className={cn("h-3 w-3 transition-transform", expanded && "rotate-180")} />
           </span>

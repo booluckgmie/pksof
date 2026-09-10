@@ -28,8 +28,8 @@ export function PerspectiveCard({
     >
       <div className="flex items-start justify-between gap-2">
         <div>
-          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Weight {(weight * 100).toFixed(1)}%</div>
-          <div className="font-head text-[15px] font-semibold text-[hsl(var(--pk-ink))] leading-snug mt-0.5">{name}</div>
+          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Weight {(weight * 100).toFixed(1)}%</div>
+          <div className="font-head text-sm font-semibold text-[hsl(var(--pk-ink))] leading-snug mt-0.5">{name}</div>
         </div>
         <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))] group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
       </div>
@@ -37,7 +37,7 @@ export function PerspectiveCard({
         <div className="tnum font-head text-2xl font-semibold" style={{ color: barColor }}>
           {achievement === null ? "—" : `${achievement.toFixed(1)}%`}
         </div>
-        <div className="text-[11px] text-[hsl(var(--pk-ink-faint))]">{kpiCount} KPI{kpiCount !== 1 ? "s" : ""}</div>
+        <div className="text-2xs text-[hsl(var(--pk-ink-faint))]">{kpiCount} KPI{kpiCount !== 1 ? "s" : ""}</div>
       </div>
       <div className="h-1.5 rounded-full bg-[hsl(var(--pk-surface-2))] overflow-hidden">
         <div className="h-full rounded-full" style={{ width: `${Math.min(100, achievement ?? 0)}%`, background: barColor }} />

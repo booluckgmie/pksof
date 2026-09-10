@@ -34,12 +34,12 @@ export function KpiMetricStrip({
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
       {boxes.map((b) => (
         <div key={b.label} className="rounded-lg border border-[hsl(var(--pk-navy-soft))] bg-[hsl(var(--pk-navy-soft)/0.4)] px-2 py-2 text-center">
-          <div className="text-[10px] font-semibold text-[hsl(var(--pk-ink-faint))] uppercase tracking-wide leading-tight">{b.label}</div>
+          <div className="text-3xs font-semibold text-[hsl(var(--pk-ink-faint))] uppercase tracking-wide leading-tight">{b.label}</div>
           <div className="tnum text-sm font-bold text-[hsl(var(--pk-ink))] mt-1">{b.value}</div>
         </div>
       ))}
       <div className="rounded-lg border border-[hsl(var(--pk-navy-soft))] bg-[hsl(var(--pk-navy-soft)/0.4)] px-2 py-2 text-center">
-        <div className="text-[10px] font-semibold text-[hsl(var(--pk-ink-faint))] uppercase tracking-wide leading-tight">Weighted Achievement</div>
+        <div className="text-3xs font-semibold text-[hsl(var(--pk-ink-faint))] uppercase tracking-wide leading-tight">Weighted Achievement</div>
         <div className="flex items-center justify-center gap-1.5 mt-1">
           <span className="tnum text-sm font-bold text-[hsl(var(--pk-ink))]">{achievement}</span>
           <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: DOT_COLOR[status] ?? DOT_COLOR["not-measurable"] }} />

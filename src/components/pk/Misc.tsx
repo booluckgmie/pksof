@@ -18,7 +18,7 @@ export function StatusLegend() {
     { label: "On Hold", color: "hsl(var(--pk-pending))" },
   ];
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-[hsl(var(--pk-ink-faint))]">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-2xs text-[hsl(var(--pk-ink-faint))]">
       {items.map((it) => (
         <span key={it.label} className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full" style={{ background: it.color }} />
@@ -55,9 +55,9 @@ export function StatCard({ label, value, sub, tone, rail }: { label: string; val
       )}
       style={rail ? { borderLeftColor: color } : undefined}
     >
-      <div className="text-[10px] uppercase tracking-[0.1em] text-[hsl(var(--pk-ink-faint))] font-semibold">{label}</div>
+      <div className="text-3xs uppercase tracking-[0.1em] text-[hsl(var(--pk-ink-faint))] font-semibold">{label}</div>
       <div className="tnum text-xl font-semibold mt-0.5" style={{ color }}>{value}</div>
-      {sub && <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-0.5">{sub}</div>}
+      {sub && <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -108,8 +108,8 @@ export function ExportMenu({ screenId, label = "Export", periodId: periodIdProp 
           <DropdownMenuItem key={format} onClick={() => runExport(format)} className="gap-2.5 py-2 cursor-pointer">
             <Icon className="h-4 w-4 text-[hsl(var(--pk-accent))] shrink-0" />
             <div className="flex flex-col">
-              <span className="text-[13px] font-medium">{itemLabel}</span>
-              <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">{description}</span>
+              <span className="text-xs font-medium">{itemLabel}</span>
+              <span className="text-2xs text-[hsl(var(--pk-ink-faint))]">{description}</span>
             </div>
           </DropdownMenuItem>
         ))}
@@ -141,7 +141,7 @@ export function NotificationsBell({ count = 0 }: { count?: number }) {
     >
       <Bell className="h-4 w-4 text-[hsl(var(--pk-ink-soft))]" />
       {count > 0 && (
-        <span className="absolute -top-1 -right-1 h-4 min-w-4 px-0.5 rounded-full bg-[hsl(var(--pk-bad))] text-white text-[9px] font-bold flex items-center justify-center">
+        <span className="absolute -top-1 -right-1 h-4 min-w-4 px-0.5 rounded-full bg-[hsl(var(--pk-bad))] text-white text-3xs font-bold flex items-center justify-center">
           {count}
         </span>
       )}
@@ -174,7 +174,7 @@ export function Breadcrumb({ current, onNavigate }: { current: ScreenId; onNavig
 
 export function LevelPill({ level }: { level: string }) {
   return (
-    <span className="font-mono-pk text-[10px] px-1.5 py-0.5 rounded border border-[hsl(var(--pk-border))] text-[hsl(var(--pk-navy))] bg-[hsl(var(--pk-navy-soft))]">
+    <span className="font-mono-pk text-3xs px-1.5 py-0.5 rounded border border-[hsl(var(--pk-border))] text-[hsl(var(--pk-navy))] bg-[hsl(var(--pk-navy-soft))]">
       {level}
     </span>
   );
@@ -187,7 +187,7 @@ export function ProgressBar({ value, max, label }: { value: number; max: number;
       <div className="h-2.5 rounded-full bg-[hsl(var(--pk-surface-2))] overflow-hidden">
         <div className="h-full rounded-full bg-[hsl(var(--pk-accent))] transition-all" style={{ width: `${pct}%` }} />
       </div>
-      {label && <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-1">{label}</div>}
+      {label && <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-1">{label}</div>}
     </div>
   );
 }

@@ -6,7 +6,7 @@ import type { ScreenId } from "@/lib/nav";
 import { useDetails } from "@/lib/details";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-2">{children}</div>;
+  return <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-2">{children}</div>;
 }
 
 /** Job Band Level (the client's own HRMS grade-code scheme) — "Management" is stored/keyed
@@ -30,10 +30,10 @@ const AGE_BAND_COLORS: Record<string, string> = {
 function GradeCard({ label, code, count, pct, total }: { label: string; code?: string; count: number; pct: number; total?: boolean }) {
   return (
     <div className={total ? "rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-4 py-3" : "rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card px-4 py-3"}>
-      <div className="text-[13px] font-semibold text-[hsl(var(--pk-ink))]">{label}</div>
-      {code && <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mb-1">({code})</div>}
+      <div className="text-xs font-semibold text-[hsl(var(--pk-ink))]">{label}</div>
+      {code && <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-1">({code})</div>}
       <div className="tnum font-head text-2xl font-bold text-[hsl(var(--pk-ink))] mt-1">{count}</div>
-      <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] tnum">{pct.toFixed(1)}%</div>
+      <div className="text-2xs text-[hsl(var(--pk-ink-faint))] tnum">{pct.toFixed(1)}%</div>
     </div>
   );
 }
@@ -78,7 +78,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <StatCard label="Total Employees" value={String(headcountSummary.totalEmployees)} />
           </div>
         </div>
-        <p className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-3">Gender is a mandatory HRMS field — no blanks permitted. Male + Female reconciles to Total Employees ({headcountSummary.totalEmployees}).</p>
+        <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">Gender is a mandatory HRMS field — no blanks permitted. Male + Female reconciles to Total Employees ({headcountSummary.totalEmployees}).</p>
       </div>
 
       <SectionLabel>Section B — Breakdown by Grade (5 approved bands)</SectionLabel>
@@ -95,7 +95,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <SectionLabel>Section C — Breakdown by Age Group (4 bands)</SectionLabel>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="text-[11px] font-bold underline text-[hsl(var(--pk-ink-faint))] mb-2">Male / Female Headcount per Age Band (HRMS)</div>
+          <div className="text-2xs font-bold underline text-[hsl(var(--pk-ink-faint))] mb-2">Male / Female Headcount per Age Band (HRMS)</div>
           <GroupedBarTrend
             data={ageGenderBreakdown.map((a) => ({ label: a.band, a: a.male, b: a.female }))}
             aLabel="Male"
@@ -105,7 +105,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           />
         </div>
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="text-[11px] font-bold underline text-[hsl(var(--pk-ink-faint))] mb-2">Workforce Age Profile — By Band</div>
+          <div className="text-2xs font-bold underline text-[hsl(var(--pk-ink-faint))] mb-2">Workforce Age Profile — By Band</div>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="w-40 shrink-0">
               <Donut
@@ -114,9 +114,9 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 centerLabel="Total Employees"
               />
             </div>
-            <table className="w-full text-[12.5px]">
+            <table className="w-full text-xs">
               <thead>
-                <tr className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] border-b border-[hsl(var(--pk-border))]">
+                <tr className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] border-b border-[hsl(var(--pk-border))]">
                   <th className="text-left font-medium py-1.5">Age Band</th>
                   <th className="text-right font-medium py-1.5">Headcount</th>
                   <th className="text-right font-medium py-1.5">% of Workforce</th>
@@ -142,8 +142,8 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </table>
           </div>
           <div className="flex items-center justify-between mt-3">
-            <p className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Average Age: <span className="font-semibold text-[hsl(var(--pk-ink))]">{averageAge.toFixed(1)} years</span></p>
-            <p className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Source: HRMS</p>
+            <p className="text-2xs text-[hsl(var(--pk-ink-faint))]">Average Age: <span className="font-semibold text-[hsl(var(--pk-ink))]">{averageAge.toFixed(1)} years</span></p>
+            <p className="text-2xs text-[hsl(var(--pk-ink-faint))]">Source: HRMS</p>
           </div>
         </div>
       </div>
@@ -152,7 +152,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
         <table className="w-full text-sm min-w-[620px]">
           <thead>
-            <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
+            <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
               <th className="text-left font-medium px-3 py-2">Job Band Level</th>
               <th className="text-left font-medium px-3 py-2">Grade Code</th>
               <th className="text-right font-medium px-3 py-2">Male</th>
@@ -189,7 +189,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </tbody>
         </table>
       </div>
-      <p className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2 flex items-center justify-between flex-wrap gap-2">
+      <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-2 flex items-center justify-between flex-wrap gap-2">
         <span>Note: Job Band Level is derived from HRMS grade code (SM1–SM3, TS1–TS2, TS3–TS5, TS6–TS8, OS1–OS4). Total headcount shall reconcile with active employees.</span>
         <span>Source: HRMS</span>
       </p>

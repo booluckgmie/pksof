@@ -59,8 +59,8 @@ export function Settings({ onNavigate: _onNavigate }: { onNavigate: (id: ScreenI
       <ScreenHeader id="SETTINGS" subtitle="Organisation-wide configuration — System Administrator only." onNavigate={_onNavigate} />
 
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 max-w-lg">
-        <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-1">Fiscal year-end</div>
-        <p className="text-[12.5px] text-[hsl(var(--pk-ink-faint))] mb-3">
+        <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-1">Fiscal year-end</div>
+        <p className="text-xs text-[hsl(var(--pk-ink-faint))] mb-3">
           Every quarter label (Q1–Q4) and cumulative threshold across the dashboard is derived from this one
           value. Currently a calendar-year FY (December year-end) — change it here if the Group ever moves
           off a calendar-year FY. No code change or redeploy required.
@@ -85,7 +85,7 @@ export function Settings({ onNavigate: _onNavigate }: { onNavigate: (id: ScreenI
           </button>
         </div>
         {dirty && !saving && (
-          <p className="text-[11px] text-[hsl(var(--pk-warn))] mt-2">Unsaved change — click Save to apply.</p>
+          <p className="text-2xs text-[hsl(var(--pk-warn))] mt-2">Unsaved change — click Save to apply.</p>
         )}
       </div>
 
@@ -99,26 +99,26 @@ export function Settings({ onNavigate: _onNavigate }: { onNavigate: (id: ScreenI
 
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 max-w-2xl mt-6">
         <div className="flex items-center justify-between gap-3 mb-1 flex-wrap">
-          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold">KPI Targets</div>
+          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold">KPI Targets</div>
           <label className="flex items-center gap-1.5">
-            <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Fiscal year</span>
+            <span className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Fiscal year</span>
             <select
               value={targetFy}
               onChange={(e) => setTargetFy(e.target.value)}
-              className="rounded-md border border-[hsl(var(--pk-border))] px-2 py-1 text-[12.5px] bg-[hsl(var(--pk-surface))] outline-none"
+              className="rounded-md border border-[hsl(var(--pk-border))] px-2 py-1 text-xs bg-[hsl(var(--pk-surface))] outline-none"
             >
               {FY_OPTIONS.map((fy) => <option key={fy} value={fy}>{fy}</option>)}
             </select>
           </label>
         </div>
-        <p className="text-[12.5px] text-[hsl(var(--pk-ink-faint))] mb-3">
+        <p className="text-xs text-[hsl(var(--pk-ink-faint))] mb-3">
           Adjustable at year-end — each KPI's full-year target can be reset per fiscal year without a code
           change. Leave a row blank to keep using the base target from the KPI catalogue.
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[480px]">
             <thead>
-              <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
+              <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
                 <th className="text-left font-medium pb-1.5">KPI</th>
                 <th className="text-right font-medium pb-1.5 pr-2 w-24">{targetFy} target</th>
                 <th className="text-right font-medium pb-1.5 pl-2 w-32">New target</th>
@@ -135,7 +135,7 @@ export function Settings({ onNavigate: _onNavigate }: { onNavigate: (id: ScreenI
                   <tr key={k.id} className="border-t border-[hsl(var(--pk-border))]">
                     <td className="py-2 pr-2">
                       <span className="font-medium text-[hsl(var(--pk-ink))]">KPI {k.no} — {k.name}</span>
-                      {override !== undefined && <span className="text-[10.5px] text-[hsl(var(--pk-accent))] ml-1.5">(override)</span>}
+                      {override !== undefined && <span className="text-3xs text-[hsl(var(--pk-accent))] ml-1.5">(override)</span>}
                     </td>
                     <td className="py-2 pr-2 text-right tnum">{live}{k.unit === "%" ? "%" : ""}</td>
                     <td className="py-2 pl-2">
@@ -152,7 +152,7 @@ export function Settings({ onNavigate: _onNavigate }: { onNavigate: (id: ScreenI
                       <button
                         onClick={() => handleSaveKpiTarget(k.id)}
                         disabled={!rowDirty || savingKpi === k.id}
-                        className="text-[11.5px] font-medium text-[hsl(var(--pk-accent))] disabled:opacity-30 disabled:pointer-events-none"
+                        className="text-2xs font-medium text-[hsl(var(--pk-accent))] disabled:opacity-30 disabled:pointer-events-none"
                       >
                         {savingKpi === k.id ? "Saving…" : "Save"}
                       </button>

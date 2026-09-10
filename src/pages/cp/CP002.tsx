@@ -34,7 +34,7 @@ export function CP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
         <table className="w-full text-sm min-w-[900px]">
           <thead>
-            <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
+            <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
               <th className="text-left font-medium px-3 py-2">Perspective</th>
               <th className="text-right font-medium px-3 py-2">Wt</th>
               <th className="text-left font-medium px-3 py-2">#</th>
@@ -75,7 +75,7 @@ export function CP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                         {(p.weight * 100).toFixed(1)}%
                       </td>
                     )}
-                    <td className="px-3 py-2 font-mono-pk text-[11px] text-[hsl(var(--pk-ink-faint))]">{k.no}</td>
+                    <td className="px-3 py-2 font-mono-pk text-2xs text-[hsl(var(--pk-ink-faint))]">{k.no}</td>
                     <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">
                       <span className="inline-flex items-center gap-1.5">
                         {k.name}
@@ -104,7 +104,7 @@ export function CP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </tfoot>
         </table>
       </div>
-      <p className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mt-3">
+      <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">
         Workflow: Draft → Submit → Review → Approve or Reject → Publish. Only approved (published) data is shown here — use{" "}
         <button className="underline underline-offset-2 hover:text-[hsl(var(--pk-accent))]" onClick={() => onNavigate("VERIFY_PUBLISH")}>Verify &amp; Publish</button> to action pending submissions.
       </p>

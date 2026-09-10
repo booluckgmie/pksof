@@ -34,7 +34,7 @@ function NavTag({ id, icon: Icon, active, onClick }: { id: ScreenId; icon: React
       )}
     >
       <Icon className="h-3.5 w-3.5 shrink-0" />
-      <span className="text-[13px] truncate">{s.label}</span>
+      <span className="text-xs truncate">{s.label}</span>
     </button>
   );
 }
@@ -50,7 +50,7 @@ function TagRow({ ids, icons, current, onNavigate }: { ids: ScreenId[]; icons: R
 }
 
 function GroupLabel({ children }: { children: React.ReactNode }) {
-  return <div className="px-2.5 pt-4 pb-1 text-[10px] uppercase tracking-[0.12em] text-white/35 font-semibold">{children}</div>;
+  return <div className="px-2.5 pt-4 pb-1 text-3xs uppercase tracking-[0.12em] text-white/35 font-semibold">{children}</div>;
 }
 
 /** Entity + reporting period pickers, moved into the sidebar so they read as global session context rather than a per-page filter. */
@@ -61,7 +61,7 @@ function SidebarFilters() {
   return (
     <div className="px-4 py-3 border-b border-white/10 flex flex-col gap-2.5 shrink-0">
       <div>
-        <div className="text-[10px] uppercase tracking-wide text-white/40 font-semibold mb-1">Entity</div>
+        <div className="text-3xs uppercase tracking-wide text-white/40 font-semibold mb-1">Entity</div>
         {pillarLocked ? (
           <div className="flex items-center gap-1.5 text-sm font-medium text-white">
             <Lock className="h-3 w-3 text-white/40 shrink-0" />
@@ -72,7 +72,7 @@ function SidebarFilters() {
             <div className="text-sm font-medium text-white truncate">{entityName}</div>
             <button
               onClick={() => setEntityId("HQ")}
-              className="mt-1.5 text-[11px] font-medium text-[hsl(var(--pk-accent-lt))] hover:underline"
+              className="mt-1.5 text-2xs font-medium text-[hsl(var(--pk-accent-lt))] hover:underline"
             >
               ← Back to Prokhas Group view
             </button>
@@ -80,13 +80,13 @@ function SidebarFilters() {
         ) : (
           <>
             <div className="text-sm font-medium text-white truncate">{entityName}</div>
-            <p className="text-[10.5px] text-white/35 mt-1 leading-snug">Drill in from a Managed Entity's row (e.g. CP004) to view its own dashboards.</p>
+            <p className="text-3xs text-white/35 mt-1 leading-snug">Drill in from a Managed Entity's row (e.g. CP004) to view its own dashboards.</p>
           </>
         )}
       </div>
 
       <div>
-        <div className="text-[10px] uppercase tracking-wide text-white/40 font-semibold mb-1">Reporting Period</div>
+        <div className="text-3xs uppercase tracking-wide text-white/40 font-semibold mb-1">Reporting Period</div>
         <YearQuarterDropdowns periodId={periodId} onChange={(id) => setPeriodId(id as never)} dark />
       </div>
     </div>
@@ -140,10 +140,10 @@ export function Sidebar({
       >
         <div className="flex items-center gap-2.5 px-4 h-14 border-b border-white/10 shrink-0">
           <div className="leading-tight flex-1 min-w-0">
-            <div className="font-head font-bold text-[16px] tracking-tight lowercase">
+            <div className="font-head font-bold text-base tracking-tight lowercase">
               pro<span className="text-[hsl(var(--pk-accent-lt))]">khas</span>
             </div>
-            <div className="text-[10px] text-white/40 -mt-0.5 tracking-wide">Group Performance Dashboard</div>
+            <div className="text-3xs text-white/40 -mt-0.5 tracking-wide">Group Performance Dashboard</div>
           </div>
           <button onClick={onCloseMobile} className="text-white/50 hover:text-white transition-colors shrink-0 lg:hidden" title="Close menu">
             <X className="h-5 w-5" />
@@ -159,10 +159,10 @@ export function Sidebar({
 
           {isRestrictedPillar ? (
             <div className="mx-2 mt-4 rounded-md border border-white/10 border-l-2 border-l-[hsl(var(--pk-warn-lt))] bg-white/5 px-2.5 py-2.5">
-              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.12em] text-white/45 font-semibold">
+              <div className="flex items-center gap-1.5 text-3xs uppercase tracking-[0.12em] text-white/45 font-semibold">
                 <Lock className="h-3 w-3" />Scoped to {homeEntityName}
               </div>
-              <p className="text-[11.5px] text-white/55 mt-1.5 leading-snug">
+              <p className="text-2xs text-white/55 mt-1.5 leading-snug">
                 {`Corporate Performance, Financial Health and Resource & People are Prokhas' own dashboards — not part of ${homeEntityName}'s pillar. ${homeEntityName}'s own modules are scoped for a later phase of this engagement.`}
               </p>
             </div>
@@ -170,10 +170,10 @@ export function Sidebar({
             <>
               {entityId !== "HQ" && (
                 <div className="mx-2 mt-4 rounded-md border border-white/10 border-l-2 border-l-[hsl(var(--pk-warn-lt))] bg-white/5 px-2.5 py-2.5">
-                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.12em] text-white/45 font-semibold">
+                  <div className="flex items-center gap-1.5 text-3xs uppercase tracking-[0.12em] text-white/45 font-semibold">
                     <Lock className="h-3 w-3" />Viewing {entityName}
                   </div>
-                  <p className="text-[11.5px] text-white/55 mt-1.5 leading-snug">
+                  <p className="text-2xs text-white/55 mt-1.5 leading-snug">
                     Corporate Performance is Prokhas' own scorecard — hidden while viewing a Managed Entity's own dashboards.
                   </p>
                 </div>
@@ -202,7 +202,7 @@ export function Sidebar({
             </>
           ) : (
             <div className="mx-2 mt-4 rounded-md border border-white/10 bg-white/5 px-2.5 py-2.5">
-              <p className="text-[11.5px] text-white/55 leading-snug">
+              <p className="text-2xs text-white/55 leading-snug">
                 The full screen menu is available to the System Administrator role. You can still open any dashboard screen without signing in — sign out to browse them.
               </p>
             </div>
@@ -230,8 +230,8 @@ export function Sidebar({
             <User className="h-4 w-4 text-white/70" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-[12.5px] font-medium truncate">{userName}</div>
-            <div className="text-[10.5px] text-white/45 truncate">{roleLabel}</div>
+            <div className="text-xs font-medium truncate">{userName}</div>
+            <div className="text-3xs text-white/45 truncate">{roleLabel}</div>
           </div>
           <button onClick={logout} className="text-white/45 hover:text-white transition-colors shrink-0" title="Sign out">
             <LogOut className="h-4 w-4" />

@@ -24,14 +24,14 @@ export function GanttChart({ rows }: { rows: Initiative[] }) {
     .filter((x): x is { r: Initiative; startQ: number; endQ: number } => x.startQ !== null && x.endQ !== null);
 
   if (parsed.length === 0) {
-    return <p className="text-[12px] text-[hsl(var(--pk-ink-faint))]">No quarter-range dates to plot for this set.</p>;
+    return <p className="text-xs text-[hsl(var(--pk-ink-faint))]">No quarter-range dates to plot for this set.</p>;
   }
 
   return (
     <div className="flex flex-col gap-2.5">
       <div className="grid gap-1" style={{ gridTemplateColumns: "1fr 3fr" }}>
         <div />
-        <div className="grid grid-cols-4 text-[10px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] pb-1 border-b border-[hsl(var(--pk-border))]">
+        <div className="grid grid-cols-4 text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] pb-1 border-b border-[hsl(var(--pk-border))]">
           {["Q1", "Q2", "Q3", "Q4"].map((q) => <div key={q} className="text-center">{q}</div>)}
         </div>
       </div>
@@ -40,7 +40,7 @@ export function GanttChart({ rows }: { rows: Initiative[] }) {
         const width = ((endQ - startQ + 1) / 4) * 100;
         return (
           <div key={r.name} className="grid items-center gap-1" style={{ gridTemplateColumns: "1fr 3fr" }}>
-            <div className="text-[12px] text-[hsl(var(--pk-ink))] truncate pr-2" title={r.name}>{r.name}</div>
+            <div className="text-xs text-[hsl(var(--pk-ink))] truncate pr-2" title={r.name}>{r.name}</div>
             <div className="relative h-5 rounded bg-[hsl(var(--pk-surface-2))]">
               <div
                 className="absolute inset-y-0 rounded"
@@ -90,7 +90,7 @@ export function MonthTimeline({ rows }: { rows: MonthTimelineRow[] }) {
     .filter((x): x is { r: MonthTimelineRow; s: number; e: number } => x.s !== null && x.e !== null);
 
   if (parsed.length === 0) {
-    return <p className="text-[12px] text-[hsl(var(--pk-ink-faint))]">No parseable start/end dates to plot for this set.</p>;
+    return <p className="text-xs text-[hsl(var(--pk-ink-faint))]">No parseable start/end dates to plot for this set.</p>;
   }
 
   const minM = Math.min(...parsed.map((p) => p.s));
@@ -99,7 +99,7 @@ export function MonthTimeline({ rows }: { rows: MonthTimelineRow[] }) {
 
   return (
     <div className="flex flex-col gap-2.5">
-      <div className="flex items-center justify-between text-[10px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] pb-1 border-b border-[hsl(var(--pk-border))]">
+      <div className="flex items-center justify-between text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] pb-1 border-b border-[hsl(var(--pk-border))]">
         <span>{monthLabel(minM)}</span>
         <span>{monthLabel(maxM)}</span>
       </div>
@@ -108,7 +108,7 @@ export function MonthTimeline({ rows }: { rows: MonthTimelineRow[] }) {
         const width = ((e - s + 1) / span) * 100;
         return (
           <div key={r.name} className="flex items-center gap-2.5">
-            <div className="w-36 sm:w-44 shrink-0 text-[12px] text-[hsl(var(--pk-ink))] truncate" title={r.name}>{r.name}</div>
+            <div className="w-36 sm:w-44 shrink-0 text-xs text-[hsl(var(--pk-ink))] truncate" title={r.name}>{r.name}</div>
             <div className="relative flex-1 h-5 rounded bg-[hsl(var(--pk-surface-2))]">
               <div
                 className="absolute inset-y-0 rounded"

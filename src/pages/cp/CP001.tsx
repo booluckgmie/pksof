@@ -40,7 +40,7 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="flex-1 w-full overflow-x-auto">
           <table className="w-full text-sm min-w-[420px]">
             <thead>
-              <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
+              <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
                 <th className="text-left font-medium pb-1.5">Metric</th>
                 <th className="text-right font-medium pb-1.5">YTD</th>
                 <th className="text-right font-medium pb-1.5">Q2</th>
@@ -73,7 +73,7 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </div>
       </div>
 
-      <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Strategic Perspectives Performance (YTD)</div>
+      <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Strategic Perspectives Performance (YTD)</div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {perspectives.map((p) => {
           const roll = perspectiveRollup(p.id, getResult);

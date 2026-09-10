@@ -62,20 +62,20 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       >
         <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.14em] text-[hsl(var(--pk-accent-lt))] font-semibold">
+            <div className="text-3xs uppercase tracking-[0.14em] text-[hsl(var(--pk-accent-lt))] font-semibold">
               {isRestrictedPillar ? `${entityName} pillar` : "Prokhas · wholly owned by MOF Inc."}
             </div>
-            <h1 className="font-head text-2xl sm:text-[28px] font-semibold tracking-tight mt-1">
+            <h1 className="font-head text-2xl sm:text-3xl font-semibold tracking-tight mt-1">
               {isRestrictedPillar ? `${entityName} Performance` : "Group Performance"}
             </h1>
-            <p className="text-[13px] text-white/55 mt-1 max-w-[42ch]">{period.label} reporting · {kpis.length} KPIs tracked across six strategic perspectives.</p>
+            <p className="text-xs text-white/55 mt-1 max-w-[42ch]">{period.label} reporting · {kpis.length} KPIs tracked across six strategic perspectives.</p>
           </div>
           {!isRestrictedPillar && (
             <div className="flex items-center gap-2.5 rounded-lg bg-white/[0.07] border border-white/15 px-3.5 py-2.5">
               <span className="h-2 w-2 rounded-full shrink-0" style={{ background: groupTone.lt }} />
               <div>
-                <div className="text-[10px] uppercase tracking-[0.12em] text-white/45">Group status</div>
-                <div className="text-[13px] font-semibold tnum">{overall.toFixed(1)}% · {groupTone.label}</div>
+                <div className="text-3xs uppercase tracking-[0.12em] text-white/45">Group status</div>
+                <div className="text-xs font-semibold tnum">{overall.toFixed(1)}% · {groupTone.label}</div>
               </div>
             </div>
           )}
@@ -91,7 +91,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <StatCard label="Not Measurable" value={String(notMeasurable)} tone="pending" />
           </div>
           {!hasAnyData && (
-            <p className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mt-2">No submissions published yet for this entity / period.</p>
+            <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-2">No submissions published yet for this entity / period.</p>
           )}
         </div>
       )}

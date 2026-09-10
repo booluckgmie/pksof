@@ -53,7 +53,7 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
+          <span className="text-2xs text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
           <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
         </div>
         <DurationFilterBar duration={duration} onChange={setDuration} total={fullTrend.length} />
@@ -66,7 +66,7 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-1">
             <div>
-              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 1 · Weight {(kpiById("KPI1").weight * 100).toFixed(1)}%</div>
+              <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 1 · Weight {(kpiById("KPI1").weight * 100).toFixed(1)}%</div>
               <div className="font-head font-bold text-[hsl(var(--pk-ink))] inline-flex items-center gap-1.5">
                 Profit Before Tax (PBT)
                 <InfoTip title="Weighted Achievement">YTD Actual ÷ FY Target × Weight, capped at 12.5%.</InfoTip>
@@ -92,7 +92,7 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             title="Click for the income-statement breakdown behind this figure"
           >
             <BarTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.pbt }))} unit="m" />
-            <div className="flex items-center justify-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] mt-1 group-hover:opacity-75 transition-opacity">
+            <div className="flex items-center justify-center gap-1 text-2xs text-[hsl(var(--pk-accent))] mt-1 group-hover:opacity-75 transition-opacity">
               {openBreakdown.pbt ? "Hide breakdown" : "Click chart for income-statement breakdown"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", openBreakdown.pbt && "rotate-180")} />
             </div>
@@ -106,7 +106,7 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-1">
             <div>
-              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 2 · Weight {(kpiById("KPI2").weight * 100).toFixed(1)}% · lower is better</div>
+              <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 2 · Weight {(kpiById("KPI2").weight * 100).toFixed(1)}% · lower is better</div>
               <div className="font-head font-bold text-[hsl(var(--pk-ink))] inline-flex items-center gap-1.5">
                 Cost-to-Income Ratio
                 <InfoTip title="Weighted Achievement">FY Target ÷ YTD Actual × Weight, capped at 12.5% — a lower actual than target scores full achievement.</InfoTip>
@@ -132,7 +132,7 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             title="Click for the cost breakdown behind this figure"
           >
             <LineTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.cir }))} unit="%" />
-            <div className="flex items-center justify-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] mt-1 group-hover:opacity-75 transition-opacity">
+            <div className="flex items-center justify-center gap-1 text-2xs text-[hsl(var(--pk-accent))] mt-1 group-hover:opacity-75 transition-opacity">
               {openBreakdown.cir ? "Hide breakdown" : "Click chart for cost breakdown"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", openBreakdown.cir && "rotate-180")} />
             </div>

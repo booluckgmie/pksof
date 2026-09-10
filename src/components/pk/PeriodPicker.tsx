@@ -27,7 +27,7 @@ export function useLocalPeriodId(): [PeriodId, (id: PeriodId) => void] {
 function LabeledSelect({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[10px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold">{label}</span>
+      <span className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold">{label}</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -135,7 +135,7 @@ export function PeriodPickerCompact({
       <select
         value={period.fy}
         onChange={(e) => onChange(periodForFy(visible, e.target.value, period.quarter))}
-        className="bg-[hsl(var(--pk-surface))] border border-[hsl(var(--pk-border))] rounded-md px-2 py-1 text-[12.5px] font-medium text-[hsl(var(--pk-ink))] outline-none cursor-pointer focus:border-[hsl(var(--pk-accent))]"
+        className="bg-[hsl(var(--pk-surface))] border border-[hsl(var(--pk-border))] rounded-md px-2 py-1 text-xs font-medium text-[hsl(var(--pk-ink))] outline-none cursor-pointer focus:border-[hsl(var(--pk-accent))]"
       >
         {fyList.map((fy) => (
           <option key={fy} value={fy}>{fy}</option>
@@ -147,7 +147,7 @@ export function PeriodPickerCompact({
             key={p.id}
             onClick={() => onChange(p.id)}
             className={cn(
-              "text-[12px] px-2.5 py-1 rounded-md border transition-colors",
+              "text-xs px-2.5 py-1 rounded-md border transition-colors",
               periodId === p.id
                 ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] border-[hsl(var(--pk-accent))]"
                 : "border-[hsl(var(--pk-border))] text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))]"
@@ -186,7 +186,7 @@ export function ComparePeriodsPicker({
         <button
           type="button"
           className={cn(
-            "inline-flex items-center gap-1.5 text-[12px] px-2.5 py-1 rounded-md border transition-colors",
+            "inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md border transition-colors",
             selected.length > 0
               ? "border-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))]"
               : "border-[hsl(var(--pk-border))] text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))]",
@@ -206,14 +206,14 @@ export function ComparePeriodsPicker({
         >
           {fyList.map((fy) => (
             <div key={fy} className="mb-2 last:mb-0">
-              <div className="text-[10px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-1">{fy}</div>
+              <div className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-1">{fy}</div>
               <div className="grid grid-cols-4 gap-1">
                 {visible.filter((p) => p.fy === fy).map((p) => (
                   <button
                     key={p.id}
                     onClick={() => toggle(p.id)}
                     className={cn(
-                      "text-[11.5px] px-1.5 py-1 rounded border transition-colors",
+                      "text-2xs px-1.5 py-1 rounded border transition-colors",
                       selected.includes(p.id)
                         ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] border-[hsl(var(--pk-accent))]"
                         : "border-[hsl(var(--pk-border))] text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))]"
@@ -228,7 +228,7 @@ export function ComparePeriodsPicker({
           {selected.length > 0 && (
             <button
               onClick={() => onChange([])}
-              className="mt-1.5 w-full text-center text-[11px] text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-bad))] transition-colors"
+              className="mt-1.5 w-full text-center text-2xs text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-bad))] transition-colors"
             >
               Clear selection
             </button>
@@ -262,7 +262,7 @@ export function PeriodComparisonTable({
     <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
       <table className="w-full text-sm min-w-[480px]">
         <thead>
-          <tr className="text-[11px] uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+          <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
             <th className="text-left font-medium px-3 py-2">Metric</th>
             {sorted.map((id) => (
               <th key={id} className="text-right font-medium px-3 py-2">

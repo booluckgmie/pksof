@@ -57,7 +57,7 @@ export function Gauge({ value, cumulativeThreshold = 0.25, mofThreshold = 0.2, s
           </text>
         )}
       </svg>
-      <div className="flex items-center gap-3 text-[10px] text-[hsl(var(--pk-ink-faint))] -mt-1">
+      <div className="flex items-center gap-3 text-3xs text-[hsl(var(--pk-ink-faint))] -mt-1">
         <span className="flex items-center gap-1"><span className="inline-block h-1.5 w-1.5 rounded-full bg-[hsl(var(--pk-ink-faint))]" />Cumulative {Math.round(cumulativeThreshold * 100)}%</span>
         <span className="flex items-center gap-1"><span className="inline-block h-1.5 w-1.5 rounded-full bg-[hsl(var(--pk-navy))]" />MOF {Math.round(mofThreshold * 100)}%</span>
       </div>

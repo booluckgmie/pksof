@@ -30,7 +30,7 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Assets (RM Million)</div>
+          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Assets (RM Million)</div>
           <div className="divide-y divide-[hsl(var(--pk-border))]">
             {balanceSheet.assets.map((a) => (
               <div key={a.label} className="flex justify-between py-1.5 text-sm"><span className="text-[hsl(var(--pk-ink-soft))]">{a.label}</span><span className="tnum">{a.value.toFixed(1)}</span></div>
@@ -39,7 +39,7 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
         </div>
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Liabilities (RM Million)</div>
+          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Liabilities (RM Million)</div>
           <div className="divide-y divide-[hsl(var(--pk-border))]">
             {balanceSheet.liabilities.map((l) => (
               <div key={l.label} className="flex justify-between py-1.5 text-sm"><span className="text-[hsl(var(--pk-ink-soft))]">{l.label}</span><span className="tnum">{l.value.toFixed(1)}</span></div>
@@ -48,9 +48,9 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
         </div>
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Equity</div>
+          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Equity</div>
           <div className="tnum font-head text-2xl font-semibold text-[hsl(var(--pk-good))]">RM {equity.toFixed(1)}m</div>
-          <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-1">Shareholders' Fund = Total Assets − Total Liabilities</div>
+          <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-1">Shareholders' Fund = Total Assets − Total Liabilities</div>
         </div>
       </div>
 
@@ -66,8 +66,8 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <StackedBarTrend data={balanceSheetTrend} />
         </div>
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2.5">Key insights</div>
-          <ul className="flex flex-col gap-2.5 text-[12.5px] text-[hsl(var(--pk-ink-soft))]">
+          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2.5">Key insights</div>
+          <ul className="flex flex-col gap-2.5 text-xs text-[hsl(var(--pk-ink-soft))]">
             <li className="flex gap-2">
               <span className="text-[hsl(var(--pk-accent))] shrink-0">•</span>
               <span>Equity makes up <span className="font-semibold text-[hsl(var(--pk-ink))]">{equityRatio.toFixed(1)}%</span> of total assets, up <span className="font-semibold text-[hsl(var(--pk-good))]">{equityGrowth.toFixed(1)}%</span> from the prior period.</span>

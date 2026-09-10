@@ -28,7 +28,7 @@ function PillarNav({ current, onNavigate, isRestrictedPillar }: { current: Scree
             key={p.id}
             onClick={() => onNavigate(p.id)}
             className={cn(
-              "rounded-full px-3 py-1 text-[12px] font-medium whitespace-nowrap transition-colors",
+              "rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap transition-colors",
               activeGroup === p.group
                 ? "bg-[hsl(var(--pk-surface))] text-[hsl(var(--pk-accent))] shadow-sm"
                 : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]"
@@ -64,7 +64,7 @@ function BrandHome({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     >
       <img src={prokhasLogo} alt="Prokhas" className="h-6 w-auto shrink-0" />
       <span className="hidden sm:block leading-tight text-left border-l border-[hsl(var(--pk-border))] pl-2.5 ml-0.5">
-        <span className="block text-[10px] text-[hsl(var(--pk-ink-faint))]">Performance Dashboard</span>
+        <span className="block text-3xs text-[hsl(var(--pk-ink-faint))]">Performance Dashboard</span>
       </span>
     </button>
   );
@@ -130,11 +130,11 @@ export function Shell({
             </button>
             <button
               onClick={() => setPaletteOpen(true)}
-              className="flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-[12px] text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
+              className="flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-xs text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
             >
               <Search className="h-3.5 w-3.5 shrink-0" />
               <span className="hidden sm:inline">Search screens…</span>
-              <kbd className="hidden sm:inline font-mono-pk text-[10px] px-1 rounded border border-[hsl(var(--pk-border))]">⌘K</kbd>
+              <kbd className="hidden sm:inline font-mono-pk text-3xs px-1 rounded border border-[hsl(var(--pk-border))]">⌘K</kbd>
             </button>
             {loggedIn ? (
               <button
@@ -147,7 +147,7 @@ export function Shell({
             ) : (
               <button
                 onClick={onOpenLogin}
-                className="flex items-center gap-1.5 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] text-[12.5px] font-medium px-3 py-1.5 hover:opacity-90 transition-opacity"
+                className="flex items-center gap-1.5 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] text-xs font-medium px-3 py-1.5 hover:opacity-90 transition-opacity"
               >
                 <LogIn className="h-3.5 w-3.5" />Login
               </button>
@@ -155,7 +155,7 @@ export function Shell({
           </div>
         </div>
         <main id="screen-content" className="flex-1 px-3.5 sm:px-6 py-4 sm:py-6 max-w-[1180px] w-full mx-auto bg-[hsl(var(--pk-paper))]">{children}</main>
-        <footer className="shrink-0 border-t border-[hsl(var(--pk-border))] px-3.5 sm:px-6 py-3 text-center text-[11px] text-[hsl(var(--pk-ink-faint))]">
+        <footer className="shrink-0 border-t border-[hsl(var(--pk-border))] px-3.5 sm:px-6 py-3 text-center text-2xs text-[hsl(var(--pk-ink-faint))]">
           Design by Operational Excellence Department (OED) &middot; Prokhas Sdn Bhd
         </footer>
       </div>

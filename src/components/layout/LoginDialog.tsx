@@ -66,7 +66,7 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
             >
               Continue with SSO
             </button>
-            <div className="flex items-center gap-2 text-[11px] text-[hsl(var(--pk-ink-faint))]">
+            <div className="flex items-center gap-2 text-2xs text-[hsl(var(--pk-ink-faint))]">
               <div className="h-px flex-1 bg-[hsl(var(--pk-border))]" />or<div className="h-px flex-1 bg-[hsl(var(--pk-border))]" />
             </div>
           </>
@@ -74,7 +74,7 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <label className="flex flex-col gap-1">
-            <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Corporate ID</span>
+            <span className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Corporate ID</span>
             <div className="flex items-center gap-2 rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-2">
               <ShieldCheck className="h-4 w-4 text-[hsl(var(--pk-ink-faint))]" />
               <input
@@ -87,7 +87,7 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
           </label>
 
           <label className="flex flex-col gap-1">
-            <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Password</span>
+            <span className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Password</span>
             <div className="flex items-center gap-2 rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-2">
               <KeyRound className="h-4 w-4 text-[hsl(var(--pk-ink-faint))]" />
               <input
@@ -103,7 +103,7 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
           <div className="h-px bg-[hsl(var(--pk-border))]" />
 
           <label className="flex flex-col gap-1">
-            <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Role</span>
+            <span className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Role</span>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as Role)}
@@ -117,7 +117,7 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
 
           {roleDef.pillarLocked && (
             <label className="flex flex-col gap-1">
-              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Entity</span>
+              <span className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Entity</span>
               <div className="flex items-center gap-2 rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-2">
                 <Building2 className="h-4 w-4 text-[hsl(var(--pk-ink-faint))]" />
                 <select
@@ -135,7 +135,7 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
 
           {roleDef.moduleLocked && (
             <label className="flex flex-col gap-1">
-              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Pillar</span>
+              <span className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Pillar</span>
               <div className="flex items-center gap-2 rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-2">
                 <LayoutGrid className="h-4 w-4 text-[hsl(var(--pk-ink-faint))]" />
                 <select

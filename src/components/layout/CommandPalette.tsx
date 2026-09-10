@@ -53,7 +53,7 @@ export function CommandPalette({
     return (
       <CommandItem key={id} value={`${s.code} ${s.label}`} onSelect={() => go(id)} className="gap-2.5">
         <Icon className="h-3.5 w-3.5 shrink-0 text-[hsl(var(--pk-ink-faint))]" />
-        <span className="font-mono-pk text-[11px] font-semibold text-[hsl(var(--pk-accent))] w-16 shrink-0">{s.code}</span>
+        <span className="font-mono-pk text-2xs font-semibold text-[hsl(var(--pk-accent))] w-16 shrink-0">{s.code}</span>
         <span className="truncate">{s.label}</span>
       </CommandItem>
     );

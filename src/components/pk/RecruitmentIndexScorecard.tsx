@@ -43,7 +43,7 @@ export function RecruitmentIndexCardHeader({
   return (
     <>
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 9 · Weight {weightPct}</div>
+        <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 9 · Weight {weightPct}</div>
         <StatusChip status={kpi9.status} />
       </div>
       <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2 inline-flex items-center gap-1.5">
@@ -82,7 +82,7 @@ export function RecruitmentIndexTable({ recruitmentIndex }: { recruitmentIndex: 
       <div className="overflow-x-auto">
         <table className="w-full text-sm min-w-[680px]">
           <thead>
-            <tr className="text-[11px] uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+            <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
               <th className="text-left font-medium px-3 py-2">Metric</th>
               <th className="text-right font-medium px-3 py-2">Weight</th>
               <th className="text-left font-medium px-3 py-2">Performance Achievement</th>
@@ -118,18 +118,18 @@ export function RecruitmentIndexTable({ recruitmentIndex }: { recruitmentIndex: 
         </table>
       </div>
       <div className="mt-3 flex flex-col gap-1.5">
-        <div className="text-[11px] font-medium text-[hsl(var(--pk-ink-soft))]">Notes:</div>
-        <div className="text-[11px] text-[hsl(var(--pk-ink-faint))]">
+        <div className="text-2xs font-medium text-[hsl(var(--pk-ink-soft))]">Notes:</div>
+        <div className="text-2xs text-[hsl(var(--pk-ink-faint))]">
           i. Scoring (out of 5): 1 – 75 days (score 5), 76 – 150 days (score 4), 151 – 225 days (score 3), 226 – 300 days (score 2), &gt;300 days (score 1)
         </div>
-        <div className="text-[11px] text-[hsl(var(--pk-ink-faint))]">
+        <div className="text-2xs text-[hsl(var(--pk-ink-faint))]">
           ii. Scoring (out of 5): 90 – 100% (score 5), 80 – 89% (score 4), 70 – 79% days (score 3), 50 – 69% days (score 2), &lt;50% (score 1)
         </div>
       </div>
-      <p className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">MRF: Manpower Requisition Form.</p>
+      <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-2">MRF: Manpower Requisition Form.</p>
     </>
   ) : (
-    <p className="text-[11.5px] text-[hsl(var(--pk-ink-faint))]">Component breakdown not tracked for this reporting period.</p>
+    <p className="text-2xs text-[hsl(var(--pk-ink-faint))]">Component breakdown not tracked for this reporting period.</p>
   );
 }
 

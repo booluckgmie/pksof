@@ -71,7 +71,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
+          <span className="text-2xs text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
           <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
         </div>
         <ComparePeriodsPicker selected={compareIds} onChange={setCompareIds} />
@@ -91,7 +91,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="lg:col-span-2 flex flex-col gap-5">
           <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5">
             <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 5 · Weight 7.5% · bi-annual</div>
+              <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 5 · Weight 7.5% · bi-annual</div>
               <StatusChip status={kpi5.status} />
             </div>
             <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">External Client Satisfaction</div>
@@ -113,7 +113,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             )}
             <div className="mt-2 pt-4 border-t border-[hsl(var(--pk-border))]">
               <div className="flex items-center justify-between flex-wrap gap-1.5 mb-2">
-                <div className="text-[11px] font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Historical trend</div>
+                <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Historical trend</div>
                 <DurationFilterBar duration={duration} onChange={setDuration} total={fullSatisfactionTrend.length} label="" />
               </div>
               <StackedBarTrend data={satisfactionTrend} />
@@ -122,7 +122,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
           <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5">
             <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 6 · Weight 7.5% · quarterly</div>
+              <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 6 · Weight 7.5% · quarterly</div>
               <StatusChip status={kpi6.status} />
             </div>
             <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Time Charter Compliance</div>
@@ -135,16 +135,16 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               achievement={kpi6.weighted !== null ? `${(kpi6.weighted * 100).toFixed(1)}%` : "—"}
               status={kpi6.status}
             />
-            <p className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Group average across {timeCharterByDept.departments.length || "—"} departments, scored quarterly.</p>
+            <p className="text-2xs text-[hsl(var(--pk-ink-faint))]">Group average across {timeCharterByDept.departments.length || "—"} departments, scored quarterly.</p>
 
             {timeCharterByDept.periods.length > 0 && (
               <div className="mt-2 pt-4 border-t border-[hsl(var(--pk-border))]">
                 <div className="flex items-center justify-between flex-wrap gap-1.5 mb-2">
-                  <div className="text-[11px] font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Scoring by quarter — {chartLabel}</div>
+                  <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Scoring by quarter — {chartLabel}</div>
                   {selectedDept && (
                     <button
                       onClick={() => setSelectedDept(null)}
-                      className="text-[11px] font-medium text-[hsl(var(--pk-accent))] hover:opacity-75 transition-opacity"
+                      className="text-2xs font-medium text-[hsl(var(--pk-accent))] hover:opacity-75 transition-opacity"
                     >
                       Reset to Group average
                     </button>
@@ -159,11 +159,11 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         {timeCharterByDept.periods.length > 0 && (
           <div className="lg:col-span-4">
             <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5 h-full">
-              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Summary of Results — click a department to chart its own trend</div>
+              <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Summary of Results — click a department to chart its own trend</div>
               <div className="rounded-lg border border-[hsl(var(--pk-border))] overflow-x-auto">
                 <table className="w-full text-sm min-w-[560px]">
                   <thead>
-                    <tr className="text-[11px] uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+                    <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
                       <th className="text-left font-medium px-3 py-2.5 w-10">No</th>
                       <th className="text-left font-medium px-3 py-2.5">Departments</th>
                       {timeCharterByDept.periods.map((p) => (

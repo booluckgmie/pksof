@@ -38,7 +38,7 @@ function BulletList({ text }: { text: string }) {
       {lines.map((line, i) => {
         const nested = /^\s/.test(line);
         return (
-          <li key={i} className={cn("flex gap-1.5 text-[12px] leading-snug", nested ? "ml-4 text-[hsl(var(--pk-ink-faint))]" : "text-[hsl(var(--pk-ink-soft))]")}>
+          <li key={i} className={cn("flex gap-1.5 text-xs leading-snug", nested ? "ml-4 text-[hsl(var(--pk-ink-faint))]" : "text-[hsl(var(--pk-ink-soft))]")}>
             <span className="shrink-0">{nested ? "o" : "▪"}</span>
             <span>{line.trim()}</span>
           </li>
@@ -102,7 +102,7 @@ export function PeopleDevPlanTable({ periodId, kpi10YtdActual }: { periodId: Per
   return (
     <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-hidden">
       {kpi10YtdActual === null && (
-        <div className="m-3 inline-block rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-3 py-1.5 text-[12px] font-semibold text-[hsl(var(--pk-ink))]">
+        <div className="m-3 inline-block rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-3 py-1.5 text-xs font-semibold text-[hsl(var(--pk-ink))]">
           Not measured in {period.label.split(" ")[0]}. Progress only.
         </div>
       )}
@@ -118,8 +118,8 @@ export function PeopleDevPlanTable({ periodId, kpi10YtdActual }: { periodId: Per
               {canEnterData && <th rowSpan={2} className="w-16 px-2 py-2 border border-[hsl(var(--pk-navy))]"></th>}
             </tr>
             <tr className="bg-[hsl(var(--pk-navy))] text-white">
-              <th className="px-3 py-1.5 text-center text-[11px] font-medium border border-[hsl(var(--pk-navy))]">Start</th>
-              <th className="px-3 py-1.5 text-center text-[11px] font-medium border border-[hsl(var(--pk-navy))]">End</th>
+              <th className="px-3 py-1.5 text-center text-2xs font-medium border border-[hsl(var(--pk-navy))]">Start</th>
+              <th className="px-3 py-1.5 text-center text-2xs font-medium border border-[hsl(var(--pk-navy))]">End</th>
             </tr>
           </thead>
           <tbody>
@@ -134,7 +134,7 @@ export function PeopleDevPlanTable({ periodId, kpi10YtdActual }: { periodId: Per
                         {canEnterData && (
                           <button
                             onClick={() => startAdd(subArea)}
-                            className="flex items-center gap-1 text-[11px] font-medium text-[hsl(var(--pk-accent))] hover:opacity-75 transition-opacity shrink-0"
+                            className="flex items-center gap-1 text-2xs font-medium text-[hsl(var(--pk-accent))] hover:opacity-75 transition-opacity shrink-0"
                           >
                             <Plus className="h-3 w-3" />Add programme
                           </button>
@@ -145,7 +145,7 @@ export function PeopleDevPlanTable({ periodId, kpi10YtdActual }: { periodId: Per
 
                   {rows.length === 0 && form?.subArea !== subArea && (
                     <tr>
-                      <td colSpan={colSpanAll} className="px-3 py-3 text-[12px] text-[hsl(var(--pk-ink-faint))] border border-[hsl(var(--pk-border))]">No programmes recorded for this period yet.</td>
+                      <td colSpan={colSpanAll} className="px-3 py-3 text-xs text-[hsl(var(--pk-ink-faint))] border border-[hsl(var(--pk-border))]">No programmes recorded for this period yet.</td>
                     </tr>
                   )}
 
@@ -212,7 +212,7 @@ function RowForm({
     <div className="px-4 py-3 bg-[hsl(var(--pk-surface-2))] flex flex-col gap-2.5">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         <label className="flex flex-col gap-1">
-          <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Programme name</span>
+          <span className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Programme name</span>
           <input
             value={form.programme}
             onChange={(e) => setForm({ ...form, programme: e.target.value })}
@@ -221,7 +221,7 @@ function RowForm({
           />
         </label>
         <label className="flex flex-col gap-1">
-          <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Status</span>
+          <span className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Status</span>
           <select
             value={form.status}
             onChange={(e) => setForm({ ...form, status: e.target.value as InitiativeStatus })}
@@ -231,17 +231,17 @@ function RowForm({
           </select>
         </label>
         <label className="flex flex-col gap-1">
-          <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Start (e.g. Apr '26)</span>
+          <span className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Start (e.g. Apr '26)</span>
           <input value={form.start} onChange={(e) => setForm({ ...form, start: e.target.value })} className="rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-sm bg-[hsl(var(--pk-surface))] outline-none" />
         </label>
         <label className="flex flex-col gap-1">
-          <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">End (e.g. Dec '26)</span>
+          <span className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">End (e.g. Dec '26)</span>
           <input value={form.end} onChange={(e) => setForm({ ...form, end: e.target.value })} className="rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-sm bg-[hsl(var(--pk-surface))] outline-none" />
         </label>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         <label className="flex flex-col gap-1">
-          <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Detail — one bullet per line (indent a line for a sub-bullet)</span>
+          <span className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Detail — one bullet per line (indent a line for a sub-bullet)</span>
           <textarea
             value={form.detail}
             onChange={(e) => setForm({ ...form, detail: e.target.value })}
@@ -251,7 +251,7 @@ function RowForm({
           />
         </label>
         <label className="flex flex-col gap-1">
-          <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Status update — one bullet per line (leave blank to just show "{form.status}" in the table)</span>
+          <span className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Status update — one bullet per line (leave blank to just show "{form.status}" in the table)</span>
           <textarea
             value={form.statusNote}
             onChange={(e) => setForm({ ...form, statusNote: e.target.value })}
@@ -262,14 +262,14 @@ function RowForm({
         </label>
       </div>
       <div className="flex items-center gap-2 justify-end">
-        <button onClick={onCancel} className="flex items-center gap-1 text-[11.5px] text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] px-2.5 py-1.5">
+        <button onClick={onCancel} className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] px-2.5 py-1.5">
           <X className="h-3.5 w-3.5" />Cancel
         </button>
         <button
           onClick={onSave}
           disabled={saving || !form.programme.trim()}
           className={cn(
-            "rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] text-[11.5px] font-medium px-3 py-1.5 hover:opacity-90 transition-opacity",
+            "rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] text-2xs font-medium px-3 py-1.5 hover:opacity-90 transition-opacity",
             (saving || !form.programme.trim()) && "opacity-40 pointer-events-none"
           )}
         >

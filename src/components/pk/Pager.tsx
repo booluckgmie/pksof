@@ -4,7 +4,7 @@ export function Pager({ page, pageCount, onChange }: { page: number; pageCount: 
   if (pageCount <= 1) return null;
   return (
     <div className="flex items-center justify-between gap-3 px-1 pt-1">
-      <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Page {page} of {pageCount}</span>
+      <span className="text-2xs text-[hsl(var(--pk-ink-faint))]">Page {page} of {pageCount}</span>
       <div className="flex items-center gap-1">
         <button
           onClick={() => onChange(Math.max(1, page - 1))}

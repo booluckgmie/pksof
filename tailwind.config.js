@@ -7,6 +7,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontSize: {
+        "3xs": ["10px", { lineHeight: "14px" }],
+        "2xs": ["11px", { lineHeight: "15px" }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

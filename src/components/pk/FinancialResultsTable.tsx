@@ -112,7 +112,7 @@ export function FinancialResultsTable({
             <col className="w-[11%]" />
           </colgroup>
           <thead>
-            <tr className="text-[11px] uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+            <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
               <th className="text-left font-medium px-2 py-2.5">RM'000</th>
               <th className="text-right font-medium px-2 py-2.5 leading-tight">{currentLabel}</th>
               <th className="text-right font-medium px-2 py-2.5 leading-tight">{compareLabel}</th>
@@ -160,20 +160,20 @@ export function FinancialResultsTable({
                           const iv = variance(it.value, cmpV);
                           return (
                             <tr key={it.key} className="border-t border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-accent-soft))]">
-                              <td className="px-2 py-1.5 pl-9 text-[12.5px] text-[hsl(var(--pk-ink-soft))]">{it.label}</td>
-                              <td className="text-right px-2 py-1.5 tnum text-[12.5px]">{fmt(it.value)}</td>
-                              <td className="text-right px-2 py-1.5 tnum text-[12.5px]">{fmt(cmpV)}</td>
-                              <td className="text-right px-2 py-1.5 tnum italic text-[12.5px]">{fmt(iv.abs)}</td>
-                              <td className="text-right px-2 py-1.5 tnum italic text-[12.5px]">{fmtPct(iv.pct)}</td>
+                              <td className="px-2 py-1.5 pl-9 text-xs text-[hsl(var(--pk-ink-soft))]">{it.label}</td>
+                              <td className="text-right px-2 py-1.5 tnum text-xs">{fmt(it.value)}</td>
+                              <td className="text-right px-2 py-1.5 tnum text-xs">{fmt(cmpV)}</td>
+                              <td className="text-right px-2 py-1.5 tnum italic text-xs">{fmt(iv.abs)}</td>
+                              <td className="text-right px-2 py-1.5 tnum italic text-xs">{fmtPct(iv.pct)}</td>
                             </tr>
                           );
                         })}
                         <tr className="border-t border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-accent-soft))] font-semibold">
-                          <td className="px-2 py-1.5 pl-9 text-[12.5px]">{totalLabel}</td>
-                          <td className="text-right px-2 py-1.5 tnum text-[12.5px]">{fmt(totalCur)}</td>
-                          <td className="text-right px-2 py-1.5 tnum text-[12.5px]">{fmt(totalCmp)}</td>
-                          <td className="text-right px-2 py-1.5 tnum italic text-[12.5px]">{fmt(totalV.abs)}</td>
-                          <td className="text-right px-2 py-1.5 tnum italic text-[12.5px]">{fmtPct(totalV.pct)}</td>
+                          <td className="px-2 py-1.5 pl-9 text-xs">{totalLabel}</td>
+                          <td className="text-right px-2 py-1.5 tnum text-xs">{fmt(totalCur)}</td>
+                          <td className="text-right px-2 py-1.5 tnum text-xs">{fmt(totalCmp)}</td>
+                          <td className="text-right px-2 py-1.5 tnum italic text-xs">{fmt(totalV.abs)}</td>
+                          <td className="text-right px-2 py-1.5 tnum italic text-xs">{fmtPct(totalV.pct)}</td>
                         </tr>
                       </>
                     );

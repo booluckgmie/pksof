@@ -58,7 +58,7 @@ export function AuditTrailPanel({ submissions, showEntityColumn = true }: { subm
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
             <table className="w-full text-sm min-w-[680px]">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
+                <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
                   <th className="text-left font-medium px-3 py-2">KPI</th>
                   <th className="text-left font-medium px-3 py-2">{showEntityColumn ? "Entity / Period" : "Period"}</th>
                   <th className="text-right font-medium px-3 py-2">Value</th>
@@ -74,11 +74,11 @@ export function AuditTrailPanel({ submissions, showEntityColumn = true }: { subm
                   const p = periodById(s.periodId);
                   return (
                     <tr key={s.id} className="border-t border-[hsl(var(--pk-border))]">
-                      <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">{k.name}<div className="font-mono-pk text-[10px] text-[hsl(var(--pk-ink-faint))]">{s.id}</div></td>
+                      <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">{k.name}<div className="font-mono-pk text-3xs text-[hsl(var(--pk-ink-faint))]">{s.id}</div></td>
                       <td className="px-3 py-2 text-[hsl(var(--pk-ink-soft))]">{showEntityColumn ? `${e.name} · ${p.label}` : p.label}</td>
                       <td className="px-3 py-2 text-right tnum">{s.value}</td>
-                      <td className="px-3 py-2 text-[11px] text-[hsl(var(--pk-ink-faint))]">{s.submittedBy}<br />{new Date(s.submittedAt).toLocaleString()}</td>
-                      <td className="px-3 py-2 text-[11px] text-[hsl(var(--pk-ink-faint))]">{s.reviewedBy ? <>{s.reviewedBy}<br />{s.reviewedAt && new Date(s.reviewedAt).toLocaleString()}</> : "—"}</td>
+                      <td className="px-3 py-2 text-2xs text-[hsl(var(--pk-ink-faint))]">{s.submittedBy}<br />{new Date(s.submittedAt).toLocaleString()}</td>
+                      <td className="px-3 py-2 text-2xs text-[hsl(var(--pk-ink-faint))]">{s.reviewedBy ? <>{s.reviewedBy}<br />{s.reviewedAt && new Date(s.reviewedAt).toLocaleString()}</> : "—"}</td>
                       <td className="px-3 py-2"><WorkflowChip status={s.status} /></td>
                     </tr>
                   );

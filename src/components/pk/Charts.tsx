@@ -74,7 +74,7 @@ export function GroupedBarTrend({
           );
         })}
       </svg>
-      <div className="flex items-center justify-center gap-4 text-[11px] text-[hsl(var(--pk-ink-faint))] mt-1.5">
+      <div className="flex items-center justify-center gap-4 text-2xs text-[hsl(var(--pk-ink-faint))] mt-1.5">
         <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: aColor }} />{aLabel}</span>
         <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: bColor }} />{bLabel}</span>
       </div>
@@ -191,7 +191,7 @@ export function StackedBarTrend({ data, unit = "" }: { data: StackedPoint[]; uni
           );
         })}
       </svg>
-      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-[hsl(var(--pk-ink-faint))] mt-1.5">
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-2xs text-[hsl(var(--pk-ink-faint))] mt-1.5">
         {legend.map((s) => (
           <span key={s.label} className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-sm" style={{ background: s.color }} />
@@ -243,7 +243,7 @@ export function CategoryBar({
           );
         })}
       </svg>
-      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-2xs text-[hsl(var(--pk-ink-faint))] mt-2">
         {segments.map((s) => (
           <span key={s.label} className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-sm" style={{ background: s.color }} />
@@ -270,7 +270,7 @@ export function SplitBar({ segments }: { segments: { label: string; value: numbe
           />
         ))}
       </div>
-      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-2xs text-[hsl(var(--pk-ink-faint))] mt-2">
         {segments.map((s) => (
           <span key={s.label} className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-sm shrink-0" style={{ background: s.color }} />

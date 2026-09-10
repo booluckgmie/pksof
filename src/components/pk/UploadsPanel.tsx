@@ -40,9 +40,9 @@ function UploadRowDetails({ uploadId }: { uploadId: string }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-[12.5px] min-w-[560px]">
+      <table className="w-full text-xs min-w-[560px]">
         <thead>
-          <tr className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
+          <tr className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
             <th className="text-left font-medium py-1 px-3">Type</th>
             <th className="text-left font-medium py-1">Sheet</th>
             <th className="text-left font-medium py-1">Field</th>
@@ -160,13 +160,13 @@ export function UploadsPanel({ entityId, assignedModule, canDelete = false, show
       {showProgressGrid ? (
         <div>
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Upload progress — {currentPeriodLabel}</div>
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Upload progress — {currentPeriodLabel}</div>
             {notYetUploaded.length > 0 ? (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[hsl(var(--pk-bad))]">
+              <span className="inline-flex items-center gap-1 text-2xs font-medium text-[hsl(var(--pk-bad))]">
                 <AlertTriangle className="h-3 w-3" />{notYetUploaded.length} of {entities.length} not yet uploaded
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[hsl(var(--pk-good))]">
+              <span className="inline-flex items-center gap-1 text-2xs font-medium text-[hsl(var(--pk-good))]">
                 <Check className="h-3 w-3" />All entities have uploaded
               </span>
             )}
@@ -180,11 +180,11 @@ export function UploadsPanel({ entityId, assignedModule, canDelete = false, show
                   r.uploadedThisPeriod ? "border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))]" : "border-[hsl(var(--pk-bad))]/40 bg-[hsl(var(--pk-bad-soft))]"
                 )}
               >
-                <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] truncate">{r.entity.fullName}</div>
+                <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] truncate">{r.entity.fullName}</div>
                 {r.uploadedThisPeriod ? (
                   <>
                     <div className="text-lg font-head font-bold text-[hsl(var(--pk-ink))] mt-0.5">{r.files} file{r.files !== 1 ? "s" : ""}</div>
-                    <div className="text-[11px] mt-0.5">
+                    <div className="text-2xs mt-0.5">
                       <span className="text-[hsl(var(--pk-good))] font-medium">{r.saved} saved</span>
                       {r.failed > 0 && <span className="text-[hsl(var(--pk-bad))] font-medium"> · {r.failed} failed</span>}
                     </div>
@@ -200,13 +200,13 @@ export function UploadsPanel({ entityId, assignedModule, canDelete = false, show
         entityId && (
           <div>
             <div className="flex items-center justify-between mb-2">
-              <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Upload progress — {currentPeriodLabel}</div>
+              <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Upload progress — {currentPeriodLabel}</div>
               {pillarsNotYetUploaded.length > 0 ? (
-                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[hsl(var(--pk-bad))]">
+                <span className="inline-flex items-center gap-1 text-2xs font-medium text-[hsl(var(--pk-bad))]">
                   <AlertTriangle className="h-3 w-3" />{pillarsNotYetUploaded.length} of {progressByPillar.length} not yet uploaded
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[hsl(var(--pk-good))]">
+                <span className="inline-flex items-center gap-1 text-2xs font-medium text-[hsl(var(--pk-good))]">
                   <Check className="h-3 w-3" />All pillars have uploaded
                 </span>
               )}
@@ -221,15 +221,15 @@ export function UploadsPanel({ entityId, assignedModule, canDelete = false, show
                   )}
                 >
                   <div className="flex items-center justify-between gap-1">
-                    <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] truncate">{r.sheet}</div>
+                    <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] truncate">{r.sheet}</div>
                     {assignedModule === r.module && (
-                      <span className="shrink-0 text-[9.5px] font-semibold uppercase tracking-wide rounded-full px-1.5 py-0.5 bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]">Yours</span>
+                      <span className="shrink-0 text-3xs font-semibold uppercase tracking-wide rounded-full px-1.5 py-0.5 bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]">Yours</span>
                     )}
                   </div>
                   {r.uploadedThisPeriod ? (
                     <>
                       <div className="text-lg font-head font-bold text-[hsl(var(--pk-ink))] mt-0.5">{r.files} file{r.files !== 1 ? "s" : ""}</div>
-                      <div className="text-[11px] mt-0.5">
+                      <div className="text-2xs mt-0.5">
                         <span className="text-[hsl(var(--pk-good))] font-medium">{r.saved} saved</span>
                         {r.failed > 0 && <span className="text-[hsl(var(--pk-bad))] font-medium"> · {r.failed} failed</span>}
                       </div>
@@ -264,7 +264,7 @@ export function UploadsPanel({ entityId, assignedModule, canDelete = false, show
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
             <table className="w-full text-sm min-w-[760px]">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
+                <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
                   <th className="text-left font-medium px-3 py-2">File</th>
                   <th className="text-left font-medium px-3 py-2">{entityId ? "Sheets" : "Entity / Sheets"}</th>
                   <th className="text-left font-medium px-3 py-2">Periods</th>
@@ -286,10 +286,10 @@ export function UploadsPanel({ entityId, assignedModule, canDelete = false, show
                         className="border-t border-[hsl(var(--pk-border))] cursor-pointer hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
                         onClick={() => setExpandedId(expanded ? null : u.id)}
                       >
-                        <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">{u.fileName}<div className="font-mono-pk text-[10px] text-[hsl(var(--pk-ink-faint))]">{u.id}</div></td>
-                        <td className="px-3 py-2 text-[hsl(var(--pk-ink-soft))]">{entityId ? u.sheets : <>{e.name}<div className="text-[11px] text-[hsl(var(--pk-ink-faint))]">{u.sheets}</div></>}</td>
-                        <td className="px-3 py-2 text-[11px] text-[hsl(var(--pk-ink-faint))]">{u.periods}</td>
-                        <td className="px-3 py-2 text-[11px] text-[hsl(var(--pk-ink-faint))]">{u.uploadedBy}<br />{new Date(u.uploadedAt).toLocaleString()}</td>
+                        <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">{u.fileName}<div className="font-mono-pk text-3xs text-[hsl(var(--pk-ink-faint))]">{u.id}</div></td>
+                        <td className="px-3 py-2 text-[hsl(var(--pk-ink-soft))]">{entityId ? u.sheets : <>{e.name}<div className="text-2xs text-[hsl(var(--pk-ink-faint))]">{u.sheets}</div></>}</td>
+                        <td className="px-3 py-2 text-2xs text-[hsl(var(--pk-ink-faint))]">{u.periods}</td>
+                        <td className="px-3 py-2 text-2xs text-[hsl(var(--pk-ink-faint))]">{u.uploadedBy}<br />{new Date(u.uploadedAt).toLocaleString()}</td>
                         <td className="px-3 py-2 text-right tnum">
                           <span className="text-[hsl(var(--pk-good))]">{u.savedRows}</span>
                           {u.failedRows > 0 && <span className="text-[hsl(var(--pk-bad))]"> / {u.failedRows} failed</span>}
@@ -301,11 +301,11 @@ export function UploadsPanel({ entityId, assignedModule, canDelete = false, show
                                 <button
                                   onClick={() => handleDelete(u.id, u.fileName)}
                                   disabled={deleting}
-                                  className="text-[11px] font-medium rounded px-1.5 py-0.5 bg-[hsl(var(--pk-bad))] text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+                                  className="text-2xs font-medium rounded px-1.5 py-0.5 bg-[hsl(var(--pk-bad))] text-white hover:opacity-90 transition-opacity disabled:opacity-50"
                                 >
                                   {deleting ? <Loader2 className="h-3 w-3 animate-spin" /> : "Delete"}
                                 </button>
-                                <button onClick={() => setConfirmingId(null)} disabled={deleting} className="text-[11px] text-[hsl(var(--pk-ink-faint))] px-1">Cancel</button>
+                                <button onClick={() => setConfirmingId(null)} disabled={deleting} className="text-2xs text-[hsl(var(--pk-ink-faint))] px-1">Cancel</button>
                               </div>
                             ) : (
                               <button

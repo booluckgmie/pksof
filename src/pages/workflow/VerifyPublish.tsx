@@ -112,9 +112,9 @@ function matchesActivity(item: ActivityFeedItem, query: string): boolean {
 
 function SourceTag({ source }: { source: Submission["source"] }) {
   return source === "web-form" ? (
-    <span className="inline-flex items-center gap-1 text-[11px] text-[hsl(var(--pk-ink-faint))]"><PenLine className="h-3 w-3" />Web form</span>
+    <span className="inline-flex items-center gap-1 text-2xs text-[hsl(var(--pk-ink-faint))]"><PenLine className="h-3 w-3" />Web form</span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-[11px] text-[hsl(var(--pk-ink-faint))]"><FileSpreadsheet className="h-3 w-3" />Excel upload</span>
+    <span className="inline-flex items-center gap-1 text-2xs text-[hsl(var(--pk-ink-faint))]"><FileSpreadsheet className="h-3 w-3" />Excel upload</span>
   );
 }
 
@@ -217,16 +217,16 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-1 border border-[hsl(var(--pk-border))] rounded-lg p-1 w-fit bg-[hsl(var(--pk-surface))]">
-          <button onClick={() => changeTab("pending")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "pending" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
+          <button onClick={() => changeTab("pending")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors", tab === "pending" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
             <Inbox className="h-3.5 w-3.5" />Pending verification {pending.length > 0 && <span className="ml-0.5 tnum">({pending.length})</span>}
           </button>
-          <button onClick={() => changeTab("audit")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "audit" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
+          <button onClick={() => changeTab("audit")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors", tab === "audit" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
             <History className="h-3.5 w-3.5" />Audit trail
           </button>
-          <button onClick={() => changeTab("uploads")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "uploads" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
+          <button onClick={() => changeTab("uploads")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors", tab === "uploads" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
             <Files className="h-3.5 w-3.5" />Upload History
           </button>
-          <button onClick={() => changeTab("activity")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "activity" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
+          <button onClick={() => changeTab("activity")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors", tab === "activity" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
             <ActivityIcon className="h-3.5 w-3.5" />Activity
           </button>
         </div>
@@ -273,7 +273,7 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
                         <WorkflowChip status={s.status} />
                         <SourceTag source={s.source} />
                       </div>
-                      <div className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mt-1">
+                      <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-1">
                         {e.fullName} · {p.label} · submitted by {s.submittedBy} · {new Date(s.submittedAt).toLocaleString()}
                       </div>
                     </div>
@@ -374,7 +374,7 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
               <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
                 <table className="w-full text-sm min-w-[680px]">
                   <thead>
-                    <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
+                    <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
                       <th className="text-left font-medium px-3 py-2">Action</th>
                       <th className="text-left font-medium px-3 py-2">User</th>
                       <th className="text-left font-medium px-3 py-2">Entity</th>
@@ -391,10 +391,10 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
                           <td className={cn("px-3 py-2 font-medium", ACTIVITY_COLOR[a.kind])}>
                             <span className="inline-flex items-center gap-1.5"><Icon className="h-3.5 w-3.5" />{ACTIVITY_LABEL[a.kind]}</span>
                           </td>
-                          <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">{a.who}{a.role && <div className="text-[11px] text-[hsl(var(--pk-ink-faint))]">{a.role}</div>}</td>
+                          <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">{a.who}{a.role && <div className="text-2xs text-[hsl(var(--pk-ink-faint))]">{a.role}</div>}</td>
                           <td className="px-3 py-2 text-[hsl(var(--pk-ink-soft))]">{e ? e.name : "—"}</td>
                           <td className="px-3 py-2 text-[hsl(var(--pk-ink-soft))]">{a.detail}</td>
-                          <td className="px-3 py-2 text-[11px] text-[hsl(var(--pk-ink-faint))]">{new Date(a.at).toLocaleString()}</td>
+                          <td className="px-3 py-2 text-2xs text-[hsl(var(--pk-ink-faint))]">{new Date(a.at).toLocaleString()}</td>
                         </tr>
                       );
                     })}

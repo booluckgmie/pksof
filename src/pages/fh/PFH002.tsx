@@ -44,7 +44,7 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <FhTabs current="PFH002" onNavigate={onNavigate} />
 
       <div className="mb-4 flex items-center gap-2">
-        <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
+        <span className="text-2xs text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
         <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
       </div>
 
@@ -62,13 +62,13 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
             <div className="font-head font-bold text-[hsl(var(--pk-ink))] text-center mb-1">YTD Actual vs YTD Budget ({period.label})</div>
             {pbtDelta !== null && pbtPct !== null && (
-              <p className="text-center text-[13px] text-[hsl(var(--pk-ink-soft))] mb-3">
+              <p className="text-center text-xs text-[hsl(var(--pk-ink-soft))] mb-3">
                 Overall, the Group recorded <span className="font-semibold text-[hsl(var(--pk-accent))]">{pbtDelta >= 0 ? "higher" : "lower"} PBT by {fmtM(pbtDelta)} ({Math.abs(pbtPct).toFixed(0)}%)</span> compared to the budget for the quarter.
               </p>
             )}
             <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
               <div>
-                <div className="text-[10px] text-[hsl(var(--pk-ink-faint))] text-center mb-1">RM million</div>
+                <div className="text-3xs text-[hsl(var(--pk-ink-faint))] text-center mb-1">RM million</div>
                 <GroupedBarTrend
                   aLabel="Actual"
                   bLabel="Budget"
@@ -80,17 +80,17 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 />
               </div>
               <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
-                <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlights</div>
+                <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlights</div>
                 {isRealQuarter ? (
-                  <ul className="flex flex-col gap-2 text-[12px] text-[hsl(var(--pk-ink-soft))] leading-snug">
+                  <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
                     <li>Higher income by <span className="font-semibold">RM5.5 million (12%)</span> mainly attributable to higher income from acquired loans by RM3.9 million and fee from managing SJPP by RM2.0 million, offset by lower fee from advisory services by RM426,000.</li>
                     <li>Lower YTD expenses by <span className="font-semibold">RM1.3 million</span> mainly attributed to lower personnel cost incurred by RM768,000 — mainly lower salary and salary related expenses (headcount: 226, budget: 232); and lower administrative expenses by RM434,000 — mainly due to lower actual cost incurred for IT and Corporate Communication projects and activities.</li>
                   </ul>
                 ) : (
-                  <ul className="flex flex-col gap-2 text-[12px] text-[hsl(var(--pk-ink-soft))] leading-snug">
+                  <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
                     <li>Income was {incomeDelta !== null && incomePct !== null ? `${fmtM(incomeDelta)} (${Math.abs(incomePct).toFixed(0)}%) ${incomeDelta >= 0 ? "higher" : "lower"}` : "—"} than budget.</li>
                     <li>Expenses were {expenseDelta !== null && expensePct !== null ? `${fmtM(expenseDelta)} (${Math.abs(expensePct).toFixed(0)}%) ${expenseDelta >= 0 ? "higher" : "lower"}` : "—"} than budget.</li>
-                    <li className="text-[11px] text-[hsl(var(--pk-ink-faint))] italic">Illustrative projection — driver commentary is only available for the reported quarter.</li>
+                    <li className="text-2xs text-[hsl(var(--pk-ink-faint))] italic">Illustrative projection — driver commentary is only available for the reported quarter.</li>
                   </ul>
                 )}
               </div>
@@ -114,7 +114,7 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           />
         ) : (
           <div className="rounded-lg border border-dashed border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-6 text-center">
-            <p className="text-[12.5px] text-[hsl(var(--pk-ink-faint))]">No preceding-quarter figures to compare {period.label} against yet.</p>
+            <p className="text-xs text-[hsl(var(--pk-ink-faint))]">No preceding-quarter figures to compare {period.label} against yet.</p>
           </div>
         )}
         {results.budget ? (
@@ -131,7 +131,7 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           />
         ) : (
           <div className="rounded-lg border border-dashed border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-6 text-center">
-            <p className="text-[12.5px] text-[hsl(var(--pk-ink-faint))]">No budget figures entered for {period.label} yet.</p>
+            <p className="text-xs text-[hsl(var(--pk-ink-faint))]">No budget figures entered for {period.label} yet.</p>
           </div>
         )}
       </div>
@@ -144,7 +144,7 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               key={g}
               onClick={() => setGranularity(g)}
               className={cn(
-                "text-[11px] px-2.5 py-1 rounded-md border transition-colors capitalize",
+                "text-2xs px-2.5 py-1 rounded-md border transition-colors capitalize",
                 granularity === g
                   ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] border-[hsl(var(--pk-accent))]"
                   : "border-[hsl(var(--pk-border))] text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))]"
@@ -157,7 +157,7 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <select
               value={monthQuarter}
               onChange={(e) => setMonthQuarter(e.target.value as PeriodId)}
-              className="text-[11px] rounded-md border border-[hsl(var(--pk-border))] px-2 py-1 bg-[hsl(var(--pk-surface))] outline-none"
+              className="text-2xs rounded-md border border-[hsl(var(--pk-border))] px-2 py-1 bg-[hsl(var(--pk-surface))] outline-none"
             >
               {periodsUpTo(currentPeriodId).map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
@@ -168,7 +168,7 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       {granularity === "monthly" && (
         monthlyEnteredCount === 0 ? (
           <div className="rounded-lg border border-dashed border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-6 text-center mb-5">
-            <p className="text-[12.5px] text-[hsl(var(--pk-ink-faint))]">No monthly figures entered yet for {periods.find((p) => p.id === monthQuarter)?.label} — add them from Data Entry's "Monthly Financial Detail" section.</p>
+            <p className="text-xs text-[hsl(var(--pk-ink-faint))]">No monthly figures entered yet for {periods.find((p) => p.id === monthQuarter)?.label} — add them from Data Entry's "Monthly Financial Detail" section.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
@@ -188,7 +188,7 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
           <table className="w-full text-sm min-w-[640px]">
             <thead>
-              <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
+              <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
                 <th className="text-left font-medium px-3 py-2">Metric</th>
                 {quarterlyTrend.map((q) => <th key={q.period} className="text-right font-medium px-3 py-2">{q.period}</th>)}
               </tr>
@@ -197,7 +197,7 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               {rows.map((r) => (
                 <Fragment key={r.metric}>
                   {r.section && (
-                    <tr><td colSpan={6} className="px-3 pt-3 pb-1 text-[10.5px] font-semibold uppercase tracking-wide text-[hsl(var(--pk-navy))]">{r.section}</td></tr>
+                    <tr><td colSpan={6} className="px-3 pt-3 pb-1 text-3xs font-semibold uppercase tracking-wide text-[hsl(var(--pk-navy))]">{r.section}</td></tr>
                   )}
                   <tr className="border-t border-[hsl(var(--pk-border))]">
                     <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">{r.metric}</td>

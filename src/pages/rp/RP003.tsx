@@ -32,7 +32,7 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <StatCard label="Employees Resigned" value={String(resigned)} />
         <StatCard label="Turnover Rate" value={`${turnoverRate.toFixed(1)}%`} tone="good" />
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card px-4 py-3">
-          <div className="flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] text-[hsl(var(--pk-ink-faint))] font-semibold">
+          <div className="flex items-center gap-1 text-3xs uppercase tracking-[0.1em] text-[hsl(var(--pk-ink-faint))] font-semibold">
             Industry Benchmark
             <InfoTip title="Industry Benchmark — source" side="bottom">{INDUSTRY_BENCHMARK_SOURCE}</InfoTip>
           </div>
@@ -65,11 +65,11 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-        <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">KPI 12 performance detail</div>
+        <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">KPI 12 performance detail</div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[480px]">
             <thead>
-              <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
+              <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
                 <th className="text-left font-medium py-1.5">KPI</th><th className="text-right font-medium py-1.5">Weight</th><th className="text-right font-medium py-1.5">YTD Target</th><th className="text-right font-medium py-1.5">YTD Actual</th><th className="text-right font-medium py-1.5">Weighted</th>
               </tr>
             </thead>

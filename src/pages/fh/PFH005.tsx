@@ -37,15 +37,15 @@ export function PFH005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       {isRestrictedPillar && (
-        <div className="flex items-center gap-1.5 text-[11px] text-[hsl(var(--pk-ink-faint))] mb-2">
+        <div className="flex items-center gap-1.5 text-2xs text-[hsl(var(--pk-ink-faint))] mb-2">
           <Lock className="h-3 w-3" />Transactions involving other related parties are blurred — only {homeEntityName}'s are visible to your pillar
         </div>
       )}
-      <p className="text-[12.5px] text-[hsl(var(--pk-ink-soft))] mb-2">The significant related party transactions of the Company are shown below.</p>
+      <p className="text-xs text-[hsl(var(--pk-ink-soft))] mb-2">The significant related party transactions of the Company are shown below.</p>
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
         <table className="w-full text-sm min-w-[520px]">
           <thead>
-            <tr className="text-[11px] uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+            <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
               <th className="text-left font-medium px-3 py-2.5">RM'000</th>
               {rptPeriods.map((p) => (
                 <th key={p.id} className="text-right font-medium px-3 py-2.5">{p.label}</th>
@@ -86,7 +86,7 @@ export function PFH005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </tbody>
         </table>
       </div>
-      <p className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mt-3">Only approved transactions are displayed, supported by valid source documents. Updated quarterly by Finance / Company Secretary.</p>
+      <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">Only approved transactions are displayed, supported by valid source documents. Updated quarterly by Finance / Company Secretary.</p>
     </div>
   );
 }

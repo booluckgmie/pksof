@@ -35,7 +35,7 @@ export function ScreenHeader({
       <div className="flex items-center justify-between gap-3">
         {showBreadcrumb && <Breadcrumb current={id} onNavigate={onNavigate} />}
         <div className="flex items-center gap-2 ml-auto">
-          <span className="hidden sm:inline text-[11px] text-[hsl(var(--pk-ink-faint))]">Last updated {lastUpdated}</span>
+          <span className="hidden sm:inline text-2xs text-[hsl(var(--pk-ink-faint))]">Last updated {lastUpdated}</span>
           <RefreshButton />
           <ExportMenu screenId={id} periodId={periodId} />
           <NotificationsBell count={pending.length} />
@@ -44,7 +44,7 @@ export function ScreenHeader({
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-2.5">
           <LevelPill level={s.level} />
-          <span className="font-mono-pk text-[11px] text-[hsl(var(--pk-ink-faint))]">{s.code}</span>
+          <span className="font-mono-pk text-2xs text-[hsl(var(--pk-ink-faint))]">{s.code}</span>
         </div>
       </div>
       <div className="flex items-end justify-between gap-4 flex-wrap -mt-1">

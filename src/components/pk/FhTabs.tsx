@@ -10,7 +10,7 @@ export function FhTabs({ current, onNavigate }: { current: ScreenId; onNavigate:
           key={id}
           onClick={() => onNavigate(id)}
           className={cn(
-            "px-3.5 py-2 text-[13px] font-medium whitespace-nowrap border-b-2 -mb-px transition-colors",
+            "px-3.5 py-2 text-xs font-medium whitespace-nowrap border-b-2 -mb-px transition-colors",
             current === id
               ? "border-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent))]"
               : "border-transparent text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]"

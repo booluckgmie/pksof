@@ -53,7 +53,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           )}
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 3 · Weight 7.5%</div>
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 3 · Weight 7.5%</div>
             <StatusChip status={kpi3.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2 inline-flex items-center gap-1.5">
@@ -74,7 +74,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             status={kpi3.status}
           />
           <div className="flex items-center justify-end">
-            <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
+            <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
               {expanded === "ratings" ? "Hide details" : "View details"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "ratings" && "rotate-180")} />
             </span>
@@ -91,7 +91,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           )}
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 4 · Weight 7.5%</div>
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 4 · Weight 7.5%</div>
             <StatusChip status={kpi4.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2 inline-flex items-center gap-1.5">
@@ -112,13 +112,13 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             status={kpi4.status}
           />
           <div className="flex items-center justify-end">
-            <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
+            <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
               {expanded === "governance" ? "Hide updates" : "View updates"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "governance" && "rotate-180")} />
             </span>
           </div>
           {kpi4.ytdActual === null && (
-            <p className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-1.5">Full annual assessment scheduled Q4 FY2026 — components below report progress only.</p>
+            <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-1.5">Full annual assessment scheduled Q4 FY2026 — components below report progress only.</p>
           )}
         </div>
       </div>
@@ -126,9 +126,9 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       {expanded === "ratings" && (
         <>
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Managed Entities Performance Summary</div>
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Managed Entities Performance Summary</div>
             {isRestrictedPillar && (
-              <span className="flex items-center gap-1.5 text-[11px] text-[hsl(var(--pk-ink-faint))]">
+              <span className="flex items-center gap-1.5 text-2xs text-[hsl(var(--pk-ink-faint))]">
                 <Lock className="h-3 w-3" />Other entities' names and figures are hidden from your pillar
               </span>
             )}
@@ -136,7 +136,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
             <table className="w-full text-sm min-w-[560px]">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+                <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
                   <th className="text-left font-medium px-3 py-2.5">Entity</th>
                   <th className="text-right font-medium px-3 py-2.5">KPI Met</th>
                   <th className="text-right font-medium px-3 py-2.5">Not Met</th>
@@ -176,9 +176,9 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                         <tr className="border-t border-[hsl(var(--pk-border))]">
                           <td colSpan={6} className="p-0">
                             <div className="bg-[hsl(var(--pk-accent-soft))] px-3 py-3">
-                              <table className="w-full text-[12.5px]">
+                              <table className="w-full text-xs">
                                 <thead>
-                                  <tr className="text-[11px] uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+                                  <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
                                     <th className="text-left font-medium py-1.5 pl-2 pr-2 w-8">No</th>
                                     <th className="text-left font-medium py-1.5 pr-2">KPI</th>
                                     <th className="text-right font-medium py-1.5 px-2">FY Target</th>
@@ -197,7 +197,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                                       <Fragment key={`${d.no}-${di}`}>
                                         {showSection && (
                                           <tr>
-                                            <td colSpan={7} className="pt-2 pb-1 text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-medium">
+                                            <td colSpan={7} className="pt-2 pb-1 text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-medium">
                                               {d.section}
                                             </td>
                                           </tr>
@@ -235,16 +235,16 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       {expanded === "governance" && (
         <>
-          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Governance Index — Component Breakdown</div>
+          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Governance Index — Component Breakdown</div>
           {governanceNotFullyDue && (
-            <div className="rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-3 py-1.5 text-[11.5px] text-[hsl(var(--pk-ink-faint))] mb-2 inline-block">
+            <div className="rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-3 py-1.5 text-2xs text-[hsl(var(--pk-ink-faint))] mb-2 inline-block">
               Not fully measured this quarter — progress only for components not yet due.
             </div>
           )}
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
             <table className="w-full text-sm min-w-[640px]">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+                <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
                   <th className="text-left font-medium px-3 py-2.5 w-8">No</th>
                   <th className="text-left font-medium px-3 py-2.5">KPI</th>
                   <th className="text-right font-medium px-3 py-2.5">FY Target</th>

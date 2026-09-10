@@ -61,19 +61,19 @@ function DownloadTemplateMenu({ assignedModule, periodId, lookup }: { assignedMo
       <DropdownMenuTrigger asChild>
         <button
           disabled={pending !== null}
-          className="inline-flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-3 py-1.5 text-[13px] font-medium text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors disabled:opacity-60"
+          className="inline-flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-3 py-1.5 text-xs font-medium text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors disabled:opacity-60"
         >
           {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
           Download template
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
-        <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.08em] text-[hsl(var(--pk-ink-faint))] font-semibold px-2 py-1">
+        <DropdownMenuLabel className="text-3xs uppercase tracking-[0.08em] text-[hsl(var(--pk-ink-faint))] font-semibold px-2 py-1">
           {periodById(periodId).label} — pre-filled template
         </DropdownMenuLabel>
         {modules.map((m) => (
           <DropdownMenuItem key={m} onClick={() => handleDownload(m)} className="gap-2.5 py-2 cursor-pointer">
-            <span className="text-[13px] font-medium">{MODULE_LABEL[m]}</span>
+            <span className="text-xs font-medium">{MODULE_LABEL[m]}</span>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
@@ -134,7 +134,7 @@ function UploadResultDialog({ result, onClose }: { result: UploadResultSummary |
 
             {result.failed.length > 0 && (
               <div className="flex flex-col gap-1.5">
-                <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-bad))] font-semibold">
+                <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-bad))] font-semibold">
                   {result.failed.length} row{result.failed.length > 1 ? "s" : ""} failed to save
                 </div>
                 <div className="rounded-md border border-[hsl(var(--pk-bad))] bg-[hsl(var(--pk-bad-soft))] divide-y divide-[hsl(var(--pk-bad))]/20 max-h-40 overflow-y-auto">
@@ -356,13 +356,13 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
 
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div className="flex items-center gap-1 border border-[hsl(var(--pk-border))] rounded-lg p-1 w-fit bg-[hsl(var(--pk-surface))]">
-          <button onClick={() => setTab("upload")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "upload" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
+          <button onClick={() => setTab("upload")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors", tab === "upload" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
             <UploadCloud className="h-3.5 w-3.5" />New Upload
           </button>
-          <button onClick={() => setTab("audit")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "audit" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
+          <button onClick={() => setTab("audit")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors", tab === "audit" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
             <History className="h-3.5 w-3.5" />Audit trail
           </button>
-          <button onClick={() => setTab("uploads")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors", tab === "uploads" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
+          <button onClick={() => setTab("uploads")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors", tab === "uploads" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
             <Files className="h-3.5 w-3.5" />Upload History
           </button>
         </div>
@@ -392,7 +392,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
       <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-5">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5 flex flex-col gap-4 h-fit">
           <div className="flex flex-col gap-2">
-            <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">{assignedModuleLabel ? `Completed ${assignedModuleLabel} Excel template` : "Completed 3-pillar Excel template"}</span>
+            <span className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">{assignedModuleLabel ? `Completed ${assignedModuleLabel} Excel template` : "Completed 3-pillar Excel template"}</span>
             <label className="flex flex-col items-center justify-center gap-1.5 rounded-md border border-dashed border-[hsl(var(--pk-border))] py-6 cursor-pointer hover:border-[hsl(var(--pk-accent))] transition-colors">
               <UploadCloud className="h-5 w-5 text-[hsl(var(--pk-ink-faint))]" />
               <span className="text-xs text-[hsl(var(--pk-ink-faint))]">{parsing ? "Reading file…" : (fileName ?? "Click to choose a .xlsx file")}</span>
@@ -406,16 +406,16 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
 
           {parsed.periodsFound.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mr-1">Periods found</span>
+              <span className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mr-1">Periods found</span>
               {parsed.periodsFound.map((id) => (
-                <span key={id} className="text-[11px] font-medium rounded-full px-2 py-0.5 bg-[hsl(var(--pk-navy-soft))] text-[hsl(var(--pk-navy))]">{periodById(id).label}</span>
+                <span key={id} className="text-2xs font-medium rounded-full px-2 py-0.5 bg-[hsl(var(--pk-navy-soft))] text-[hsl(var(--pk-navy))]">{periodById(id).label}</span>
               ))}
             </div>
           )}
 
           {parsed.kpiRows.length > 0 && (
             <div className="flex flex-col gap-2">
-              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
+              <span className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
                 KPI Scorecard — {parsed.kpiRows.length} value{parsed.kpiRows.length > 1 ? "s" : ""} across {parsed.periodsFound.length} period{parsed.periodsFound.length > 1 ? "s" : ""}
               </span>
               <div className="rounded-md border border-[hsl(var(--pk-border))] divide-y divide-[hsl(var(--pk-border))] max-h-48 overflow-y-auto">
@@ -434,7 +434,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
 
           {(parsed.metricRows.length > 0 || parsed.recordRows.length > 0) && (
             <div className="flex flex-col gap-2">
-              <span className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
+              <span className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
                 {parsed.sheetsFound.join(", ")} — {parsed.metricRows.length + parsed.recordRows.length} detail figure{parsed.metricRows.length + parsed.recordRows.length > 1 ? "s" : ""}
               </span>
               <div className="rounded-md border border-[hsl(var(--pk-border))] divide-y divide-[hsl(var(--pk-border))] max-h-48 overflow-y-auto">
@@ -469,7 +469,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
                   style={{ width: `${submitProgress.total > 0 ? Math.round((submitProgress.done / submitProgress.total) * 100) : 0}%` }}
                 />
               </div>
-              <span className="text-[11px] text-[hsl(var(--pk-ink-faint))] tnum">
+              <span className="text-2xs text-[hsl(var(--pk-ink-faint))] tnum">
                 {submitProgress.done} / {submitProgress.total} saved ({submitProgress.total > 0 ? Math.round((submitProgress.done / submitProgress.total) * 100) : 0}%)
               </span>
             </div>
@@ -478,7 +478,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
         </div>
 
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 h-fit">
-          <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-3">Recent submissions — this pillar</div>
+          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-3">Recent submissions — this pillar</div>
           {mySubmissions.length === 0 ? (
             <p className="text-sm text-[hsl(var(--pk-ink-faint))]">No submissions yet. Once you submit, it'll appear here with its review status.</p>
           ) : (
@@ -517,12 +517,12 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
                         <button onClick={() => setEditingSubId(null)} className="text-xs text-[hsl(var(--pk-ink-faint))] px-1.5">Cancel</button>
                       </div>
                     ) : (
-                      <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-0.5">
+                      <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-0.5">
                         {periods.find((p) => p.id === s.periodId)?.label} · {s.value}{k.unit === "%" ? "%" : ""} · Excel upload · {new Date(s.submittedAt).toLocaleDateString()}
                       </div>
                     )}
                     {s.status === "rejected" && s.reviewNote && (
-                      <div className="text-[11px] text-[hsl(var(--pk-bad))] mt-1">Rejected: {s.reviewNote}</div>
+                      <div className="text-2xs text-[hsl(var(--pk-bad))] mt-1">Rejected: {s.reviewNote}</div>
                     )}
                   </div>
                 );

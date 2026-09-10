@@ -37,7 +37,7 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
+          <span className="text-2xs text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
           <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
         </div>
         <ComparePeriodsPicker selected={compareIds} onChange={setCompareIds} />
@@ -92,7 +92,7 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       <div className="flex items-center justify-between flex-wrap gap-1.5 mb-2">
-        <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Quarterly Trend Analysis</div>
+        <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Quarterly Trend Analysis</div>
         <DurationFilterBar duration={duration} onChange={setDuration} total={fullTrend.length} label="" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -105,7 +105,7 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             title="Click for the income-statement breakdown behind this figure"
           >
             <BarTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.pbt }))} unit="m" />
-            <div className="flex items-center justify-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] mt-1 group-hover:opacity-75 transition-opacity">
+            <div className="flex items-center justify-center gap-1 text-2xs text-[hsl(var(--pk-accent))] mt-1 group-hover:opacity-75 transition-opacity">
               {openBreakdown.pbt ? "Hide breakdown" : "Click chart for income-statement breakdown"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", openBreakdown.pbt && "rotate-180")} />
             </div>
@@ -121,7 +121,7 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             title="Click for the cost breakdown behind this figure"
           >
             <LineTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.cir }))} unit="%" />
-            <div className="flex items-center justify-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] mt-1 group-hover:opacity-75 transition-opacity">
+            <div className="flex items-center justify-center gap-1 text-2xs text-[hsl(var(--pk-accent))] mt-1 group-hover:opacity-75 transition-opacity">
               {openBreakdown.cir ? "Hide breakdown" : "Click chart for cost breakdown"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", openBreakdown.cir && "rotate-180")} />
             </div>
@@ -129,7 +129,7 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           {openBreakdown.cir && <div className="mt-2"><BreakdownTable rows={cirBreakdown} unit="RM 'mil" /></div>}
         </div>
       </div>
-      <p className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mt-3">Supporting indicators (excluded from KPI achievement): Net Profit Margin — profitability · Shareholders' Fund — sustainability.</p>
+      <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">Supporting indicators (excluded from KPI achievement): Net Profit Margin — profitability · Shareholders' Fund — sustainability.</p>
     </div>
   );
 }

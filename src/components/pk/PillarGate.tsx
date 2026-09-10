@@ -30,7 +30,7 @@ export function PillarGate({
       <div className="absolute inset-0 flex items-center justify-center px-2">
         <span
           className={cn(
-            "flex items-center gap-1.5 rounded-full bg-[hsl(var(--pk-ink))] text-white text-[10.5px] font-medium px-2.5 py-1 shadow whitespace-nowrap",
+            "flex items-center gap-1.5 rounded-full bg-[hsl(var(--pk-ink))] text-white text-3xs font-medium px-2.5 py-1 shadow whitespace-nowrap",
             badgeClassName
           )}
         >

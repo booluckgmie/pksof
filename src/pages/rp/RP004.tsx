@@ -11,7 +11,7 @@ import { useDetails, industryBenchmark, priorYearTrained } from "@/lib/details";
 import { periodById } from "@/data/periods";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-2">{children}</div>;
+  return <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-2">{children}</div>;
 }
 
 export function RP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
@@ -48,7 +48,7 @@ export function RP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weight 1.66%</div>
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weight 1.66%</div>
             <div className="font-head font-bold text-[hsl(var(--pk-ink))]">Bumiputera Training &amp; Development</div>
           </div>
           <StatusChip status={kpi13.status} />
@@ -56,7 +56,7 @@ export function RP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div className="rounded-md bg-[hsl(var(--pk-surface-2))] p-3">
-            <div className="text-[10px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Programme Status Overview</div>
+            <div className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Programme Status Overview</div>
             <dl className="flex flex-col gap-1.5 text-xs">
               <div className="flex justify-between"><dt className="text-[hsl(var(--pk-ink-faint))]">FY2025 actual</dt><dd className="tnum font-semibold text-[hsl(var(--pk-ink))]">{priorYearTrained} staff trained</dd></div>
               <div className="flex justify-between"><dt className="text-[hsl(var(--pk-ink-faint))]">Annual target</dt><dd className="tnum font-semibold text-[hsl(var(--pk-ink))]">{target} staff</dd></div>
@@ -65,9 +65,9 @@ export function RP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </dl>
           </div>
           <div className="rounded-md bg-[hsl(var(--pk-surface-2))] p-3">
-            <div className="text-[10px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Training Progress</div>
+            <div className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Training Progress</div>
             <ProgressBar value={bumiputeraTraining.attendedOne} max={target} label={`${bumiputeraTraining.attendedOne} of ${target} completed (${((bumiputeraTraining.attendedOne / target) * 100).toFixed(1)}%)`} />
-            <p className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2.5 leading-snug">Participant statistics, programme objectives and training progress are displayed with programme updates until measurement commences.</p>
+            <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-2.5 leading-snug">Participant statistics, programme objectives and training progress are displayed with programme updates until measurement commences.</p>
           </div>
         </div>
 
@@ -77,20 +77,20 @@ export function RP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <StatCard label="Attended ≥2 Programmes" value={String(bumiputeraTraining.attendedTwoPlus)} tone="pending" />
         </div>
 
-        <div className="text-[10px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-1">Progress Updates</div>
+        <div className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-1">Progress Updates</div>
         <div className="divide-y divide-[hsl(var(--pk-border))]">
           <div className="flex items-center justify-between py-2 text-sm">
             <span className="text-[hsl(var(--pk-ink-soft))]">Competency development programme</span>
-            <span className="text-[11px] text-[hsl(var(--pk-ink-faint))] mr-3">{notCommenced ? "Next milestone: Programme commencement" : `As of ${period.label}`}</span>
+            <span className="text-2xs text-[hsl(var(--pk-ink-faint))] mr-3">{notCommenced ? "Next milestone: Programme commencement" : `As of ${period.label}`}</span>
             <InitiativeStatusDot status={notCommenced ? "Planned" : "In Progress"} />
           </div>
           <div className="flex items-center justify-between py-2 text-sm">
             <span className="text-[hsl(var(--pk-ink-soft))]">Bumiputera training ({target} staff)</span>
-            <span className="text-[11px] text-[hsl(var(--pk-ink-faint))] mr-3">{bumiputeraTraining.attendedOne} of {target} completed as of {period.label}</span>
+            <span className="text-2xs text-[hsl(var(--pk-ink-faint))] mr-3">{bumiputeraTraining.attendedOne} of {target} completed as of {period.label}</span>
             <InitiativeStatusDot status={notCommenced ? "Planned" : bumiputeraTraining.attendedOne >= target ? "Completed" : "In Progress"} />
           </div>
         </div>
-        <p className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] mt-3">
+        <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">
           {notCommenced
             ? "KPI remains Not Measurable until scheduled programmes commence for this financial year."
             : `KPI ${kpi13.status === "met" ? "Met" : kpi13.status === "not-met" ? "Not Met" : "tracked"} as of ${period.label}.`}

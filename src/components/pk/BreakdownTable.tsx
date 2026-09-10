@@ -12,14 +12,14 @@ export interface BreakdownRow {
  * (Financial Perspective) and PFH001 (Financial Health Overview) — same KPIs, same breakdown. */
 export function BreakdownTable({ rows, unit }: { rows: BreakdownRow[]; unit: string }) {
   if (rows.length === 0) {
-    return <p className="text-[12px] text-[hsl(var(--pk-ink-faint))] px-1 py-2">No breakdown entered yet for this period.</p>;
+    return <p className="text-xs text-[hsl(var(--pk-ink-faint))] px-1 py-2">No breakdown entered yet for this period.</p>;
   }
   const hasTargets = rows.some((r) => r.fyTarget !== null);
   return (
     <div className="rounded-lg border border-[hsl(var(--pk-border))] overflow-x-auto">
       <table className="w-full text-sm min-w-[420px]">
         <thead>
-          <tr className="text-[11px] text-white bg-[hsl(var(--pk-navy))]">
+          <tr className="text-2xs text-white bg-[hsl(var(--pk-navy))]">
             <th className="text-left font-medium px-3 py-2"> </th>
             {hasTargets && <th className="text-right font-medium px-3 py-2">FY Target ({unit})</th>}
             {hasTargets && <th className="text-right font-medium px-3 py-2">YTD Target ({unit})</th>}

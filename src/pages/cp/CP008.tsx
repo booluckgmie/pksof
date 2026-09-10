@@ -62,7 +62,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
+          <span className="text-2xs text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
           <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
         </div>
         <ComparePeriodsPicker selected={compareIds} onChange={setCompareIds} />
@@ -90,7 +90,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           )}
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 12 · Weight 1.67%</div>
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 12 · Weight 1.67%</div>
             <StatusChip status={kpi12.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">Bumiputera Composition</div>
@@ -108,7 +108,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             status={kpi12.status}
           />
           <div className="flex items-center justify-end">
-            <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
+            <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
               {expanded === "composition" ? "Hide details" : "View details"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "composition" && "rotate-180")} />
             </span>
@@ -126,7 +126,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           )}
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 11 · Weight 1.67%</div>
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 11 · Weight 1.67%</div>
             <StatusChip status={kpi11.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">Bumiputera Procurement</div>
@@ -144,7 +144,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             status={kpi11.status}
           />
           <div className="flex items-center justify-end">
-            <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
+            <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
               {expanded === "procurement" ? "Hide details" : "View details"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "procurement" && "rotate-180")} />
             </span>
@@ -162,7 +162,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           )}
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weight 1.66%</div>
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 13 · Weight 1.66%</div>
             <StatusChip status={kpi13.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">Bumiputera Training</div>
@@ -180,7 +180,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             status={kpi13.status}
           />
           <div className="flex items-center justify-end">
-            <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
+            <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
               {expanded === "training" ? "Hide details" : "View details"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "training" && "rotate-180")} />
             </span>
@@ -197,12 +197,12 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" },
               ]}
             />
-            <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-2">Target {kpi12.ytdTarget}% · Actual {kpi12.ytdActual?.toFixed(1)}%</div>
+            <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-2">Target {kpi12.ytdTarget}% · Actual {kpi12.ytdActual?.toFixed(1)}%</div>
           </div>
           {compositionTrend.length > 1 && (
             <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
               <div className="flex items-center justify-between flex-wrap gap-1.5 mb-1.5">
-                <div className="text-[11px] font-bold underline text-[hsl(var(--pk-ink-faint))]">Composition trend by quarter</div>
+                <div className="text-2xs font-bold underline text-[hsl(var(--pk-ink-faint))]">Composition trend by quarter</div>
                 <DurationFilterBar duration={compDuration} onChange={setCompDuration} total={fullCompositionTrend.length} label="" />
               </div>
               <LineTrend data={compositionTrend} unit="%" />
@@ -214,7 +214,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       {expanded === "procurement" && (
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Procurement by department</div>
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Procurement by department</div>
             <div className="tnum text-sm font-semibold text-[hsl(var(--pk-ink))]">Total RM {procTotal.toFixed(2)}m</div>
           </div>
           <div className="flex flex-col gap-3">
@@ -239,11 +239,11 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       {expanded === "training" && (
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.poolIdentified}</div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">Pool identified</div></div>
-            <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.attendedOne}</div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">Attended 1 programme</div></div>
-            <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.attendedTwoPlus}</div><div className="text-[10px] text-[hsl(var(--pk-ink-faint))]">Attended 2+ programmes</div></div>
+            <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.poolIdentified}</div><div className="text-3xs text-[hsl(var(--pk-ink-faint))]">Pool identified</div></div>
+            <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.attendedOne}</div><div className="text-3xs text-[hsl(var(--pk-ink-faint))]">Attended 1 programme</div></div>
+            <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.attendedTwoPlus}</div><div className="text-3xs text-[hsl(var(--pk-ink-faint))]">Attended 2+ programmes</div></div>
           </div>
-          <p className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-3">Annual target {kpi13Target} staff{bumiputeraTraining.attendedOne === 0 ? " · training not yet commenced this financial year." : ` · stage: ${bumiputeraTraining.stage}.`}</p>
+          <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">Annual target {kpi13Target} staff{bumiputeraTraining.attendedOne === 0 ? " · training not yet commenced this financial year." : ` · stage: ${bumiputeraTraining.stage}.`}</p>
         </div>
       )}
     </div>

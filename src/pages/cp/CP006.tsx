@@ -24,8 +24,8 @@ function InitiativeTable({ rows }: { rows: Initiative[] }) {
             <InitiativeStatusDot status={r.status} />
           </div>
           <div className="flex items-center justify-between mt-0.5">
-            <span className="text-[11px] text-[hsl(var(--pk-ink-faint))]">{r.start} → {r.end}</span>
-            <span className="text-[11px] text-[hsl(var(--pk-accent))]">{r.nextAction}</span>
+            <span className="text-2xs text-[hsl(var(--pk-ink-faint))]">{r.start} → {r.end}</span>
+            <span className="text-2xs text-[hsl(var(--pk-accent))]">{r.nextAction}</span>
           </div>
         </div>
       ))}
@@ -69,7 +69,7 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           )}
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 7 · Weight 10.0%</div>
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 7 · Weight 10.0%</div>
             <StatusChip status={kpi7.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">Process Improvements</div>
@@ -87,7 +87,7 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             status={kpi7.status}
           />
           <div className="flex items-center justify-end">
-            <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
+            <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
               {expanded === "process" ? "Hide initiatives" : "View initiatives"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "process" && "rotate-180")} />
             </span>
@@ -105,7 +105,7 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           )}
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 8 · Weight 10.0%</div>
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 8 · Weight 10.0%</div>
             <StatusChip status={kpi8.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">New Technology Implementation</div>
@@ -123,7 +123,7 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             status={kpi8.status}
           />
           <div className="flex items-center justify-end">
-            <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] shrink-0">
+            <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
               {expanded === "tech" ? "Hide initiatives" : "View initiatives"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "tech" && "rotate-180")} />
             </span>
@@ -134,19 +134,19 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       {expanded && (
         <>
           <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
               {expanded === "process" ? "Process Improvement Initiatives — Target: 3 initiatives · Q3 onward" : "Technology & Digital Transformation — Target: 6 initiatives · Q2 onward"}
             </div>
             <div className="flex items-center gap-1 border border-[hsl(var(--pk-border))] rounded-lg p-1 bg-[hsl(var(--pk-surface))]">
               <button
                 onClick={() => setView("cards")}
-                className={cn("flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12px] font-medium transition-colors", view === "cards" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}
+                className={cn("flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors", view === "cards" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}
               >
                 <LayoutList className="h-3.5 w-3.5" />Cards
               </button>
               <button
                 onClick={() => setView("timeline")}
-                className={cn("flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12px] font-medium transition-colors", view === "timeline" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}
+                className={cn("flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors", view === "timeline" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}
               >
                 <GanttChartSquare className="h-3.5 w-3.5" />Timeline
               </button>

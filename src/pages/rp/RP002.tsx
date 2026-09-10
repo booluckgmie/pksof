@@ -14,7 +14,7 @@ import { periodById } from "@/data/periods";
 import { cn } from "@/lib/utils";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-2">{children}</div>;
+  return <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-2">{children}</div>;
 }
 
 export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
@@ -65,13 +65,13 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="flex items-center gap-1 border border-[hsl(var(--pk-border))] rounded-lg p-1 bg-[hsl(var(--pk-surface))]">
           <button
             onClick={() => setView("cards")}
-            className={cn("flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12px] font-medium transition-colors", view === "cards" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}
+            className={cn("flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors", view === "cards" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}
           >
             <LayoutList className="h-3.5 w-3.5" />Cards
           </button>
           <button
             onClick={() => setView("timeline")}
-            className={cn("flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12px] font-medium transition-colors", view === "timeline" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}
+            className={cn("flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors", view === "timeline" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}
           >
             <GanttChartSquare className="h-3.5 w-3.5" />Timeline
           </button>
@@ -80,7 +80,7 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
         <div className="flex items-center justify-between mb-1">
           <div>
-            <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 10 · Weight 10.0%</div>
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 10 · Weight 10.0%</div>
             <div className="font-head font-bold text-[hsl(var(--pk-ink))]">People Development Programme</div>
           </div>
           <StatusChip status={kpi10.status} />
@@ -99,8 +99,8 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                   <InitiativeStatusDot status={p.status} />
                 </div>
                 <div className="flex items-start justify-between gap-3 mt-0.5">
-                  <p className="text-[11.5px] text-[hsl(var(--pk-ink-faint))] leading-snug">{p.detail}</p>
-                  <span className="text-[11px] text-[hsl(var(--pk-ink-faint))] shrink-0 whitespace-nowrap">{p.start} → {p.end}</span>
+                  <p className="text-2xs text-[hsl(var(--pk-ink-faint))] leading-snug">{p.detail}</p>
+                  <span className="text-2xs text-[hsl(var(--pk-ink-faint))] shrink-0 whitespace-nowrap">{p.start} → {p.end}</span>
                 </div>
               </div>
             ))}

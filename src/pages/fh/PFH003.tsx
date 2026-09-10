@@ -33,7 +33,7 @@ export function PFH003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-5">
         <table className="w-full text-sm min-w-[560px]">
           <thead>
-            <tr className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
+            <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
               <th className="text-left font-medium px-3 py-2">Item (RM M)</th>
               <th className="text-right font-medium px-3 py-2">Actual</th>
               <th className="text-right font-medium px-3 py-2">Budget</th>
@@ -61,14 +61,14 @@ export function PFH003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </table>
       </div>
 
-      <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Variance Commentary — direct on-screen editing (Finance only)</div>
+      <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Variance Commentary — direct on-screen editing (Finance only)</div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         {fields.map((f) => (
           <div key={f.key} className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-3.5">
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-semibold text-[hsl(var(--pk-ink))]">{f.label}</label>
               {!readOnly && (
-                <button onClick={save} className="flex items-center gap-1 text-[11px] text-[hsl(var(--pk-accent))] hover:underline">
+                <button onClick={save} className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] hover:underline">
                   <Save className="h-3 w-3" />Save
                 </button>
               )}

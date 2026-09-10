@@ -14,7 +14,7 @@ import { kpiById } from "@/data/kpis";
 import { periodById } from "@/data/periods";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-2">{children}</div>;
+  return <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold mb-2">{children}</div>;
 }
 
 export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
@@ -48,7 +48,7 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))]">Headcount Trend — minimum 4 quarters</div>
             <DurationFilterBar duration={duration} onChange={setDuration} total={fullHeadcountTrend.length} label="" />
           </div>
-          <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mb-2">Actual headcount (HRMS) vs approved establishment</div>
+          <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-2">Actual headcount (HRMS) vs approved establishment</div>
           <BarTrend data={headcountTrend.map((h) => ({ label: h.period.replace(" FY", " '"), value: h.actual }))} />
         </div>
         <button onClick={() => onNavigate("RP001A")} className="group rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 text-left hover:border-[hsl(var(--pk-accent))] transition-colors">
