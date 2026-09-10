@@ -195,7 +195,7 @@ export function CP009({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                             <td className="px-3 py-2.5 border border-[hsl(var(--pk-border))] text-center whitespace-nowrap">{r.start}</td>
                             <td className="px-3 py-2.5 border border-[hsl(var(--pk-border))] text-center whitespace-nowrap">{r.end}</td>
                             <td className="px-3 py-2.5 border border-[hsl(var(--pk-border))]"><BulletList text={r.detail} /></td>
-                            <td className="px-3 py-2.5 border border-[hsl(var(--pk-border))]"><BulletList text={r.statusNote} /></td>
+                            <td className="px-3 py-2.5 border border-[hsl(var(--pk-border))]"><BulletList text={r.statusNote.trim() ? r.statusNote : r.status} /></td>
                             {canEnterData && (
                               <td className="px-2 py-2.5 border border-[hsl(var(--pk-border))]">
                                 <div className="flex items-center gap-1">
@@ -283,7 +283,7 @@ function RowForm({
           />
         </label>
         <label className="flex flex-col gap-1">
-          <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Status — one bullet per line</span>
+          <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Status update — one bullet per line (leave blank to just show "{form.status}" in the table)</span>
           <textarea
             value={form.statusNote}
             onChange={(e) => setForm({ ...form, statusNote: e.target.value })}
