@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Plus, Pencil, Trash2, X, GraduationCap, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
-import { InfoNote, InitiativeStatusDot } from "@/components/pk/Misc";
+import { InfoNote } from "@/components/pk/Misc";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { useDetails, PEOPLE_DEV_SUB_AREAS, type PeopleDevRecord, type PeopleDevSubArea } from "@/lib/details";
 import { upsertDetailRecord, deleteDetailRecord } from "@/lib/api/details";
+import { periodById } from "@/data/periods";
 import type { InitiativeStatus } from "@/data/initiatives";
 import type { ScreenId } from "@/lib/nav";
 import { cn } from "@/lib/utils";
@@ -23,12 +24,34 @@ interface FormState {
   end: string;
   status: InitiativeStatus;
   detail: string;
+  statusNote: string;
 }
 
-const BLANK = (subArea: PeopleDevSubArea): FormState => ({ id: null, subArea, programme: "", start: "", end: "", status: "Planned", detail: "" });
+const BLANK = (subArea: PeopleDevSubArea): FormState => ({ id: null, subArea, programme: "", start: "", end: "", status: "Planned", detail: "", statusNote: "" });
 
 let seq = 1;
 const newRecordId = () => `PDP-${Date.now().toString(36)}-${String(seq++).padStart(3, "0")}`;
+
+// Detail/Status cells hold one bullet per line; a line that starts with leading whitespace
+// renders as an indented sub-bullet, matching the client's own report tables (e.g. a top-level
+// "Total sessions..." bullet with ELDP/MLDP/ISLDP breakdown nested under it).
+function BulletList({ text }: { text: string }) {
+  const lines = text.split("\n").map((l) => l.replace(/\s+$/, "")).filter((l) => l.trim().length > 0);
+  if (lines.length === 0) return <span className="text-[hsl(var(--pk-ink-faint))]">—</span>;
+  return (
+    <ul className="flex flex-col gap-1">
+      {lines.map((line, i) => {
+        const nested = /^\s/.test(line);
+        return (
+          <li key={i} className={cn("flex gap-1.5 text-[12px] leading-snug", nested ? "ml-4 text-[hsl(var(--pk-ink-faint))]" : "text-[hsl(var(--pk-ink-soft))]")}>
+            <span className="shrink-0">{nested ? "o" : "▪"}</span>
+            <span>{line.trim()}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
 
 export function CP009({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, canEnterData } = useSession();
@@ -36,12 +59,14 @@ export function CP009({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { latestValue } = useWorkflow();
   const { peopleDevRecordsFor, refresh } = useDetails();
   const kpi10 = latestValue("KPI10", entityId, periodId);
+  const period = periodById(periodId);
   const records = peopleDevRecordsFor(periodId);
   const [form, setForm] = useState<FormState | null>(null);
   const [saving, setSaving] = useState(false);
+  const colSpanAll = canEnterData ? 7 : 6;
 
   const startAdd = (subArea: PeopleDevSubArea) => setForm(BLANK(subArea));
-  const startEdit = (r: PeopleDevRecord) => setForm({ id: r.id, subArea: r.subArea, programme: r.programme, start: r.start, end: r.end, status: r.status, detail: r.detail });
+  const startEdit = (r: PeopleDevRecord) => setForm({ id: r.id, subArea: r.subArea, programme: r.programme, start: r.start, end: r.end, status: r.status, detail: r.detail, statusNote: r.statusNote });
   const cancel = () => setForm(null);
 
   const save = async () => {
@@ -55,7 +80,7 @@ export function CP009({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         recordType: "people_dev_programme",
         label: form.programme.trim(),
         category: form.subArea,
-        textNote: [form.start, form.end, form.status, form.detail].join("|"),
+        textNote: [form.start, form.end, form.status].join("|") + "|" + form.detail + "\u001F" + form.statusNote,
       });
       await refresh();
       setForm(null);
@@ -106,63 +131,101 @@ export function CP009({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] shrink-0" />
       </button>
 
-      <div className="flex flex-col gap-4 mt-4">
-        {PEOPLE_DEV_SUB_AREAS.map((subArea) => {
-          const rows = records.filter((r) => r.subArea === subArea);
-          return (
-            <div key={subArea} className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[hsl(var(--pk-surface-2))]">
-                <div className="text-[11px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold">{subArea}</div>
-                {canEnterData && (
-                  <button
-                    onClick={() => startAdd(subArea)}
-                    className="flex items-center gap-1 text-[11px] font-medium text-[hsl(var(--pk-accent))] hover:opacity-75 transition-opacity"
-                  >
-                    <Plus className="h-3 w-3" />Add programme
-                  </button>
-                )}
-              </div>
-
-              {rows.length === 0 && form?.subArea !== subArea && (
-                <p className="text-[12px] text-[hsl(var(--pk-ink-faint))] px-4 py-3">No programmes recorded for this period yet.</p>
-              )}
-
-              <div className="divide-y divide-[hsl(var(--pk-border))]">
-                {rows.map((r) => (
-                  <div key={r.id}>
-                    {form?.id === r.id ? (
-                      <RowForm form={form} setForm={setForm} onSave={save} onCancel={cancel} saving={saving} />
-                    ) : (
-                      <div className="px-4 py-3 flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-[hsl(var(--pk-ink))]">{r.programme}</span>
-                            <InitiativeStatusDot status={r.status} />
-                          </div>
-                          <div className="text-[11px] text-[hsl(var(--pk-ink-faint))] mt-0.5">{r.start} → {r.end}</div>
-                          {r.detail && <p className="text-[12px] text-[hsl(var(--pk-ink-soft))] mt-1.5">{r.detail}</p>}
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-hidden mt-4">
+        {kpi10.ytdActual === null && (
+          <div className="m-3 inline-block rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-3 py-1.5 text-[12px] font-semibold text-[hsl(var(--pk-ink))]">
+            Not measured in {period.label.split(" ")[0]}. Progress only.
+          </div>
+        )}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse min-w-[900px]">
+            <thead>
+              <tr className="bg-[hsl(var(--pk-navy))] text-white">
+                <th rowSpan={2} className="w-10 px-3 py-2 text-left align-middle border border-[hsl(var(--pk-navy))]">No</th>
+                <th rowSpan={2} className="px-3 py-2 text-left align-middle border border-[hsl(var(--pk-navy))]">People Development Programme</th>
+                <th colSpan={2} className="px-3 py-1.5 text-center border border-[hsl(var(--pk-navy))]">Implementation Timeline</th>
+                <th rowSpan={2} className="px-3 py-2 text-left align-middle border border-[hsl(var(--pk-navy))] w-[26%]">Detail</th>
+                <th rowSpan={2} className="px-3 py-2 text-left align-middle border border-[hsl(var(--pk-navy))] w-[26%]">Status</th>
+                {canEnterData && <th rowSpan={2} className="w-16 px-2 py-2 border border-[hsl(var(--pk-navy))]"></th>}
+              </tr>
+              <tr className="bg-[hsl(var(--pk-navy))] text-white">
+                <th className="px-3 py-1.5 text-center text-[11px] font-medium border border-[hsl(var(--pk-navy))]">Start</th>
+                <th className="px-3 py-1.5 text-center text-[11px] font-medium border border-[hsl(var(--pk-navy))]">End</th>
+              </tr>
+            </thead>
+            <tbody>
+              {PEOPLE_DEV_SUB_AREAS.map((subArea, gi) => {
+                const rows = records.filter((r) => r.subArea === subArea);
+                return (
+                  <Fragment key={subArea}>
+                    <tr className="bg-[hsl(var(--pk-surface-2))]">
+                      <td colSpan={colSpanAll} className="px-3 py-2 border border-[hsl(var(--pk-border))]">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-bold text-[hsl(var(--pk-ink))]">{gi + 1}&emsp;{subArea}</span>
+                          {canEnterData && (
+                            <button
+                              onClick={() => startAdd(subArea)}
+                              className="flex items-center gap-1 text-[11px] font-medium text-[hsl(var(--pk-accent))] hover:opacity-75 transition-opacity shrink-0"
+                            >
+                              <Plus className="h-3 w-3" />Add programme
+                            </button>
+                          )}
                         </div>
-                        {canEnterData && (
-                          <div className="flex items-center gap-1 shrink-0">
-                            <button onClick={() => startEdit(r)} className="p-1.5 rounded-md text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors" title="Edit">
-                              <Pencil className="h-3.5 w-3.5" />
-                            </button>
-                            <button onClick={() => remove(r.id)} className="p-1.5 rounded-md text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-bad))] hover:bg-[hsl(var(--pk-bad-soft))] transition-colors" title="Delete">
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                      </td>
+                    </tr>
+
+                    {rows.length === 0 && form?.subArea !== subArea && (
+                      <tr>
+                        <td colSpan={colSpanAll} className="px-3 py-3 text-[12px] text-[hsl(var(--pk-ink-faint))] border border-[hsl(var(--pk-border))]">No programmes recorded for this period yet.</td>
+                      </tr>
                     )}
-                  </div>
-                ))}
-                {form && form.id === null && form.subArea === subArea && (
-                  <RowForm form={form} setForm={setForm} onSave={save} onCancel={cancel} saving={saving} />
-                )}
-              </div>
-            </div>
-          );
-        })}
+
+                    {rows.map((r, ri) => (
+                      <Fragment key={r.id}>
+                        {form?.id === r.id ? (
+                          <tr>
+                            <td colSpan={colSpanAll} className="p-0 border border-[hsl(var(--pk-border))]">
+                              <RowForm form={form} setForm={setForm} onSave={save} onCancel={cancel} saving={saving} />
+                            </td>
+                          </tr>
+                        ) : (
+                          <tr className="align-top hover:bg-[hsl(var(--pk-surface-2))] transition-colors">
+                            <td className="px-3 py-2.5 border border-[hsl(var(--pk-border))] text-[hsl(var(--pk-ink-faint))]">{String.fromCharCode(97 + ri)})</td>
+                            <td className="px-3 py-2.5 border border-[hsl(var(--pk-border))] font-medium text-[hsl(var(--pk-ink))]">{r.programme}</td>
+                            <td className="px-3 py-2.5 border border-[hsl(var(--pk-border))] text-center whitespace-nowrap">{r.start}</td>
+                            <td className="px-3 py-2.5 border border-[hsl(var(--pk-border))] text-center whitespace-nowrap">{r.end}</td>
+                            <td className="px-3 py-2.5 border border-[hsl(var(--pk-border))]"><BulletList text={r.detail} /></td>
+                            <td className="px-3 py-2.5 border border-[hsl(var(--pk-border))]"><BulletList text={r.statusNote} /></td>
+                            {canEnterData && (
+                              <td className="px-2 py-2.5 border border-[hsl(var(--pk-border))]">
+                                <div className="flex items-center gap-1">
+                                  <button onClick={() => startEdit(r)} className="p-1.5 rounded-md text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors" title="Edit">
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button onClick={() => remove(r.id)} className="p-1.5 rounded-md text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-bad))] hover:bg-[hsl(var(--pk-bad-soft))] transition-colors" title="Delete">
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </div>
+                              </td>
+                            )}
+                          </tr>
+                        )}
+                      </Fragment>
+                    ))}
+
+                    {form && form.id === null && form.subArea === subArea && (
+                      <tr>
+                        <td colSpan={colSpanAll} className="p-0 border border-[hsl(var(--pk-border))]">
+                          <RowForm form={form} setForm={setForm} onSave={save} onCancel={cancel} saving={saving} />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -208,15 +271,28 @@ function RowForm({
           <input value={form.end} onChange={(e) => setForm({ ...form, end: e.target.value })} className="rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-sm bg-[hsl(var(--pk-surface))] outline-none" />
         </label>
       </div>
-      <label className="flex flex-col gap-1">
-        <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Detail</span>
-        <textarea
-          value={form.detail}
-          onChange={(e) => setForm({ ...form, detail: e.target.value })}
-          rows={2}
-          className="rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-sm bg-[hsl(var(--pk-surface))] outline-none resize-none"
-        />
-      </label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <label className="flex flex-col gap-1">
+          <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Detail — one bullet per line (indent a line for a sub-bullet)</span>
+          <textarea
+            value={form.detail}
+            onChange={(e) => setForm({ ...form, detail: e.target.value })}
+            rows={4}
+            className="rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-sm bg-[hsl(var(--pk-surface))] outline-none resize-none font-mono-pk"
+            placeholder={"Continuation of 2025 LDPs\n  ELDP – 3 modules x 3 sessions"}
+          />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-[10.5px] uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Status — one bullet per line</span>
+          <textarea
+            value={form.statusNote}
+            onChange={(e) => setForm({ ...form, statusNote: e.target.value })}
+            rows={4}
+            className="rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-sm bg-[hsl(var(--pk-surface))] outline-none resize-none font-mono-pk"
+            placeholder={"ELDP programmes will commence in April:\n  15 – 16 Apr"}
+          />
+        </label>
+      </div>
       <div className="flex items-center gap-2 justify-end">
         <button onClick={onCancel} className="flex items-center gap-1 text-[11.5px] text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] px-2.5 py-1.5">
           <X className="h-3.5 w-3.5" />Cancel

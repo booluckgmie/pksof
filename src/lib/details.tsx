@@ -164,6 +164,9 @@ export interface PeopleDevRecord {
   end: string;
   status: InitiativeStatus;
   detail: string;
+  /** Free-text progress narrative for the table's own "Status" column (bulleted, one line each)
+   * — separate from the `status` enum above, which still drives InitiativeStatusDot elsewhere. */
+  statusNote: string;
 }
 
 export function useDetails() {
@@ -660,20 +663,24 @@ export function useDetails() {
 
   /** People Development Programme entries for a period — edited in full via CP009, mapped onto
    * detail_records the same way initiativeListFor() maps process/tech initiatives: `category`
-   * holds the sub-area, `textNote` packs "start|end|status|detail" (pipe-delimited, same
-   * convention as initiativeListFor's "status | nextAction"). */
+   * holds the sub-area, `textNote` packs "start|end|status|detail<US>statusNote" (pipe-delimited
+   * for the three scalar fields, same convention as initiativeListFor's "status | nextAction";
+   * the two free-text blobs after that are joined with a Unit Separator (U+001F) instead, since
+   * either one can itself contain "|" or newlines — user bullet text does, routinely). */
   function peopleDevRecordsFor(periodId: PeriodId): PeopleDevRecord[] {
     return recordRows("people_dev_programme")
       .filter((r) => r.periodId === periodId)
       .map((r) => {
         const [start = "", end = "", status = "Planned", ...rest] = (r.textNote ?? "").split("|");
+        const [detail = "", statusNote = ""] = rest.join("|").split("\u001F");
         return {
           id: r.id,
           subArea: (PEOPLE_DEV_SUB_AREAS as readonly string[]).includes(r.category ?? "") ? (r.category as PeopleDevSubArea) : PEOPLE_DEV_SUB_AREAS[0],
           programme: r.label,
           start, end,
           status: status as InitiativeStatus,
-          detail: rest.join("|"),
+          detail,
+          statusNote,
         };
       });
   }
