@@ -54,7 +54,7 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="CP006" subtitle="Internal Business Process performance with strategic initiative tracking. Weight 20.0% · 2 KPIs." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
+      <ScreenHeader id="CP006" subtitle="Internal Business Process performance with strategic initiative tracking. Weight 20.0% · 2 KPIs." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">

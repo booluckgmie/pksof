@@ -40,7 +40,7 @@ export function PFH002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="PFH002" subtitle="Overview of YTD financial results — quarter-on-quarter and vs budget, with revenue/expense drill-down." onNavigate={onNavigate} />
+      <ScreenHeader id="PFH002" subtitle="Overview of YTD financial results — quarter-on-quarter and vs budget, with revenue/expense drill-down." periodId={periodId} onNavigate={onNavigate} />
       <FhTabs current="PFH002" onNavigate={onNavigate} />
 
       <div className="mb-4 flex items-center gap-2">

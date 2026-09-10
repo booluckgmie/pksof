@@ -25,7 +25,7 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="RP003" subtitle="Resource & People · Turnover analysis and Bumiputera Composition." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
+      <ScreenHeader id="RP003" subtitle="Resource & People · Turnover analysis and Bumiputera Composition." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
         <StatCard label="Total Employees" value={String(headcountSummary.totalEmployees)} />

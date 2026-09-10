@@ -39,7 +39,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="CP004" subtitle="Mandate & Governance performance, including the managed-entity KPI summary. Weight 15.0%." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
+      <ScreenHeader id="CP004" subtitle="Mandate & Governance performance, including the managed-entity KPI summary. Weight 15.0%." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div

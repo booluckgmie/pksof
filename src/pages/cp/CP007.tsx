@@ -22,7 +22,7 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="CP007" subtitle="Organisational Capacity performance: Recruitment Efficiency Index. Weight 10.0%." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
+      <ScreenHeader id="CP007" subtitle="Organisational Capacity performance: Recruitment Efficiency Index. Weight 10.0%." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
       <RecruitmentIndexScorecard
         kpi9={kpi9}
         recruitmentIndex={recruitmentIndex}

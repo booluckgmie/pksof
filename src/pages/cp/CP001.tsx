@@ -26,7 +26,7 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="CP001" subtitle="Consolidated achievement across all six Strategic Perspectives, with drill-down to KPI detail." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
+      <ScreenHeader id="CP001" subtitle="Consolidated achievement across all six Strategic Perspectives, with drill-down to KPI detail." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div
         role="button"

@@ -29,7 +29,7 @@ export function CP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="CP002" subtitle="All KPI performance grouped by the six perspectives for the selected period." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
+      <ScreenHeader id="CP002" subtitle="All KPI performance grouped by the six perspectives for the selected period." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
         <table className="w-full text-sm min-w-[900px]">

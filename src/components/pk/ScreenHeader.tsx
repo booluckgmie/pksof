@@ -3,18 +3,24 @@ import { screens, screenLabel, breadcrumbTrail, type ScreenId } from "@/lib/nav"
 import { Breadcrumb, ExportMenu, LevelPill, NotificationsBell, RefreshButton } from "@/components/pk/Misc";
 import { useWorkflow } from "@/lib/workflow";
 import { useSession } from "@/lib/session";
+import type { PeriodId } from "@/types";
 
 export function ScreenHeader({
   id,
   subtitle,
   onNavigate,
   right,
+  periodId,
   lastUpdated = "6 May 2026, 09:30",
 }: {
   id: ScreenId;
   subtitle?: string;
   onNavigate: (id: ScreenId) => void;
   right?: ReactNode;
+  /** The reporting period actually filtered on this screen — passed through to ExportMenu so exports
+   * reflect this page's own picker rather than the (possibly stale) global session period. Screens
+   * with no period concept of their own can omit this and ExportMenu falls back to the session period. */
+  periodId?: PeriodId;
   lastUpdated?: string;
 }) {
   const s = screens[id];
@@ -31,7 +37,7 @@ export function ScreenHeader({
         <div className="flex items-center gap-2 ml-auto">
           <span className="hidden sm:inline text-[11px] text-[hsl(var(--pk-ink-faint))]">Last updated {lastUpdated}</span>
           <RefreshButton />
-          <ExportMenu screenId={id} />
+          <ExportMenu screenId={id} periodId={periodId} />
           <NotificationsBell count={pending.length} />
         </div>
       </div>

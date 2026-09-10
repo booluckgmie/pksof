@@ -31,7 +31,7 @@ export function RP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="RP004" subtitle="Resource & People · Turnover analysis and Bumiputera Training." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
+      <ScreenHeader id="RP004" subtitle="Resource & People · Turnover analysis and Bumiputera Training." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <SectionLabel>Section A — Demographics: Turnover Rate</SectionLabel>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">

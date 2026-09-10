@@ -31,7 +31,7 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="RP002" subtitle="Resource & People · Approved establishment and People Development Programme." onNavigate={onNavigate} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
+      <ScreenHeader id="RP002" subtitle="Resource & People · Approved establishment and People Development Programme." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div className="flex items-center gap-1.5 mb-2">
         <SectionLabel>Section A — Demographics: Approved Headcount</SectionLabel>

@@ -57,7 +57,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="CP008" subtitle="Weight 5.0% · 3 KPIs — Composition, Procurement and Training." onNavigate={onNavigate} />
+      <ScreenHeader id="CP008" subtitle="Weight 5.0% · 3 KPIs — Composition, Procurement and Training." periodId={periodId} onNavigate={onNavigate} />
 
       <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2">
         <div className="flex items-center gap-2">

@@ -64,6 +64,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         id="RP001A"
         subtitle="Resource & People · Headcount by Gender, Grade, Age Group and Job Band Level."
         onNavigate={onNavigate}
+        periodId={periodId}
         right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />}
       />
 

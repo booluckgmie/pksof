@@ -51,6 +51,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             : "Consolidated organisational performance overview across the Group."
         }
         onNavigate={onNavigate}
+        periodId={periodId}
         right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />}
       />
 
