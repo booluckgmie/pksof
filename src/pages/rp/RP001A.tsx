@@ -27,6 +27,46 @@ const AGE_BAND_COLORS: Record<string, string> = {
   "51+": "hsl(var(--pk-navy))",
 };
 
+/** Grade-code-level establishment listing (client HRMS export) — the granular rows behind
+ * Section B's 5 approved bands. Reuses the "Management" → "Managerial" key/label convention
+ * from GRADE_INFO above. This listing doesn't vary by reporting period in the source export. */
+const GRADE_CODE_ROWS: { code: string; qty: number; category: string }[] = [
+  { code: "CEO", qty: 1, category: "Top Management" },
+  { code: "SM1", qty: 0, category: "Top Management" },
+  { code: "SM2", qty: 1, category: "Top Management" },
+  { code: "SM3", qty: 5, category: "Top Management" },
+  { code: "TS1", qty: 8, category: "Senior Management" },
+  { code: "TS2", qty: 17, category: "Senior Management" },
+  { code: "TS3", qty: 33, category: "Management" },
+  { code: "TS4", qty: 42, category: "Management" },
+  { code: "TS5", qty: 32, category: "Management" },
+  { code: "TS6", qty: 36, category: "Executive" },
+  { code: "TS7", qty: 15, category: "Executive" },
+  { code: "TS8", qty: 28, category: "Executive" },
+  { code: "OS1", qty: 6, category: "Non-Executive" },
+  { code: "OS2", qty: 7, category: "Non-Executive" },
+  { code: "OS3", qty: 1, category: "Non-Executive" },
+  { code: "OS4", qty: 4, category: "Non-Executive" },
+];
+
+const GRADE_CATEGORY_ORDER = ["Top Management", "Senior Management", "Management", "Executive", "Non-Executive"];
+
+const GRADE_CATEGORY_COLORS: Record<string, string> = {
+  "Top Management": "hsl(var(--pk-navy))",
+  "Senior Management": "hsl(var(--pk-accent))",
+  "Management": "hsl(151 65% 45%)",
+  "Executive": "hsl(151 45% 68%)",
+  "Non-Executive": "hsl(220 9% 62%)",
+};
+
+const GRADE_CODE_CATEGORY_TOTALS: Record<string, number> = Object.fromEntries(
+  GRADE_CATEGORY_ORDER.map((cat) => [cat, GRADE_CODE_ROWS.filter((r) => r.category === cat).reduce((s, r) => s + r.qty, 0)])
+);
+const GRADE_CODE_CATEGORY_ROW_COUNTS: Record<string, number> = Object.fromEntries(
+  GRADE_CATEGORY_ORDER.map((cat) => [cat, GRADE_CODE_ROWS.filter((r) => r.category === cat).length])
+);
+const GRADE_CODE_GRAND_TOTAL = GRADE_CODE_ROWS.reduce((s, r) => s + r.qty, 0);
+
 function GradeCard({ label, code, count, pct, total }: { label: string; code?: string; count: number; pct: number; total?: boolean }) {
   return (
     <div className={total ? "rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-4 py-3" : "rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card px-4 py-3"}>
@@ -90,6 +130,67 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           );
         })}
         <GradeCard label="Total Employees" count={headcountSummary.totalEmployees} pct={100} total />
+      </div>
+
+      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-5">
+        <div className="text-2xs font-bold underline text-[hsl(var(--pk-ink-faint))] mb-2">Grade Code Detail — HRMS Establishment Listing</div>
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="w-40 shrink-0">
+            <Donut
+              segments={GRADE_CATEGORY_ORDER.map((cat) => ({
+                label: GRADE_INFO[cat]?.displayLabel ?? cat,
+                value: GRADE_CODE_CATEGORY_TOTALS[cat],
+                color: GRADE_CATEGORY_COLORS[cat],
+              }))}
+              centerValue={String(GRADE_CODE_GRAND_TOTAL)}
+              centerLabel="Total Employees"
+            />
+          </div>
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] border-b border-[hsl(var(--pk-border))]">
+                <th className="text-left font-medium py-1.5">No</th>
+                <th className="text-left font-medium py-1.5">Grade Code</th>
+                <th className="text-right font-medium py-1.5">Quantity</th>
+                <th className="text-left font-medium py-1.5 pl-3">Description</th>
+                <th className="text-right font-medium py-1.5">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {GRADE_CODE_ROWS.map((row, i) => {
+                const isFirstOfCategory = i === 0 || GRADE_CODE_ROWS[i - 1].category !== row.category;
+                const info = GRADE_INFO[row.category];
+                return (
+                  <tr key={row.code} className="border-b border-[hsl(var(--pk-border))] last:border-b-0">
+                    <td className="py-1.5 text-[hsl(var(--pk-ink-faint))]">{i + 1}</td>
+                    <td className="py-1.5 font-medium text-[hsl(var(--pk-ink))]">{row.code}</td>
+                    <td className="py-1.5 text-right tnum">{row.qty}</td>
+                    {isFirstOfCategory && (
+                      <td className="py-1.5 pl-3 align-middle text-[hsl(var(--pk-ink))]" rowSpan={GRADE_CODE_CATEGORY_ROW_COUNTS[row.category]}>
+                        <span className="flex items-center gap-1.5">
+                          <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: GRADE_CATEGORY_COLORS[row.category] }} />
+                          {info?.displayLabel ?? row.category}
+                        </span>
+                      </td>
+                    )}
+                    {isFirstOfCategory && (
+                      <td className="py-1.5 text-right tnum font-semibold text-[hsl(var(--pk-accent))] align-middle" rowSpan={GRADE_CODE_CATEGORY_ROW_COUNTS[row.category]}>
+                        {GRADE_CODE_CATEGORY_TOTALS[row.category]}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+              <tr className="font-semibold bg-[hsl(var(--pk-surface-2))]">
+                <td className="py-1.5" colSpan={2}>Total</td>
+                <td className="py-1.5 text-right tnum">{GRADE_CODE_GRAND_TOTAL}</td>
+                <td className="py-1.5 pl-3">Total</td>
+                <td className="py-1.5 text-right tnum">{GRADE_CODE_GRAND_TOTAL}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">Grade code detail as per HRMS establishment listing (16 codes across 5 job band levels). Source: HRMS.</p>
       </div>
 
       <SectionLabel>Section C — Breakdown by Age Group (4 bands)</SectionLabel>
