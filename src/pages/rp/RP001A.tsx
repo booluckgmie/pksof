@@ -62,30 +62,15 @@ const GRADE_CATEGORY_COLORS: Record<string, string> = {
 const GRADE_CODE_CATEGORY_TOTALS: Record<string, number> = Object.fromEntries(
   GRADE_CATEGORY_ORDER.map((cat) => [cat, GRADE_CODE_ROWS.filter((r) => r.category === cat).reduce((s, r) => s + r.qty, 0)])
 );
-const GRADE_CODE_CATEGORY_ROW_COUNTS: Record<string, number> = Object.fromEntries(
-  GRADE_CATEGORY_ORDER.map((cat) => [cat, GRADE_CODE_ROWS.filter((r) => r.category === cat).length])
-);
 const GRADE_CODE_GRAND_TOTAL = GRADE_CODE_ROWS.reduce((s, r) => s + r.qty, 0);
-
-function GradeCard({ label, code, count, pct, total }: { label: string; code?: string; count: number; pct: number; total?: boolean }) {
-  return (
-    <div className={total ? "rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-4 py-3" : "rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card px-4 py-3"}>
-      <div className="text-xs font-semibold text-[hsl(var(--pk-ink))]">{label}</div>
-      {code && <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-1">({code})</div>}
-      <div className="tnum font-head text-2xl font-bold text-[hsl(var(--pk-ink))] mt-1">{count}</div>
-      <div className="text-2xs text-[hsl(var(--pk-ink-faint))] tnum">{pct.toFixed(1)}%</div>
-    </div>
-  );
-}
 
 export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const [periodId, setPeriodId] = useLocalPeriodId();
   const {
     genderBreakdownByPeriod, ageGenderBreakdownFor, gradeGenderCrossTabFor,
-    gradeBreakdownFor, ageBreakdownFor, headcountSummaryByPeriod, averageAgeByPeriod,
+    ageBreakdownFor, headcountSummaryByPeriod, averageAgeByPeriod,
   } = useDetails();
   const genderBreakdown = genderBreakdownByPeriod[periodId];
-  const gradeBreakdown = gradeBreakdownFor(periodId);
   const ageBreakdown = ageBreakdownFor(periodId);
   const ageGenderBreakdown = ageGenderBreakdownFor(periodId);
   const gradeGenderCrossTab = gradeGenderCrossTabFor(periodId);
@@ -122,18 +107,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       <SectionLabel>Section B — Breakdown by Grade (5 approved bands)</SectionLabel>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mb-5">
-        {gradeBreakdown.map((g) => {
-          const info = GRADE_INFO[g.grade];
-          return (
-            <GradeCard key={g.grade} label={info?.displayLabel ?? g.grade} code={info?.code} count={g.count} pct={(g.count / totalEmployees) * 100} />
-          );
-        })}
-        <GradeCard label="Total Employees" count={headcountSummary.totalEmployees} pct={100} total />
-      </div>
-
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-5">
-        <div className="text-2xs font-bold underline text-[hsl(var(--pk-ink-faint))] mb-2">Grade Code Detail — HRMS Establishment Listing</div>
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <div className="w-40 shrink-0">
             <Donut
@@ -146,51 +120,26 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               centerLabel="Total Employees"
             />
           </div>
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] border-b border-[hsl(var(--pk-border))]">
-                <th className="text-left font-medium py-1.5">No</th>
-                <th className="text-left font-medium py-1.5">Grade Code</th>
-                <th className="text-right font-medium py-1.5">Quantity</th>
-                <th className="text-left font-medium py-1.5 pl-3">Description</th>
-                <th className="text-right font-medium py-1.5">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {GRADE_CODE_ROWS.map((row, i) => {
-                const isFirstOfCategory = i === 0 || GRADE_CODE_ROWS[i - 1].category !== row.category;
-                const info = GRADE_INFO[row.category];
-                return (
-                  <tr key={row.code} className="border-b border-[hsl(var(--pk-border))] last:border-b-0">
-                    <td className="py-1.5 text-[hsl(var(--pk-ink-faint))]">{i + 1}</td>
-                    <td className="py-1.5 font-medium text-[hsl(var(--pk-ink))]">{row.code}</td>
-                    <td className="py-1.5 text-right tnum">{row.qty}</td>
-                    {isFirstOfCategory && (
-                      <td className="py-1.5 pl-3 align-middle text-[hsl(var(--pk-ink))]" rowSpan={GRADE_CODE_CATEGORY_ROW_COUNTS[row.category]}>
-                        <span className="flex items-center gap-1.5">
-                          <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: GRADE_CATEGORY_COLORS[row.category] }} />
-                          {info?.displayLabel ?? row.category}
-                        </span>
-                      </td>
-                    )}
-                    {isFirstOfCategory && (
-                      <td className="py-1.5 text-right tnum font-semibold text-[hsl(var(--pk-accent))] align-middle" rowSpan={GRADE_CODE_CATEGORY_ROW_COUNTS[row.category]}>
-                        {GRADE_CODE_CATEGORY_TOTALS[row.category]}
-                      </td>
-                    )}
-                  </tr>
-                );
-              })}
-              <tr className="font-semibold bg-[hsl(var(--pk-surface-2))]">
-                <td className="py-1.5" colSpan={2}>Total</td>
-                <td className="py-1.5 text-right tnum">{GRADE_CODE_GRAND_TOTAL}</td>
-                <td className="py-1.5 pl-3">Total</td>
-                <td className="py-1.5 text-right tnum">{GRADE_CODE_GRAND_TOTAL}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-2.5 w-full">
+            {GRADE_CATEGORY_ORDER.map((cat) => (
+              <div key={cat} className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-3 py-2.5">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-[hsl(var(--pk-ink))]">
+                  <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: GRADE_CATEGORY_COLORS[cat] }} />
+                  {GRADE_INFO[cat]?.displayLabel ?? cat}
+                </div>
+                <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-1">({GRADE_INFO[cat]?.code})</div>
+                <div className="tnum font-head text-xl font-bold text-[hsl(var(--pk-ink))]">{GRADE_CODE_CATEGORY_TOTALS[cat]}</div>
+                <div className="text-2xs text-[hsl(var(--pk-ink-faint))] tnum">{((GRADE_CODE_CATEGORY_TOTALS[cat] / GRADE_CODE_GRAND_TOTAL) * 100).toFixed(1)}%</div>
+              </div>
+            ))}
+            <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-3 py-2.5">
+              <div className="text-xs font-semibold text-[hsl(var(--pk-ink))]">Total Employees</div>
+              <div className="tnum font-head text-xl font-bold text-[hsl(var(--pk-ink))] mt-1">{GRADE_CODE_GRAND_TOTAL}</div>
+              <div className="text-2xs text-[hsl(var(--pk-ink-faint))] tnum">100.0%</div>
+            </div>
+          </div>
         </div>
-        <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">Grade code detail as per HRMS establishment listing (16 codes across 5 job band levels). Source: HRMS.</p>
+        <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">As at Q2 FY2026 · HRMS establishment listing (16 grade codes across 5 job band levels). Source: HRMS.</p>
       </div>
 
       <SectionLabel>Section C — Breakdown by Age Group (4 bands)</SectionLabel>
