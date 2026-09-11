@@ -352,3 +352,124 @@ export function Donut({
     </svg>
   );
 }
+
+interface FinResultPoint {
+  label: string;
+  revenue: number;
+  pbt: number;
+  /** Quarters reported under a prior structure (e.g. before an income-recognition change) —
+   * rendered in a paler tone than the rest, per the client's own exhibit. */
+  faded?: boolean;
+}
+
+/**
+ * The client's own "Overview of Financial Results" historical exhibit — grouped Revenue/PBT
+ * bars across a long quarterly run, with `faded` quarters shown in a paler tone, an optional
+ * dashed marker before the latest quarter, and a bottom banner calling out named eras
+ * (e.g. before/after a reporting-structure change) by quarter-index span.
+ */
+export function FinancialResultsHistoryChart({
+  data,
+  dividerBeforeIndex,
+  banner,
+  unit = "RM' Million",
+}: {
+  data: FinResultPoint[];
+  dividerBeforeIndex?: number;
+  banner?: { label: string; from: number; to: number }[];
+  unit?: string;
+}) {
+  const W = 960;
+  const PAD_L = 34;
+  const PAD_R = 8;
+  const PAD_T = 34;
+  const plotH = 200;
+  const axisLabelH = 34;
+  const bannerH = banner ? 28 : 0;
+  const H = PAD_T + plotH + axisLabelH + bannerH + 6;
+
+  const max = Math.max(...data.map((d) => Math.max(d.revenue, d.pbt)), 1);
+  const niceMax = Math.ceil((max * 1.15) / 10) * 10;
+  const tickCount = 8;
+  const ticks = Array.from({ length: tickCount + 1 }, (_, i) => (niceMax / tickCount) * i);
+
+  const plotW = W - PAD_L - PAD_R;
+  const bw = plotW / data.length;
+  const barW = bw * 0.32;
+  const axisY = PAD_T + plotH;
+
+  const revenueColor = "hsl(var(--pk-navy))";
+  const pbtColor = "hsl(var(--pk-warn))";
+  const revenueFaded = "hsl(var(--pk-navy) / 0.28)";
+  const pbtFaded = "hsl(var(--pk-warn) / 0.30)";
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Overview of Financial Results — Revenue and PBT by quarter">
+      <text x={PAD_L} y={10} fontSize={10} className="fill-[hsl(var(--pk-ink-faint))]">{unit}</text>
+      <g>
+        <rect x={PAD_L} y={20} width={9} height={9} rx={1.5} fill={revenueColor} />
+        <text x={PAD_L + 13} y={28} fontSize={10.5} fontWeight={600} className="fill-[hsl(var(--pk-ink))]">Revenue</text>
+        <rect x={PAD_L + 78} y={20} width={9} height={9} rx={1.5} fill={pbtColor} />
+        <text x={PAD_L + 91} y={28} fontSize={10.5} fontWeight={600} className="fill-[hsl(var(--pk-ink))]">PBT</text>
+      </g>
+
+      {ticks.map((t) => {
+        const y = axisY - (plotH * t) / niceMax;
+        return (
+          <g key={t}>
+            <line x1={PAD_L} y1={y} x2={W - PAD_R} y2={y} stroke="hsl(var(--pk-border))" strokeWidth={1} />
+            <text x={PAD_L - 6} y={y + 3} textAnchor="end" fontSize={9} className="fill-[hsl(var(--pk-ink-faint))] tnum">{t.toFixed(1)}</text>
+          </g>
+        );
+      })}
+
+      {data.map((d, i) => {
+        const gx = PAD_L + i * bw + bw * 0.18;
+        const hRev = (plotH * d.revenue) / niceMax;
+        const hPbt = (plotH * d.pbt) / niceMax;
+        return (
+          <g key={d.label}>
+            <rect x={gx} y={axisY - hRev} width={barW} height={hRev} fill={d.faded ? revenueFaded : revenueColor}>
+              <title>{d.label} — Revenue: {d.revenue.toFixed(1)}</title>
+            </rect>
+            <text x={gx + barW / 2} y={axisY - hRev - 4} textAnchor="middle" fontSize={9} className="fill-[hsl(var(--pk-ink))] tnum" fontWeight={600}>{d.revenue.toFixed(1)}</text>
+            <rect x={gx + barW + 3} y={axisY - hPbt} width={barW} height={hPbt} fill={d.faded ? pbtFaded : pbtColor}>
+              <title>{d.label} — PBT: {d.pbt.toFixed(1)}</title>
+            </rect>
+            <text x={gx + barW + 3 + barW / 2} y={axisY - hPbt - 4} textAnchor="middle" fontSize={9} className="fill-[hsl(var(--pk-ink))] tnum" fontWeight={600}>{d.pbt.toFixed(1)}</text>
+            <text x={gx + barW + 1.5} y={axisY + 14} textAnchor="middle" fontSize={9} className="fill-[hsl(var(--pk-ink-faint))]">{d.label}</text>
+          </g>
+        );
+      })}
+
+      {dividerBeforeIndex !== undefined && dividerBeforeIndex > 0 && dividerBeforeIndex < data.length && (
+        <line
+          x1={PAD_L + dividerBeforeIndex * bw}
+          y1={PAD_T - 6}
+          x2={PAD_L + dividerBeforeIndex * bw}
+          y2={axisY}
+          stroke="hsl(var(--pk-ink-faint))"
+          strokeWidth={1.25}
+          strokeDasharray="4 3"
+        />
+      )}
+
+      {banner && banner.map((seg, i) => {
+        const x1 = PAD_L + seg.from * bw;
+        const x2 = PAD_L + (seg.to + 1) * bw;
+        const y = axisY + axisLabelH;
+        const isLast = i === banner.length - 1;
+        const tipW = 8;
+        const points = isLast
+          ? `${x1},${y} ${x2 - tipW},${y} ${x2},${y + bannerH / 2} ${x2 - tipW},${y + bannerH} ${x1},${y + bannerH}`
+          : `${x1},${y} ${x2},${y} ${x2 - tipW},${y + bannerH / 2} ${x2},${y + bannerH} ${x1},${y + bannerH}`;
+        return (
+          <g key={seg.label}>
+            <polygon points={points} fill={i % 2 === 0 ? "hsl(var(--pk-surface-2))" : "hsl(var(--pk-border))"} />
+            <text x={(x1 + x2) / 2} y={y + bannerH / 2 + 3.5} textAnchor="middle" fontSize={9} fontWeight={600} className="fill-[hsl(var(--pk-ink-soft))]">{seg.label}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
