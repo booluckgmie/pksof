@@ -1,23 +1,21 @@
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { BarTrend, LineTrend, GroupedBarTrend } from "@/components/pk/Charts";
 import { InfoNote } from "@/components/pk/Misc";
 import { FinancialResultsTable } from "@/components/pk/FinancialResultsTable";
-import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
 import { useDetails } from "@/lib/details";
 import { useCurrentPeriodId } from "@/lib/orgSettings";
 import { periods, periodById, periodsUpTo } from "@/data/periods";
 import type { PeriodId } from "@/types";
-import { cn } from "@/lib/utils";
 
 const fmtM = (v: number | null) => (v === null ? "—" : `RM${(Math.abs(v) / 1000).toFixed(1)} million`);
 const pctOf = (delta: number | null, base: number | null) => (delta === null || base === null || base === 0 ? null : (delta / Math.abs(base)) * 100);
 
 /**
  * Shared body for both Financial Results tabs — YTD highlight card, the comparison table
- * (Current Quarter vs Preceding Quarter on PFH002, Actual vs Budget on PFH003), the metric
- * trend charts, and the quarterly trend table. `tableKind` picks which single comparison
- * table this instance renders — full width, since each screen now shows only one.
+ * (Current Quarter vs Preceding Quarter on PFH002, Actual vs Budget on PFH003), and the
+ * monthly metric trend charts. `tableKind` picks which single comparison table this
+ * instance renders — full width, since each screen now shows only one.
  */
 export function FinancialResultsOverview({
   periodId,
@@ -29,20 +27,12 @@ export function FinancialResultsOverview({
   tableKind: "qoq" | "budget";
 }) {
   const currentPeriodId = useCurrentPeriodId();
-  const { quarterlyTrend: fullTrend, monthlyTrendFor, financialResultsFor } = useDetails();
-  const { duration, setDuration, filtered: quarterlyTrend } = useDurationFilter(fullTrend);
-  const [granularity, setGranularity] = useState<"quarterly" | "monthly">("quarterly");
+  const { monthlyTrendFor, financialResultsFor } = useDetails();
   const [monthQuarter, setMonthQuarter] = useState<PeriodId>(periodId);
   const monthlyRaw = monthlyTrendFor(monthQuarter);
   const monthlyEnteredCount = monthlyRaw.filter((m) => m.pbt !== null || m.netMargin !== null).length;
   const monthlyPbt = monthlyRaw.filter((m) => m.pbt !== null).map((m) => ({ label: m.period, value: m.pbt as number }));
   const monthlyMargin = monthlyRaw.filter((m) => m.netMargin !== null).map((m) => ({ label: m.period, value: m.netMargin as number }));
-  const rows = [
-    { section: "INCOME METRICS", metric: "Revenue (RM Million)", values: quarterlyTrend.map((q) => q.revenue) },
-    { section: "PROFIT METRICS", metric: "Profit Before Tax (RM Million)", values: quarterlyTrend.map((q) => q.pbt) },
-    { metric: "Net Profit Margin (%)", values: quarterlyTrend.map((q) => q.netMargin) },
-    { section: "COST METRICS", metric: "Cost-to-Income Ratio (%)", values: quarterlyTrend.map((q) => q.cir) },
-  ];
 
   const period = periodById(periodId);
   const results = financialResultsFor(periodId);
@@ -144,81 +134,33 @@ export function FinancialResultsOverview({
       </div>
 
       <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-        <DurationFilterBar duration={duration} onChange={setDuration} total={fullTrend.length} label="Metric trend duration" />
-        <div className="flex items-center gap-1.5">
-          {(["quarterly", "monthly"] as const).map((g) => (
-            <button
-              key={g}
-              onClick={() => setGranularity(g)}
-              className={cn(
-                "text-2xs px-2.5 py-1 rounded-md border transition-colors capitalize",
-                granularity === g
-                  ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] border-[hsl(var(--pk-accent))]"
-                  : "border-[hsl(var(--pk-border))] text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))]"
-              )}
-            >
-              {g}
-            </button>
-          ))}
-          {granularity === "monthly" && (
-            <select
-              value={monthQuarter}
-              onChange={(e) => setMonthQuarter(e.target.value as PeriodId)}
-              className="text-2xs rounded-md border border-[hsl(var(--pk-border))] px-2 py-1 bg-[hsl(var(--pk-surface))] outline-none"
-            >
-              {periodsUpTo(currentPeriodId).map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
-            </select>
-          )}
-        </div>
+        <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Monthly metric trend</div>
+        <select
+          value={monthQuarter}
+          onChange={(e) => setMonthQuarter(e.target.value as PeriodId)}
+          className="text-2xs rounded-md border border-[hsl(var(--pk-border))] px-2 py-1 bg-[hsl(var(--pk-surface))] outline-none"
+        >
+          {periodsUpTo(currentPeriodId).map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+        </select>
       </div>
 
-      {granularity === "monthly" && (
-        monthlyEnteredCount === 0 ? (
-          <div className="rounded-lg border border-dashed border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-6 text-center mb-5">
-            <p className="text-xs text-[hsl(var(--pk-ink-faint))]">No monthly figures entered yet for {periods.find((p) => p.id === monthQuarter)?.label} — add them from Data Entry's "Monthly Financial Detail" section.</p>
+      {monthlyEnteredCount === 0 ? (
+        <div className="rounded-lg border border-dashed border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-6 text-center mb-5">
+          <p className="text-xs text-[hsl(var(--pk-ink-faint))]">No monthly figures entered yet for {periods.find((p) => p.id === monthQuarter)?.label} — add them from Data Entry's "Monthly Financial Detail" section.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))] mb-2">PBT by month — {periods.find((p) => p.id === monthQuarter)?.label}</div>
+            <BarTrend data={monthlyPbt} unit="m" />
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-            <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-              <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))] mb-2">PBT by month — {periods.find((p) => p.id === monthQuarter)?.label}</div>
-              <BarTrend data={monthlyPbt} unit="m" />
-            </div>
-            <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-              <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))] mb-2">Net Profit Margin by month — {periods.find((p) => p.id === monthQuarter)?.label}</div>
-              <LineTrend data={monthlyMargin} unit="%" />
-            </div>
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))] mb-2">Net Profit Margin by month — {periods.find((p) => p.id === monthQuarter)?.label}</div>
+            <LineTrend data={monthlyMargin} unit="%" />
           </div>
-        )
-      )}
-
-      {granularity === "quarterly" && (
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
-          <table className="w-full text-sm min-w-[640px]">
-            <thead>
-              <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
-                <th className="text-left font-medium px-3 py-2">Metric</th>
-                {quarterlyTrend.map((q) => <th key={q.period} className="text-right font-medium px-3 py-2">{q.period}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <Fragment key={r.metric}>
-                  {r.section && (
-                    <tr><td colSpan={6} className="px-3 pt-3 pb-1 text-3xs font-semibold uppercase tracking-wide text-[hsl(var(--pk-navy))]">{r.section}</td></tr>
-                  )}
-                  <tr className="border-t border-[hsl(var(--pk-border))]">
-                    <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">{r.metric}</td>
-                    {r.values.map((v, i) => (
-                      <td key={i} className={`px-3 py-2 text-right tnum ${i === r.values.length - 1 ? "font-semibold" : ""}`}>{v.toFixed(1)}</td>
-                    ))}
-                  </tr>
-                </Fragment>
-              ))}
-            </tbody>
-          </table>
         </div>
       )}
-      <InfoNote>All Overview figures are in RM'000. Click "REVENUE" or "Expenses" in the table to drill into that quarter's own breakdown by source/category. The Quarterly/Monthly toggle below switches only the supporting metric trend — KPI achievement scoring stays quarterly-only by design.</InfoNote>
+      <InfoNote>All Overview figures are in RM'000. Click "REVENUE" or "Expenses" in the table to drill into that quarter's own breakdown by source/category.</InfoNote>
     </div>
   );
 }
