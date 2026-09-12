@@ -1,21 +1,19 @@
-import { useState } from "react";
-import { BarTrend, LineTrend, GroupedBarTrend } from "@/components/pk/Charts";
+import { GroupedBarTrend } from "@/components/pk/Charts";
 import { InfoNote } from "@/components/pk/Misc";
 import { FinancialResultsTable } from "@/components/pk/FinancialResultsTable";
 import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
 import { useDetails } from "@/lib/details";
-import { useCurrentPeriodId } from "@/lib/orgSettings";
-import { periods, periodById, periodsUpTo } from "@/data/periods";
+import { periodById } from "@/data/periods";
 import type { PeriodId } from "@/types";
 
 const fmtM = (v: number | null) => (v === null ? "—" : `RM${(Math.abs(v) / 1000).toFixed(1)} million`);
 const pctOf = (delta: number | null, base: number | null) => (delta === null || base === null || base === 0 ? null : (delta / Math.abs(base)) * 100);
 
 /**
- * Shared body for both Financial Results tabs — YTD highlight card, the comparison table
- * (Current Quarter vs Preceding Quarter on PFH002, Actual vs Budget on PFH003), and the
- * monthly metric trend charts. `tableKind` picks which single comparison table this
- * instance renders — full width, since each screen now shows only one.
+ * Shared body for both Financial Results tabs — the YTD highlight card and the comparison
+ * table (Current Quarter vs Preceding Quarter on PFH002, Actual vs Budget on PFH003).
+ * `tableKind` picks which single comparison table this instance renders — full width,
+ * since each screen now shows only one.
  */
 export function FinancialResultsOverview({
   periodId,
@@ -26,14 +24,7 @@ export function FinancialResultsOverview({
   setPeriodId: (id: PeriodId) => void;
   tableKind: "qoq" | "budget";
 }) {
-  const currentPeriodId = useCurrentPeriodId();
-  const { monthlyTrendFor, financialResultsFor } = useDetails();
-  const [monthQuarter, setMonthQuarter] = useState<PeriodId>(periodId);
-  const monthlyRaw = monthlyTrendFor(monthQuarter);
-  const monthlyEnteredCount = monthlyRaw.filter((m) => m.pbt !== null || m.netMargin !== null).length;
-  const monthlyPbt = monthlyRaw.filter((m) => m.pbt !== null).map((m) => ({ label: m.period, value: m.pbt as number }));
-  const monthlyMargin = monthlyRaw.filter((m) => m.netMargin !== null).map((m) => ({ label: m.period, value: m.netMargin as number }));
-
+  const { financialResultsFor } = useDetails();
   const period = periodById(periodId);
   const results = financialResultsFor(periodId);
 
@@ -133,33 +124,6 @@ export function FinancialResultsOverview({
         )}
       </div>
 
-      <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-        <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Monthly metric trend</div>
-        <select
-          value={monthQuarter}
-          onChange={(e) => setMonthQuarter(e.target.value as PeriodId)}
-          className="text-2xs rounded-md border border-[hsl(var(--pk-border))] px-2 py-1 bg-[hsl(var(--pk-surface))] outline-none"
-        >
-          {periodsUpTo(currentPeriodId).map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
-        </select>
-      </div>
-
-      {monthlyEnteredCount === 0 ? (
-        <div className="rounded-lg border border-dashed border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-6 text-center mb-5">
-          <p className="text-xs text-[hsl(var(--pk-ink-faint))]">No monthly figures entered yet for {periods.find((p) => p.id === monthQuarter)?.label} — add them from Data Entry's "Monthly Financial Detail" section.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))] mb-2">PBT by month — {periods.find((p) => p.id === monthQuarter)?.label}</div>
-            <BarTrend data={monthlyPbt} unit="m" />
-          </div>
-          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))] mb-2">Net Profit Margin by month — {periods.find((p) => p.id === monthQuarter)?.label}</div>
-            <LineTrend data={monthlyMargin} unit="%" />
-          </div>
-        </div>
-      )}
       <InfoNote>All Overview figures are in RM'000. Click "REVENUE" or "Expenses" in the table to drill into that quarter's own breakdown by source/category.</InfoNote>
     </div>
   );
