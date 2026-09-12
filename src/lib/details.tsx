@@ -550,6 +550,43 @@ export function useDetails() {
       });
   }
 
+  /** Same per-KPI rows as managedEntityKpiDetailFor, but pivoted across every quarter of one FY
+   * (Q1-Q4) instead of a single period — for the "add Q1-Q4 to the table" view. Row identity
+   * across quarters is the "no" key from textNote (falls back to label if blank); order follows
+   * whichever quarter (most recent first) actually has rows, since the underlying table has no
+   * natural sort column of its own. */
+  function managedEntityKpiQuarterlyFor(entity: string, fy: string) {
+    const rows = recordRows("managed_entity_kpi").filter((r) => r.category === entity);
+    const quartersInFy = periods.filter((p) => p.fy === fy);
+    const keyOf = (r: DetailRecordRow) => (r.textNote ?? "").split("|")[0] || r.label;
+
+    let order: string[] = [];
+    for (let i = quartersInFy.length - 1; i >= 0; i--) {
+      const forQ = rows.filter((r) => r.periodId === quartersInFy[i].id);
+      if (forQ.length > 0) {
+        order = forQ.map(keyOf);
+        break;
+      }
+    }
+
+    return order.map((key) => {
+      let section = "";
+      let label = "";
+      let fyTarget = "";
+      const byQuarter: Record<number, { ytdActual: string; rating: number; weighted: number }> = {};
+      for (const q of quartersInFy) {
+        const r = rows.find((rr) => rr.periodId === q.id && keyOf(rr) === key);
+        if (!r) continue;
+        const [, sec = "", fyT = "", , ytdActual = ""] = (r.textNote ?? "").split("|");
+        section = sec;
+        label = r.label;
+        fyTarget = fyT;
+        byQuarter[q.quarter] = { ytdActual, rating: r.valueNum ?? 0, weighted: r.valueNum2 ?? 0 };
+      }
+      return { no: key, section, label, fyTarget, byQuarter };
+    });
+  }
+
   function managedEntityRatingsFor(periodId: PeriodId) {
     const rows = managedEntityKpiRows(periodId);
     const entitiesPresent = [...new Set(rows.map((r) => r.category).filter((c): c is string => !!c))];
@@ -692,7 +729,7 @@ export function useDetails() {
     gradeGenderCrossTabFor, departmentHeadcountFor, recruitmentIndexByPeriod,
     resignedByPeriod, turnoverTrend, bumiputeraTrainingByPeriod,
     quarterlyTrend, monthlyTrendFor, actualVsBudget, financialResultsFor, varianceCommentary, balanceSheet, relatedPartyTransactions,
-    managedEntityRatingsFor, managedEntityKpiDetailFor, clientSatisfaction, timeCharterByDept, governanceKpiFor,
+    managedEntityRatingsFor, managedEntityKpiDetailFor, managedEntityKpiQuarterlyFor, clientSatisfaction, timeCharterByDept, governanceKpiFor,
     processInitiatives, techInitiatives, bumiputeraProcurement, peopleDevRecordsFor,
     pbtBreakdown, cirBreakdown,
   };
