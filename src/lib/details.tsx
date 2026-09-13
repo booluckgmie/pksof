@@ -505,10 +505,14 @@ export function useDetails() {
    * plus party code packed into dimension2 as "subheading|party" (the two free-text dimension
    * slots aren't enough for a 3-level hierarchy on their own). Newest quarter first, same reading
    * order as the source report. */
-  const relatedPartyTransactions = useMemo(() => {
+  /** RPT trend table, capped to quarters up to and including `periodId` — same "Reporting
+   * period" semantics as every other Financial Health screen, applied to a multi-quarter table
+   * instead of a single-quarter one. */
+  function relatedPartyTransactionsUpTo(periodId: PeriodId) {
     const rows = metricRows("related_party_txn");
     const available = [...periodsWithData(rows, entityId, () => true)];
-    const periodsUsed = periods.filter((p) => available.includes(p.id)).slice().reverse();
+    const cutoffIdx = periods.findIndex((p) => p.id === periodId);
+    const periodsUsed = periods.filter((p, i) => available.includes(p.id) && (cutoffIdx === -1 || i <= cutoffIdx)).slice().reverse();
     const keys = [...new Set(rows.map((r) => `${r.dimension}::${r.dimension2}`))];
     const items = keys.map((key) => {
       const [category, rest] = key.split("::");
@@ -524,7 +528,7 @@ export function useDetails() {
       periods: periodsUsed.map((p) => ({ id: p.id, label: p.label })),
       items,
     };
-  }, [metrics, entityId]);
+  }
 
   // ── Initiatives / compliance ────────────────────────────────────────────
 
@@ -728,7 +732,7 @@ export function useDetails() {
     gradeBreakdownFor, ageBreakdownFor, ageGenderBreakdownFor, averageAgeByPeriod,
     gradeGenderCrossTabFor, departmentHeadcountFor, recruitmentIndexByPeriod,
     resignedByPeriod, turnoverTrend, bumiputeraTrainingByPeriod,
-    quarterlyTrend, monthlyTrendFor, actualVsBudget, financialResultsFor, varianceCommentary, balanceSheet, relatedPartyTransactions,
+    quarterlyTrend, monthlyTrendFor, actualVsBudget, financialResultsFor, varianceCommentary, balanceSheet, relatedPartyTransactionsUpTo,
     managedEntityRatingsFor, managedEntityKpiDetailFor, managedEntityKpiQuarterlyFor, clientSatisfaction, timeCharterByDept, governanceKpiFor,
     processInitiatives, techInitiatives, bumiputeraProcurement, peopleDevRecordsFor,
     pbtBreakdown, cirBreakdown,

@@ -4,6 +4,7 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { FhTabs } from "@/components/pk/FhTabs";
 import { StatCard } from "@/components/pk/Misc";
 import { pillarRowClass } from "@/components/pk/PillarGate";
+import { PeriodPickerCompact, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
 import { useDetails } from "@/lib/details";
@@ -13,8 +14,9 @@ const fmt = (v: number | null) => (v === null ? "—" : v.toLocaleString("en-MY"
 
 export function PFH005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { isRestrictedPillar, homeEntityName } = useSession();
-  const { relatedPartyTransactions } = useDetails();
-  const { periods: rptPeriods, items } = relatedPartyTransactions;
+  const { relatedPartyTransactionsUpTo } = useDetails();
+  const [periodId, setPeriodId] = useLocalPeriodId();
+  const { periods: rptPeriods, items } = relatedPartyTransactionsUpTo(periodId);
   const latest = items.map((it) => it.valuesByPeriod[0] ?? 0);
   const total = latest.reduce((s, v) => s + v, 0);
 
@@ -28,7 +30,18 @@ export function PFH005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="PFH005" subtitle="RPT monitoring, arm's-length compliance and Board approval status." onNavigate={onNavigate} />
+      <ScreenHeader
+        id="PFH005"
+        subtitle="RPT monitoring, arm's-length compliance and Board approval status."
+        periodId={periodId}
+        onNavigate={onNavigate}
+        right={
+          <div className="flex items-center gap-2">
+            <span className="text-2xs text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
+            <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
+          </div>
+        }
+      />
       <FhTabs current="PFH005" onNavigate={onNavigate} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-5">
