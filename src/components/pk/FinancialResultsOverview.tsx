@@ -1,4 +1,4 @@
-import { GroupedBarTrend } from "@/components/pk/Charts";
+import { GroupedBarTrend, QoQHorizontalBars } from "@/components/pk/Charts";
 import { InfoNote } from "@/components/pk/Misc";
 import { FinancialResultsTable } from "@/components/pk/FinancialResultsTable";
 import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
@@ -8,6 +8,7 @@ import type { PeriodId } from "@/types";
 
 const fmtM = (v: number | null) => (v === null ? "—" : `RM${(Math.abs(v) / 1000).toFixed(1)} million`);
 const pctOf = (delta: number | null, base: number | null) => (delta === null || base === null || base === 0 ? null : (delta / Math.abs(base)) * 100);
+const shortQ = (label: string) => label.replace(" FY20", "'");
 
 /**
  * Shared body for both Financial Results tabs — the YTD highlight card and the comparison
@@ -35,7 +36,62 @@ export function FinancialResultsOverview({
         <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
       </div>
 
-      {results.current && results.budget && (() => {
+      {tableKind === "qoq" && results.current && results.qoq && (() => {
+        const c = results.current!;
+        const b = results.qoq!.compare;
+        const pbtDelta = c.pbt !== null && b.pbt !== null ? c.pbt - b.pbt : null;
+        const incomeDelta = c.totalIncome !== null && b.totalIncome !== null ? c.totalIncome - b.totalIncome : null;
+        const incomePct = pctOf(incomeDelta, b.totalIncome);
+        const expenseDelta = c.expenses !== null && b.expenses !== null ? Math.abs(c.expenses) - Math.abs(b.expenses) : null;
+        const expensePct = pctOf(expenseDelta, b.expenses !== null ? Math.abs(b.expenses) : null);
+        const isRealQuarter = periodId === "Q1FY26";
+        return (
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
+            <div className="font-head font-bold text-[hsl(var(--pk-ink))] text-center mb-1">Overview of Quarterly Financial Results</div>
+            <div className="text-center text-xs font-semibold text-[hsl(var(--pk-ink-soft))] mb-1">{shortQ(period.label)} vs {shortQ(results.qoq.compareLabel)} (3-month)</div>
+            {pbtDelta !== null && (
+              <p className="text-center text-xs text-[hsl(var(--pk-ink-soft))] mb-3">
+                The Group recorded <span className="font-semibold text-[hsl(var(--pk-accent))]">{pbtDelta >= 0 ? "an increase" : "a drop"} in PBT by {fmtM(pbtDelta)}</span> compared to the preceding quarter.
+              </p>
+            )}
+            <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
+              <QoQHorizontalBars
+                currentLabel={shortQ(period.label)}
+                compareLabel={shortQ(results.qoq.compareLabel)}
+                categories={[
+                  { label: "Total Income", current: c.totalIncome ?? 0, compare: b.totalIncome ?? 0 },
+                  { label: "Total Expenses", current: Math.abs(c.expenses ?? 0), compare: Math.abs(b.expenses ?? 0) },
+                  { label: "Profit Before Tax", current: c.pbt ?? 0, compare: b.pbt ?? 0 },
+                ]}
+              />
+              <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
+                <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlights (current quarter against preceding quarter)</div>
+                {isRealQuarter ? (
+                  <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
+                    <li>Lower income by <span className="font-semibold">RM9.8 million</span> mainly due to lower income from acquired loans by RM7.5 million and fee from advisory services by RM1.0 million.</li>
+                    <li>
+                      Lower expenses by <span className="font-semibold">RM415,000</span> attributed to the following:
+                      <ul className="flex flex-col gap-1 mt-1 ml-3">
+                        <li className="list-disc">lower administrative expenses by RM1.2 million due to lower computer system expenses and corporate communication expenses; and</li>
+                        <li className="list-disc">lower professional fees by RM439,000;</li>
+                        <li className="list-disc">however, offset by higher personnel expenses by RM1.0 million.</li>
+                      </ul>
+                    </li>
+                  </ul>
+                ) : (
+                  <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
+                    <li>Income was {incomeDelta !== null && incomePct !== null ? `${fmtM(incomeDelta)} (${Math.abs(incomePct).toFixed(0)}%) ${incomeDelta >= 0 ? "higher" : "lower"}` : "—"} than the preceding quarter.</li>
+                    <li>Expenses were {expenseDelta !== null && expensePct !== null ? `${fmtM(expenseDelta)} (${Math.abs(expensePct).toFixed(0)}%) ${expenseDelta >= 0 ? "higher" : "lower"}` : "—"} than the preceding quarter.</li>
+                    <li className="text-2xs text-[hsl(var(--pk-ink-faint))] italic">Illustrative projection — driver commentary is only available for the reported quarter.</li>
+                  </ul>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {tableKind === "budget" && results.current && results.budget && (() => {
         const c = results.current!;
         const b = results.budget!.compare;
         const pbtDelta = c.pbt !== null && b.pbt !== null ? c.pbt - b.pbt : null;

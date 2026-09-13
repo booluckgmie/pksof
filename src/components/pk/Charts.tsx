@@ -473,3 +473,97 @@ export function FinancialResultsHistoryChart({
     </svg>
   );
 }
+
+/**
+ * Horizontal paired-bar comparison — the client's own "Overview of Quarterly Financial
+ * Results" exhibit (Current Quarter vs Preceding Quarter). Each category gets a current-
+ * quarter bar and a compare-quarter bar sharing one axis, with a bracket + variance label
+ * (RM Xm, Y%) between them. Values are plain numbers (RM'000); `unit` labels the axis.
+ */
+export function QoQHorizontalBars({
+  categories,
+  currentLabel,
+  compareLabel,
+  unit = "RM'000",
+}: {
+  categories: { label: string; current: number; compare: number }[];
+  currentLabel: string;
+  compareLabel: string;
+  unit?: string;
+}) {
+  const W = 620;
+  const PAD_L = 92;
+  const PAD_R = 110;
+  const BAR_H = 22;
+  const BAR_GAP = 4;
+  const GROUP_H = BAR_H * 2 + BAR_GAP + 30;
+  const LEGEND_H = 22;
+  const AXIS_H = 22;
+  const H = LEGEND_H + categories.length * GROUP_H + AXIS_H;
+
+  const max = Math.max(...categories.flatMap((c) => [c.current, c.compare]), 1) * 1.2;
+  const plotW = W - PAD_L - PAD_R;
+  const niceMax = Math.ceil(max / 10000) * 10000 || 1;
+  const tickCount = 5;
+  const ticks = Array.from({ length: tickCount + 1 }, (_, i) => (niceMax / tickCount) * i);
+  const axisY = LEGEND_H + categories.length * GROUP_H + 12;
+
+  const currentColor = "hsl(var(--pk-navy))";
+  const compareColor = "hsl(var(--pk-border))";
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Current quarter vs preceding quarter">
+      <g>
+        <rect x={PAD_L} y={4} width={10} height={10} rx={2} fill={currentColor} />
+        <text x={PAD_L + 14} y={13} fontSize={10.5} className="fill-[hsl(var(--pk-ink))]">{currentLabel}</text>
+        <rect x={PAD_L + 100} y={4} width={10} height={10} rx={2} fill={compareColor} />
+        <text x={PAD_L + 114} y={13} fontSize={10.5} className="fill-[hsl(var(--pk-ink))]">{compareLabel}</text>
+        <text x={W - PAD_R} y={13} textAnchor="end" fontSize={9.5} className="fill-[hsl(var(--pk-ink-faint))]">{unit}</text>
+      </g>
+
+      {ticks.map((t) => {
+        const x = PAD_L + (t / niceMax) * plotW;
+        return <line key={t} x1={x} y1={LEGEND_H} x2={x} y2={LEGEND_H + categories.length * GROUP_H - 8} stroke="hsl(var(--pk-border))" strokeWidth={1} />;
+      })}
+
+      {categories.map((c, i) => {
+        const groupY = LEGEND_H + i * GROUP_H;
+        const curW = (c.current / niceMax) * plotW;
+        const cmpW = (c.compare / niceMax) * plotW;
+        const delta = c.current - c.compare;
+        const pct = c.compare !== 0 ? (delta / Math.abs(c.compare)) * 100 : 0;
+        const bracketX = PAD_L + Math.max(curW, cmpW) + 8;
+        return (
+          <g key={c.label}>
+            <text x={PAD_L - 8} y={groupY + BAR_H + BAR_GAP / 2 + 4} textAnchor="end" fontSize={10.5} fontWeight={700} className="fill-[hsl(var(--pk-ink-soft))]">
+              {c.label}
+            </text>
+            <rect x={PAD_L} y={groupY} width={curW} height={BAR_H} rx={2} fill={currentColor}>
+              <title>{currentLabel} — {c.label}: {c.current.toLocaleString()}</title>
+            </rect>
+            <text x={PAD_L + curW - 6} y={groupY + BAR_H / 2 + 4} textAnchor="end" fontSize={10.5} fontWeight={700} className="fill-white tnum">{c.current.toLocaleString()}</text>
+            <rect x={PAD_L} y={groupY + BAR_H + BAR_GAP} width={cmpW} height={BAR_H} rx={2} fill={compareColor}>
+              <title>{compareLabel} — {c.label}: {c.compare.toLocaleString()}</title>
+            </rect>
+            <text x={PAD_L + cmpW - 6} y={groupY + BAR_H + BAR_GAP + BAR_H / 2 + 4} textAnchor="end" fontSize={10.5} fontWeight={700} className="fill-[hsl(var(--pk-ink))] tnum">{c.compare.toLocaleString()}</text>
+
+            <line x1={bracketX} y1={groupY} x2={bracketX} y2={groupY + BAR_H * 2 + BAR_GAP} stroke="hsl(var(--pk-ink-faint))" strokeWidth={1} />
+            <line x1={bracketX - 4} y1={groupY} x2={bracketX} y2={groupY} stroke="hsl(var(--pk-ink-faint))" strokeWidth={1} />
+            <line x1={bracketX - 4} y1={groupY + BAR_H * 2 + BAR_GAP} x2={bracketX} y2={groupY + BAR_H * 2 + BAR_GAP} stroke="hsl(var(--pk-ink-faint))" strokeWidth={1} />
+            <text x={bracketX + 5} y={groupY + BAR_H + BAR_GAP / 2 - 3} fontSize={9.5} fontStyle="italic" fontWeight={700} className="fill-[hsl(var(--pk-ink))] tnum">
+              RM{(Math.abs(delta) / 1000).toFixed(1)}m
+            </text>
+            <text x={bracketX + 5} y={groupY + BAR_H + BAR_GAP / 2 + 9} fontSize={9.5} fontStyle="italic" fontWeight={700} className="fill-[hsl(var(--pk-ink))] tnum">
+              {Math.abs(pct).toFixed(0)}%
+            </text>
+          </g>
+        );
+      })}
+
+      <line x1={PAD_L} y1={LEGEND_H + categories.length * GROUP_H - 8} x2={PAD_L} y2={LEGEND_H} stroke="hsl(var(--pk-border))" strokeWidth={1} />
+      {ticks.map((t) => (
+        <text key={t} x={PAD_L + (t / niceMax) * plotW} y={axisY} textAnchor="middle" fontSize={9} className="fill-[hsl(var(--pk-ink-faint))] tnum">{t.toLocaleString()}</text>
+      ))}
+    </svg>
+  );
+}
