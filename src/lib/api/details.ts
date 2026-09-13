@@ -76,17 +76,33 @@ function toRecord(row: RecordDbRow): DetailRecordRow {
   };
 }
 
-/** All detail_metrics rows across every entity/period — small table, fetched in full like fact_kpi_results. */
+/** All detail_metrics rows across every entity/period. PostgREST caps a single response at 1000
+ * rows by default — this table crossed that threshold once Financial Position's line-item detail
+ * was added, so a plain `.select("*")` silently truncated whichever rows sorted last. Page through
+ * in fixed-size chunks until a short page confirms there's nothing left. */
 export async function fetchDetailMetrics(): Promise<DetailMetricRow[]> {
-  const { data, error } = await getSupabase().from("detail_metrics").select("*");
-  if (error) throw error;
-  return (data as MetricDbRow[]).map(toMetric);
+  const pageSize = 1000;
+  const rows: MetricDbRow[] = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await getSupabase().from("detail_metrics").select("*").range(from, from + pageSize - 1);
+    if (error) throw error;
+    rows.push(...(data as MetricDbRow[]));
+    if (data.length < pageSize) break;
+  }
+  return rows.map(toMetric);
 }
 
+/** Same pagination guard as fetchDetailMetrics — this table is smaller today but grows the same way. */
 export async function fetchDetailRecords(): Promise<DetailRecordRow[]> {
-  const { data, error } = await getSupabase().from("detail_records").select("*");
-  if (error) throw error;
-  return (data as RecordDbRow[]).map(toRecord);
+  const pageSize = 1000;
+  const rows: RecordDbRow[] = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await getSupabase().from("detail_records").select("*").range(from, from + pageSize - 1);
+    if (error) throw error;
+    rows.push(...(data as RecordDbRow[]));
+    if (data.length < pageSize) break;
+  }
+  return rows.map(toRecord);
 }
 
 export async function upsertDetailMetric(input: {
