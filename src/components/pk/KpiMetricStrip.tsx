@@ -1,4 +1,5 @@
 import type { KpiStatus } from "@/types";
+import { cn } from "@/lib/utils";
 
 const DOT_COLOR: Record<string, string> = {
   met: "hsl(var(--pk-good))",
@@ -38,10 +39,15 @@ export function KpiMetricStrip({
           <div className="tnum text-sm font-bold text-[hsl(var(--pk-ink))] mt-1">{b.value}</div>
         </div>
       ))}
-      <div className="rounded-lg border border-[hsl(var(--pk-navy-soft))] bg-[hsl(var(--pk-navy-soft)/0.4)] px-2 py-2 text-center">
+      <div
+        className={cn(
+          "rounded-lg border px-2 py-2 text-center",
+          status === "not-met" ? "border-[hsl(var(--pk-bad))] bg-[hsl(var(--pk-bad-soft))]" : "border-[hsl(var(--pk-navy-soft))] bg-[hsl(var(--pk-navy-soft)/0.4)]"
+        )}
+      >
         <div className="text-3xs font-semibold text-[hsl(var(--pk-ink-faint))] uppercase tracking-wide leading-tight">Weighted Achievement</div>
         <div className="flex items-center justify-center gap-1.5 mt-1">
-          <span className="tnum text-sm font-bold text-[hsl(var(--pk-ink))]">{achievement}</span>
+          <span className={cn("tnum text-sm font-bold", status === "not-met" ? "text-[hsl(var(--pk-bad))]" : "text-[hsl(var(--pk-ink))]")}>{achievement}</span>
           <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: DOT_COLOR[status] ?? DOT_COLOR["not-measurable"] }} />
         </div>
       </div>
