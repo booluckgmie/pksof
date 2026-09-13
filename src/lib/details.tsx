@@ -469,36 +469,206 @@ export function useDetails() {
     };
   }, [metrics, entityId]);
 
-  const balanceSheet = useMemo(() => {
-    const trendRows = metricRows("balance_sheet");
-    const linesRows = metricRows("balance_sheet_lines");
-    const available = [...periodsWithData(trendRows, entityId, () => true)];
-    const trend = periods
-      .filter((p) => available.includes(p.id))
-      .map((p) => {
-        const forPeriod = trendRows.filter((r) => r.periodId === p.id);
-        return {
-          period: p.label.replace("FY20", "FY"),
-          equity: forPeriod.find((r) => r.dimension === "shareholders_fund")?.value ?? 0,
-          liabilities: forPeriod.find((r) => r.dimension === "total_liabilities")?.value ?? 0,
-        };
-      });
-    const eff = latestPeriodWithData(periodsWithData(trendRows, entityId, () => true));
-    const shareholdersFund = eff ? (trendRows.find((r) => r.periodId === eff && r.dimension === "shareholders_fund")?.value ?? 0) : 0;
-    const priorIdx = eff ? periods.findIndex((p) => p.id === eff) - 1 : -1;
-    const priorPeriodId = priorIdx >= 0 ? periods[priorIdx].id : null;
-    const priorShareholdersFund = priorPeriodId
-      ? (trendRows.find((r) => r.periodId === priorPeriodId && r.dimension === "shareholders_fund")?.value ?? shareholdersFund)
-      : shareholdersFund;
-    const linesForPeriod = eff ? linesRows.filter((r) => r.periodId === eff) : [];
+  // ── Financial Position (PFH004) ─────────────────────────────────────────
+  // "fp_main" carries the leaf line items that have no further drill-down (dimension = item key,
+  // dimension2 = "asset"|"equity"|"liability"). Items that DO have a drill-down (Property and
+  // Equipment, Right-of-use assets, Receivables/Deposits/Prepayments, Cash and Cash Equivalents,
+  // Other payables) are never stored as their own total — that total is always the sum of their
+  // "fp_breakdown" leaves (dimension = parent key, dimension2 = leaf key), so the main table and
+  // its drill-down can never drift apart. Retained profit is likewise never stored: it's the
+  // balancing plug (Total Assets − Share Capital − Total Liabilities), same convention as Total
+  // Income/Expenses being derived elsewhere in this file.
+  const FP_BREAKDOWN_LABELS: Record<string, { parentLabel: string; totalLabel: string; leaves: Record<string, string> }> = {
+    property_equipment: {
+      parentLabel: "Property and Equipment",
+      totalLabel: "TOTAL PROPERTY AND EQUIPMENT",
+      leaves: { freehold_buildings: "Freehold buildings", office_furniture_fittings: "Office furniture & fittings", office_equipment: "Office equipment", motor_vehicles: "Motor vehicles", computer_equipment: "Computer equipment", office_renovation: "Office renovation", work_in_progress: "Work in progress" },
+    },
+    rou_assets: {
+      parentLabel: "Right-of-use assets",
+      totalLabel: "TOTAL RIGHT-OF-USE ASSETS",
+      leaves: { office_space: "Office Space", photocopier: "Photocopier", notebook_computer: "Notebook/Computer", server: "Server" },
+    },
+    receivables_deposits_prepayments: {
+      parentLabel: "Receivables, deposits and prepayments",
+      totalLabel: "TOTAL RECEIVABLES, DEPOSITS AND PREPAYMENTS",
+      leaves: { trade_receivables: "Trade receivables", impairment_receivables: "Impairment of receivables", expected_credit_loss: "Expected credit loss", profit_receivables_placements: "Profit receivables from placements", deposits: "Deposits", prepayments: "Prepayments", reimbursable_personnel_cost: "Reimbursable personnel cost and fees by MoF", accrued_revenue: "Accrued revenue", other_receivables: "Other receivables" },
+    },
+    cash_equivalents: {
+      parentLabel: "Cash and cash equivalents",
+      totalLabel: "Total Cash and Cash Equivalents",
+      leaves: { deposits_and_placements: "Deposits and placements", cash_and_bank_balances: "Cash and bank balances" },
+    },
+    other_payables: {
+      parentLabel: "Other payables",
+      totalLabel: "TOTAL LIABILITIES",
+      leaves: { staff_related_provisions: "Staff related provisions", dividend_payable: "Dividend payable", service_tax: "Service tax", external_auditors_fee: "External auditors' fee", tax_agent_fee: "Tax agent's fee", deposits_sale_properties: "Deposits from sale of properties (PAM)", due_to_related_corp: "Amount due to a related corporation", accrued_expenses_other_payables: "Accrued expenses and other payables" },
+    },
+  };
+  const FP_MAIN_LABELS: Record<string, string> = {
+    deferred_tax_asset: "Deferred tax asset",
+    tax_recoverable: "Tax recoverable",
+    due_from_related: "Amount due from related corporations",
+    other_investments: "Other investments",
+    share_capital: "Share capital",
+    lease_liabilities: "Lease liabilities",
+    provision_for_tax: "Provision for tax",
+  };
+
+  function fpMainValue(periodId: PeriodId, key: string): number {
+    return metricRows("fp_main").find((r) => r.periodId === periodId && r.dimension === key)?.value ?? 0;
+  }
+
+  function fpBreakdownTotal(periodId: PeriodId, parentKey: string): number {
+    return metricRows("fp_breakdown")
+      .filter((r) => r.periodId === periodId && r.dimension === parentKey)
+      .reduce((s, r) => s + (r.value ?? 0), 0);
+  }
+
+  /** One breakdown group's rows for the current period and (if available) the immediately
+   * preceding one — powers each drill-down table under the Financial Position main table. */
+  function financialPositionBreakdownFor(parentKey: keyof typeof FP_BREAKDOWN_LABELS, periodId: PeriodId) {
+    const def = FP_BREAKDOWN_LABELS[parentKey];
+    const idx = periods.findIndex((p) => p.id === periodId);
+    const priorId = idx > 0 ? periods[idx - 1].id : null;
+    const rowsForP = metricRows("fp_breakdown").filter((r) => r.periodId === periodId && r.dimension === parentKey);
+    const rowsForPrior = priorId ? metricRows("fp_breakdown").filter((r) => r.periodId === priorId && r.dimension === parentKey) : [];
+    const rows = Object.entries(def.leaves).map(([key, label]) => ({
+      key,
+      label,
+      current: rowsForP.find((r) => r.dimension2 === key)?.value ?? null,
+      prior: priorId ? (rowsForPrior.find((r) => r.dimension2 === key)?.value ?? null) : null,
+    }));
     return {
-      assets: linesForPeriod.filter((r) => r.dimension2 === "asset").map((r) => ({ label: r.dimension, value: r.value ?? 0 })),
-      liabilities: linesForPeriod.filter((r) => r.dimension2 === "liability").map((r) => ({ label: r.dimension, value: r.value ?? 0 })),
-      shareholdersFund,
-      priorShareholdersFund,
-      trend,
+      parentLabel: def.parentLabel,
+      totalLabel: def.totalLabel,
+      currentLabel: periodById(periodId).label,
+      priorLabel: priorId ? periodById(priorId).label : null,
+      rows,
+      totalCurrent: rowsForP.reduce((s, r) => s + (r.value ?? 0), 0),
+      totalPrior: rowsForPrior.reduce((s, r) => s + (r.value ?? 0), 0),
     };
-  }, [metrics, entityId]);
+  }
+
+  /** The Financial Position statement itself — current vs. immediately preceding quarter, RM'000.
+   * Every total (Total Assets/Equity/Liabilities, and the summary "Cash and other investments" /
+   * "Other assets" buckets) is derived from leaf figures so it can never drift out of reconciliation. */
+  function financialPositionFor(periodId: PeriodId) {
+    const idx = periods.findIndex((p) => p.id === periodId);
+    const priorId = idx > 0 ? periods[idx - 1].id : null;
+    const val = (key: string, forPeriod: PeriodId) =>
+      key in FP_BREAKDOWN_LABELS ? fpBreakdownTotal(forPeriod, key) : fpMainValue(forPeriod, key);
+
+    const ASSET_KEYS = ["property_equipment", "rou_assets", "deferred_tax_asset", "tax_recoverable", "due_from_related", "receivables_deposits_prepayments", "other_investments", "cash_equivalents"];
+    const LIABILITY_KEYS = ["lease_liabilities", "provision_for_tax", "other_payables"];
+
+    function sumAssets(forPeriod: PeriodId) {
+      return ASSET_KEYS.reduce((s, k) => s + val(k, forPeriod), 0);
+    }
+    function sumLiabilities(forPeriod: PeriodId) {
+      return LIABILITY_KEYS.reduce((s, k) => s + val(k, forPeriod), 0);
+    }
+    function retainedProfit(forPeriod: PeriodId) {
+      return sumAssets(forPeriod) - fpMainValue(forPeriod, "share_capital") - sumLiabilities(forPeriod);
+    }
+
+    const label = (key: string) => (key in FP_BREAKDOWN_LABELS ? FP_BREAKDOWN_LABELS[key as keyof typeof FP_BREAKDOWN_LABELS].parentLabel : FP_MAIN_LABELS[key]);
+    const drillable = (key: string) => key in FP_BREAKDOWN_LABELS || key === "other_investments";
+
+    const current = periodId;
+    const totalAssetsCurrent = sumAssets(current);
+    const totalLiabilitiesCurrent = sumLiabilities(current);
+    const totalEquityCurrent = fpMainValue(current, "share_capital") + retainedProfit(current);
+    const totalAssetsPrior = priorId ? sumAssets(priorId) : null;
+    const totalLiabilitiesPrior = priorId ? sumLiabilities(priorId) : null;
+    const totalEquityPrior = priorId ? fpMainValue(priorId, "share_capital") + retainedProfit(priorId) : null;
+
+    const rows = [
+      ...ASSET_KEYS.map((key) => ({ key, label: label(key), current: val(key, current), prior: priorId ? val(key, priorId) : null, bucket: "asset" as const, isTotal: false, drillable: drillable(key) })),
+      { key: "total_assets", label: "Total Assets", current: totalAssetsCurrent, prior: totalAssetsPrior, bucket: "asset" as const, isTotal: true, drillable: false },
+      { key: "share_capital", label: "Share capital", current: fpMainValue(current, "share_capital"), prior: priorId ? fpMainValue(priorId, "share_capital") : null, bucket: "equity" as const, isTotal: false, drillable: false },
+      { key: "retained_profit", label: "Retained profit", current: retainedProfit(current), prior: priorId ? retainedProfit(priorId) : null, bucket: "equity" as const, isTotal: false, drillable: false },
+      { key: "total_equity", label: "Total Equity", current: totalEquityCurrent, prior: totalEquityPrior, bucket: "equity" as const, isTotal: true, drillable: false },
+      ...LIABILITY_KEYS.map((key) => ({ key, label: label(key), current: val(key, current), prior: priorId ? val(key, priorId) : null, bucket: "liability" as const, isTotal: false, drillable: drillable(key) })),
+      { key: "total_liabilities", label: "Total Liabilities", current: totalLiabilitiesCurrent, prior: totalLiabilitiesPrior, bucket: "liability" as const, isTotal: true, drillable: false },
+      { key: "total_equity_and_liabilities", label: "Total Equity and Liabilities", current: totalEquityCurrent + totalLiabilitiesCurrent, prior: totalEquityPrior !== null && totalLiabilitiesPrior !== null ? totalEquityPrior + totalLiabilitiesPrior : null, bucket: "total" as const, isTotal: true, drillable: false },
+    ];
+
+    const cashAndInvestmentsCurrent = val("other_investments", current) + val("cash_equivalents", current);
+    const cashAndInvestmentsPrior = priorId ? val("other_investments", priorId) + val("cash_equivalents", priorId) : null;
+
+    return {
+      hasData: totalAssetsCurrent !== 0,
+      currentLabel: periodById(current).label,
+      priorLabel: priorId ? periodById(priorId).label : null,
+      priorId,
+      rows,
+      totalAssets: { current: totalAssetsCurrent, prior: totalAssetsPrior },
+      totalEquity: { current: totalEquityCurrent, prior: totalEquityPrior },
+      totalLiabilities: { current: totalLiabilitiesCurrent, prior: totalLiabilitiesPrior },
+      cashAndInvestments: { current: cashAndInvestmentsCurrent, prior: cashAndInvestmentsPrior },
+      otherAssets: { current: totalAssetsCurrent - cashAndInvestmentsCurrent, prior: totalAssetsPrior !== null && cashAndInvestmentsPrior !== null ? totalAssetsPrior - cashAndInvestmentsPrior : null },
+    };
+  }
+
+  /** Aging-of-receivables sub-drill under the Trade receivables line — only captured for the
+   * quarters the client actually supplied an aging schedule for (not every dummy quarter has one). */
+  function agingOfReceivablesFor(periodId: PeriodId) {
+    const AGING_LABELS: Record<string, string> = { current: "Current", d1_30: "1-30 days", d31_60: "31-60 days", d61_90: "61-90 days", d91_120: "91-120 days", over_120: ">120 days (impaired)" };
+    const idx = periods.findIndex((p) => p.id === periodId);
+    const priorId = idx > 0 ? periods[idx - 1].id : null;
+    const rowsForP = metricRows("fp_aging_receivables").filter((r) => r.periodId === periodId);
+    if (rowsForP.length === 0) return null;
+    const rowsForPrior = priorId ? metricRows("fp_aging_receivables").filter((r) => r.periodId === priorId) : [];
+    const rows = Object.entries(AGING_LABELS).map(([key, label]) => ({
+      key,
+      label,
+      current: rowsForP.find((r) => r.dimension === key)?.value ?? null,
+      prior: rowsForPrior.find((r) => r.dimension === key)?.value ?? null,
+    }));
+    const totalCurrent = rowsForP.reduce((s, r) => s + (r.value ?? 0), 0);
+    const totalPrior = rowsForPrior.reduce((s, r) => s + (r.value ?? 0), 0);
+    const impairmentCurrent = fpBreakdownRow("receivables_deposits_prepayments", "impairment_receivables", periodId);
+    const eclCurrent = fpBreakdownRow("receivables_deposits_prepayments", "expected_credit_loss", periodId);
+    const impairmentPrior = priorId ? fpBreakdownRow("receivables_deposits_prepayments", "impairment_receivables", priorId) : 0;
+    const eclPrior = priorId ? fpBreakdownRow("receivables_deposits_prepayments", "expected_credit_loss", priorId) : 0;
+    return {
+      currentLabel: periodById(periodId).label,
+      priorLabel: priorId ? periodById(priorId).label : null,
+      rows,
+      totalCurrent,
+      totalPrior,
+      impairmentCurrent,
+      impairmentPrior,
+      eclCurrent,
+      eclPrior,
+      netCurrent: totalCurrent + impairmentCurrent + eclCurrent,
+      netPrior: totalPrior + impairmentPrior + eclPrior,
+    };
+  }
+
+  function fpBreakdownRow(parentKey: string, leafKey: string, periodId: PeriodId): number {
+    return metricRows("fp_breakdown").find((r) => r.periodId === periodId && r.dimension === parentKey && r.dimension2 === leafKey)?.value ?? 0;
+  }
+
+  /** Point-in-time deal-level schedule behind the "Other investments" line — captured only for
+   * the quarter it was reported for, unlike every other drill-down here there is no prior-period
+   * comparison column (the client's own exhibit is a snapshot, not a QoQ table). */
+  function otherInvestmentsDealsFor(periodId: PeriodId) {
+    const rows = recordRows("fp_other_investment_deal").filter((r) => r.periodId === periodId);
+    if (rows.length === 0) return null;
+    const deals = rows.map((r) => {
+      const [dealDate, maturityDate, rating, tenureDays] = (r.textNote ?? "").split("|");
+      return { bank: r.label, instrument: r.category ?? "", dealDate, maturityDate, rating, tenureDays, principal: r.valueNum ?? 0, interestPct: r.valueNum2 ?? 0 };
+    });
+    const total = deals.reduce((s, d) => s + d.principal, 0);
+    const rateRow = metricRows("fp_note").find((r) => r.periodId === periodId && r.dimension === "other_investments_rate");
+    return { asOfLabel: periodById(periodId).label, deals, total, noteRate: rateRow?.note ?? null };
+  }
+
+  function cashEffectiveRateFor(periodId: PeriodId): number | null {
+    return metricRows("fp_note").find((r) => r.periodId === periodId && r.dimension === "cash_effective_rate")?.value ?? null;
+  }
 
   /** Quarter-over-quarter comparison table, matching the client's own RPT report format — RM'000
    * figures grouped under a category (dimension, e.g. "A. Subsidiary companies") and a sub-heading
@@ -732,7 +902,8 @@ export function useDetails() {
     gradeBreakdownFor, ageBreakdownFor, ageGenderBreakdownFor, averageAgeByPeriod,
     gradeGenderCrossTabFor, departmentHeadcountFor, recruitmentIndexByPeriod,
     resignedByPeriod, turnoverTrend, bumiputeraTrainingByPeriod,
-    quarterlyTrend, monthlyTrendFor, actualVsBudget, financialResultsFor, varianceCommentary, balanceSheet, relatedPartyTransactionsUpTo,
+    quarterlyTrend, monthlyTrendFor, actualVsBudget, financialResultsFor, varianceCommentary, relatedPartyTransactionsUpTo,
+    financialPositionFor, financialPositionBreakdownFor, agingOfReceivablesFor, otherInvestmentsDealsFor, cashEffectiveRateFor,
     managedEntityRatingsFor, managedEntityKpiDetailFor, managedEntityKpiQuarterlyFor, clientSatisfaction, timeCharterByDept, governanceKpiFor,
     processInitiatives, techInitiatives, bumiputeraProcurement, peopleDevRecordsFor,
     pbtBreakdown, cirBreakdown,

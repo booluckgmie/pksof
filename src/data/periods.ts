@@ -43,6 +43,28 @@ export function periodsUpTo(currentPeriodId: PeriodId): Period[] {
   return idx === -1 ? periods : periods.slice(0, idx + 1);
 }
 
+const MONTH_NAMES_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+function periodEndDate(periodId: PeriodId, fyEndMonth: number): Date {
+  const [, end] = periodDateRange(periodById(periodId), fyEndMonth);
+  return new Date(end.getTime() - 24 * 60 * 60 * 1000);
+}
+
+/** "DD.MM.YYYY" for the last calendar day of a period's quarter — the "as at" date the client's
+ * own Financial Position report is dated by (e.g. Q1 FY2026 → "31.03.2026"). */
+export function periodEndDateLabel(periodId: PeriodId, fyEndMonth: number = FISCAL_YEAR_END_MONTH): string {
+  const lastDay = periodEndDate(periodId, fyEndMonth);
+  const dd = String(lastDay.getUTCDate()).padStart(2, "0");
+  const mm = String(lastDay.getUTCMonth() + 1).padStart(2, "0");
+  return `${dd}.${mm}.${lastDay.getUTCFullYear()}`;
+}
+
+/** "31 March 2026" — the same "as at" date in the client's word-form header style. */
+export function periodEndDateWords(periodId: PeriodId, fyEndMonth: number = FISCAL_YEAR_END_MONTH): string {
+  const lastDay = periodEndDate(periodId, fyEndMonth);
+  return `${lastDay.getUTCDate()} ${MONTH_NAMES_LONG[lastDay.getUTCMonth()]} ${lastDay.getUTCFullYear()}`;
+}
+
 /** [start, end) calendar-quarter date range for a period, derived from its fy + quarter (FY = calendar year). */
 function periodDateRange(p: Period, fyEndMonth: number): [Date, Date] {
   const year = parseInt(p.fy.replace("FY", ""), 10);

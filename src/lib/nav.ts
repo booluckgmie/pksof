@@ -31,7 +31,7 @@ export const screens: Record<ScreenId, ScreenDef> = {
   PFH001: { id: "PFH001", code: "PFH001", label: "Financial Health Overview", level: "L2", group: "fh", parent: "MAIN" },
   PFH002: { id: "PFH002", code: "PFH002", label: "Financial Results (QoQ)", level: "L3", group: "fh", parent: "PFH001" },
   PFH003: { id: "PFH003", code: "PFH003", label: "Actual vs Budget vs PY", level: "L3", group: "fh", parent: "PFH001" },
-  PFH004: { id: "PFH004", code: "PFH004", label: "Assets & Liabilities", level: "L3", group: "fh", parent: "PFH001" },
+  PFH004: { id: "PFH004", code: "PFH004", label: "Financial Position", level: "L3", group: "fh", parent: "PFH001" },
   PFH005: { id: "PFH005", code: "PFH005", label: "Related Party Transactions", level: "L3", group: "fh", parent: "PFH001" },
 
   RP001: { id: "RP001", code: "RP001", label: "Total Headcount & KPI 9", level: "L2", group: "rp", parent: "MAIN" },
