@@ -111,6 +111,11 @@ export function LineTrend({
   const path = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
   const area = `${path} L ${pts[pts.length - 1].x} ${H - 24} L ${pts[0].x} ${H - 24} Z`;
   const refY = referenceLine ? H - 24 - ((H - 44) * (referenceLine.value - min)) / range : null;
+  // With many points the quarter labels below the axis collide — thin them out to at most ~6,
+  // always keeping the first and last so the range is still legible.
+  const maxAxisLabels = 6;
+  const labelStep = Math.max(1, Math.ceil(data.length / maxAxisLabels));
+  const showAxisLabel = (i: number) => i % labelStep === 0 || i === data.length - 1;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Line trend chart">
@@ -135,9 +140,11 @@ export function LineTrend({
           <text x={p.x} y={p.y - 8} textAnchor="middle" fontSize={9.5} className="fill-[hsl(var(--pk-ink))] tnum" fontWeight={i === pts.length - 1 ? 700 : 500}>
             {data[i].value.toFixed(1)}{unit}
           </text>
-          <text x={p.x} y={H - 10} textAnchor="middle" fontSize={9} className="fill-[hsl(var(--pk-ink-faint))]">
-            {data[i].label}
-          </text>
+          {showAxisLabel(i) && (
+            <text x={p.x} y={H - 10} textAnchor="middle" fontSize={9} className="fill-[hsl(var(--pk-ink-faint))]">
+              {data[i].label}
+            </text>
+          )}
         </g>
       ))}
     </svg>

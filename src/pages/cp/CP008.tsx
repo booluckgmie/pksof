@@ -82,42 +82,6 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div
           role="button"
           tabIndex={0}
-          onClick={() => toggle("composition")}
-          onKeyDown={onToggleKeyDown("composition")}
-          className={cn(
-            "text-left rounded-lg border bg-[hsl(var(--pk-surface))] shadow-card p-4 cursor-pointer transition-colors",
-            expanded === "composition" ? "border-[hsl(var(--pk-accent))]" : "border-[hsl(var(--pk-border))] hover:bg-[hsl(var(--pk-surface-2))]"
-          )}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 12 · Weight 1.67%</div>
-            <StatusChip status={kpi12.status} />
-          </div>
-          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">Bumiputera Composition</div>
-          <div className="flex items-baseline gap-2 mb-2">
-            <span className="tnum font-head text-2xl font-semibold">{kpi12.ytdActual !== null ? `${kpi12.ytdActual.toFixed(1)}%` : "—"}</span>
-            <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi12.ytdTarget !== null ? `${kpi12.ytdTarget}%` : "—"}</span>
-          </div>
-          <KpiMetricStrip
-            fy={fy}
-            periodLabel={periodLabel}
-            fyTarget={`${kpi12FyTarget.toFixed(1)}%`}
-            ytdTarget={kpi12.ytdTarget !== null ? `${kpi12.ytdTarget.toFixed(1)}%` : "—"}
-            ytdActual={kpi12.ytdActual !== null ? `${kpi12.ytdActual.toFixed(1)}%` : "—"}
-            achievement={kpi12.weighted !== null ? `${(kpi12.weighted * 100).toFixed(1)}%` : "—"}
-            status={kpi12.status}
-          />
-          <div className="flex items-center justify-end">
-            <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
-              {expanded === "composition" ? "Hide details" : "View details"}
-              <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "composition" && "rotate-180")} />
-            </span>
-          </div>
-        </div>
-
-        <div
-          role="button"
-          tabIndex={0}
           onClick={() => toggle("procurement")}
           onKeyDown={onToggleKeyDown("procurement")}
           className={cn(
@@ -147,6 +111,42 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
               {expanded === "procurement" ? "Hide details" : "View details"}
               <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "procurement" && "rotate-180")} />
+            </span>
+          </div>
+        </div>
+
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => toggle("composition")}
+          onKeyDown={onToggleKeyDown("composition")}
+          className={cn(
+            "text-left rounded-lg border bg-[hsl(var(--pk-surface))] shadow-card p-4 cursor-pointer transition-colors",
+            expanded === "composition" ? "border-[hsl(var(--pk-accent))]" : "border-[hsl(var(--pk-border))] hover:bg-[hsl(var(--pk-surface-2))]"
+          )}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 12 · Weight 1.67%</div>
+            <StatusChip status={kpi12.status} />
+          </div>
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">Bumiputera Composition</div>
+          <div className="flex items-baseline gap-2 mb-2">
+            <span className="tnum font-head text-2xl font-semibold">{kpi12.ytdActual !== null ? `${kpi12.ytdActual.toFixed(1)}%` : "—"}</span>
+            <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi12.ytdTarget !== null ? `${kpi12.ytdTarget}%` : "—"}</span>
+          </div>
+          <KpiMetricStrip
+            fy={fy}
+            periodLabel={periodLabel}
+            fyTarget={`${kpi12FyTarget.toFixed(1)}%`}
+            ytdTarget={kpi12.ytdTarget !== null ? `${kpi12.ytdTarget.toFixed(1)}%` : "—"}
+            ytdActual={kpi12.ytdActual !== null ? `${kpi12.ytdActual.toFixed(1)}%` : "—"}
+            achievement={kpi12.weighted !== null ? `${(kpi12.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi12.status}
+          />
+          <div className="flex items-center justify-end">
+            <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
+              {expanded === "composition" ? "Hide details" : "View details"}
+              <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "composition" && "rotate-180")} />
             </span>
           </div>
         </div>
