@@ -857,20 +857,22 @@ export function useDetails() {
   const processInitiatives = useMemo(() => initiativeListFor("process_initiative"), [records, entityId]);
   const techInitiatives = useMemo(() => initiativeListFor("tech_initiative"), [records, entityId]);
 
-  const bumiputeraProcurement = useMemo(() => {
-    const rows = metricRows("bumiputera_procurement");
-    const eff = latestPeriodWithData(periodsWithData(rows, entityId, () => true));
-    const forPeriod = eff ? rows.filter((r) => r.periodId === eff) : [];
-    const depts = [...new Set(forPeriod.map((r) => r.dimension))];
+  /** Bumiputera Procurement (KPI11) by department for a given quarter, matching the client's own
+   * "Appendix — Bumiputera Procurement" exhibit. YTD Target is never stored — it's always the
+   * department's FY Target scaled by the quarter's own cumulative-YTD threshold (25%/50%/75%/100%,
+   * same convention the rest of the app's YTD targets use), so it can't drift from the FY figure. */
+  function bumiputeraProcurementFor(periodId: PeriodId) {
+    const rows = metricRows("bumiputera_procurement").filter((r) => r.periodId === periodId);
+    const depts = [...new Set(rows.map((r) => r.dimension))];
+    const threshold = periodById(periodId).cumulativeThreshold;
     return depts.map((dept) => {
-      const sub = forPeriod.filter((r) => r.dimension === dept);
-      return {
-        dept,
-        fyTarget: sub.find((r) => r.dimension2 === "fy_target")?.value ?? 0,
-        ytdActual: sub.find((r) => r.dimension2 === "ytd_actual")?.value ?? 0,
-      };
+      const sub = rows.filter((r) => r.dimension === dept);
+      const fyTarget = sub.find((r) => r.dimension2 === "fy_target")?.value ?? 0;
+      const ytdActual = sub.find((r) => r.dimension2 === "ytd_actual")?.value ?? 0;
+      const ytdTarget = fyTarget * threshold;
+      return { dept, fyTarget, ytdTarget, ytdActual, variance: ytdActual - ytdTarget };
     });
-  }, [metrics, entityId]);
+  }
 
   /** People Development Programme entries for a period — edited in full via CP009, mapped onto
    * detail_records the same way initiativeListFor() maps process/tech initiatives: `category`
@@ -905,7 +907,7 @@ export function useDetails() {
     quarterlyTrend, monthlyTrendFor, actualVsBudget, financialResultsFor, varianceCommentary, relatedPartyTransactionsUpTo,
     financialPositionFor, financialPositionBreakdownFor, agingOfReceivablesFor, otherInvestmentsDealsFor, cashEffectiveRateFor,
     managedEntityRatingsFor, managedEntityKpiDetailFor, managedEntityKpiQuarterlyFor, clientSatisfaction, timeCharterByDept, governanceKpiFor,
-    processInitiatives, techInitiatives, bumiputeraProcurement, peopleDevRecordsFor,
+    processInitiatives, techInitiatives, bumiputeraProcurementFor, peopleDevRecordsFor,
     pbtBreakdown, cirBreakdown,
   };
 }

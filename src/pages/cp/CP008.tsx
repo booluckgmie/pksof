@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
-import { CategoryBar, LineTrend } from "@/components/pk/Charts";
+import { Donut, LineTrend } from "@/components/pk/Charts";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
@@ -13,9 +13,11 @@ import { useDetails } from "@/lib/details";
 import { useKpiTargets } from "@/lib/kpiTargets";
 import { useCurrentPeriodId } from "@/lib/orgSettings";
 import { kpiById } from "@/data/kpis";
-import { periods, periodById } from "@/data/periods";
+import { periods, periodById, periodEndDateWords } from "@/data/periods";
 import { cn } from "@/lib/utils";
 import type { PeriodId } from "@/types";
+
+const fmtRM = (v: number) => v.toLocaleString("en-MY", { maximumFractionDigits: 0 });
 
 type Tab = "composition" | "procurement" | "training";
 
@@ -24,7 +26,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   // Local to this screen only — see CP003's own Reporting period filter for why.
   const [periodId, setPeriodId] = useState<PeriodId>(useCurrentPeriodId());
   const { latestValue } = useWorkflow();
-  const { bumiputeraProcurement, bumiputeraTrainingByPeriod, headcountSummaryByPeriod } = useDetails();
+  const { bumiputeraProcurementFor, bumiputeraTrainingByPeriod, headcountSummaryByPeriod } = useDetails();
   const { getFyTarget } = useKpiTargets();
   const kpi11 = latestValue("KPI11", entityId, periodId);
   const kpi12 = latestValue("KPI12", entityId, periodId);
@@ -45,7 +47,11 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   };
   const [compareIds, setCompareIds] = useState<PeriodId[]>([]);
 
-  const procTotal = bumiputeraProcurement.reduce((s, r) => s + r.ytdActual, 0);
+  const bumiputeraProcurement = bumiputeraProcurementFor(periodId);
+  const procTotals = bumiputeraProcurement.reduce(
+    (s, r) => ({ fyTarget: s.fyTarget + r.fyTarget, ytdTarget: s.ytdTarget + r.ytdTarget, ytdActual: s.ytdActual + r.ytdActual, variance: s.variance + r.variance }),
+    { fyTarget: 0, ytdTarget: 0, ytdActual: 0, variance: 0 }
+  );
 
   const fullCompositionTrend = periods
     .map((p) => {
@@ -191,13 +197,45 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       {expanded === "composition" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-            <CategoryBar
-              segments={[
-                { label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" },
-                { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" },
-              ]}
-            />
-            <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-2">Target {kpi12.ytdTarget}% · Actual {kpi12.ytdActual?.toFixed(1)}%</div>
+            <div className="text-2xs font-bold underline text-[hsl(var(--pk-ink-faint))] mb-2">Bumiputera Composition</div>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-36 shrink-0">
+                <Donut
+                  segments={[
+                    { label: "Bumiputera Employees", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" },
+                    { label: "Non-Bumiputera Employees", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-navy))" },
+                  ]}
+                  centerValue={headcountSummary.bumiputera + headcountSummary.nonBumiputera > 0 ? `${((headcountSummary.bumiputera / (headcountSummary.bumiputera + headcountSummary.nonBumiputera)) * 100).toFixed(0)}%` : "—"}
+                  centerLabel="Bumiputera"
+                />
+              </div>
+              <table className="w-full text-xs">
+                <tbody>
+                  <tr className="border-b border-[hsl(var(--pk-border))]">
+                    <td className="py-1.5 flex items-center gap-1.5 text-[hsl(var(--pk-ink-soft))]">
+                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: "hsl(var(--pk-accent))" }} />
+                      Bumiputera Employees
+                    </td>
+                    <td className="text-right py-1.5 tnum font-semibold">{headcountSummary.bumiputera}</td>
+                  </tr>
+                  <tr className="border-b border-[hsl(var(--pk-border))]">
+                    <td className="py-1.5 flex items-center gap-1.5 text-[hsl(var(--pk-ink-soft))]">
+                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: "hsl(var(--pk-navy))" }} />
+                      Non-Bumiputera Employees
+                    </td>
+                    <td className="text-right py-1.5 tnum font-semibold">{headcountSummary.nonBumiputera}</td>
+                  </tr>
+                  <tr className="border-b border-[hsl(var(--pk-border))] font-semibold">
+                    <td className="py-1.5 text-[hsl(var(--pk-ink))]">Total Employees as at {periodEndDateWords(periodId)}</td>
+                    <td className="text-right py-1.5 tnum">{headcountSummary.bumiputera + headcountSummary.nonBumiputera}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-1.5 text-[hsl(var(--pk-ink))] italic">% of Bumiputera Employees</td>
+                    <td className="text-right py-1.5 tnum font-semibold text-[hsl(var(--pk-accent))]">{kpi12.ytdActual !== null ? `${kpi12.ytdActual.toFixed(1)}%` : "—"}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
           {compositionTrend.length > 1 && (
             <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
@@ -212,36 +250,75 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       )}
 
       {expanded === "procurement" && (
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Procurement by department</div>
-            <div className="tnum text-sm font-semibold text-[hsl(var(--pk-ink))]">Total RM {procTotal.toFixed(2)}m</div>
-          </div>
-          <div className="flex flex-col gap-3">
-            {bumiputeraProcurement.map((d) => {
-              const pct = d.fyTarget > 0 ? Math.min(100, (d.ytdActual / d.fyTarget) * 100) : 0;
-              return (
-                <div key={d.dept}>
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-[hsl(var(--pk-ink-soft))]">{d.dept}</span>
-                    <span className="tnum text-[hsl(var(--pk-ink-faint))]">RM {d.ytdActual.toFixed(2)}m / {d.fyTarget.toFixed(2)}m · {pct.toFixed(0)}%</span>
-                  </div>
-                  <div className="h-2 rounded bg-[hsl(var(--pk-surface-2))]">
-                    <div className="h-full rounded bg-[hsl(var(--pk-accent))]" style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
-              );
-            })}
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-hidden mb-4">
+          <div className="px-4 pt-3.5 pb-1 font-head font-bold text-[hsl(var(--pk-ink))]">Bumiputera Procurement by Department</div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[520px]">
+              <thead>
+                <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+                  <th className="text-left font-medium px-3 py-2.5">Department</th>
+                  <th className="text-right font-medium px-3 py-2.5">FY Target (RM)</th>
+                  <th className="text-right font-medium px-3 py-2.5">YTD {periodLabel} Target (RM)</th>
+                  <th className="text-right font-medium px-3 py-2.5">YTD {periodLabel} Actual (RM)</th>
+                  <th className="text-right font-medium px-3 py-2.5">Variance against Target (RM)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bumiputeraProcurement.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-3 py-4 text-center text-xs text-[hsl(var(--pk-ink-faint))]">No department-level data for {period.label} yet.</td>
+                  </tr>
+                ) : (
+                  bumiputeraProcurement.map((d) => (
+                    <tr key={d.dept} className="border-t border-[hsl(var(--pk-border))]">
+                      <td className="px-3 py-2 text-[hsl(var(--pk-ink-soft))]">{d.dept}</td>
+                      <td className="text-right px-3 py-2 tnum">{fmtRM(d.fyTarget)}</td>
+                      <td className="text-right px-3 py-2 tnum">{fmtRM(d.ytdTarget)}</td>
+                      <td className="text-right px-3 py-2 tnum">{fmtRM(d.ytdActual)}</td>
+                      <td className={cn("text-right px-3 py-2 tnum", d.variance < 0 && "text-[hsl(var(--pk-bad))]")}>{fmtRM(d.variance)}</td>
+                    </tr>
+                  ))
+                )}
+                {bumiputeraProcurement.length > 0 && (
+                  <tr className="border-t border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] font-bold">
+                    <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">Total</td>
+                    <td className="text-right px-3 py-2 tnum">{fmtRM(procTotals.fyTarget)}</td>
+                    <td className="text-right px-3 py-2 tnum">{fmtRM(procTotals.ytdTarget)}</td>
+                    <td className="text-right px-3 py-2 tnum">{fmtRM(procTotals.ytdActual)}</td>
+                    <td className={cn("text-right px-3 py-2 tnum", procTotals.variance < 0 && "text-[hsl(var(--pk-bad))]")}>{fmtRM(procTotals.variance)}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
       {expanded === "training" && (
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.poolIdentified}</div><div className="text-3xs text-[hsl(var(--pk-ink-faint))]">Pool identified</div></div>
-            <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.attendedOne}</div><div className="text-3xs text-[hsl(var(--pk-ink-faint))]">Attended 1 programme</div></div>
-            <div><div className="tnum font-head text-xl font-semibold">{bumiputeraTraining.attendedTwoPlus}</div><div className="text-3xs text-[hsl(var(--pk-ink-faint))]">Attended 2+ programmes</div></div>
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Bumiputera Training</div>
+          {kpi13.status === "not-measurable" && (
+            <div className="inline-block rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-3 py-1.5 text-xs font-bold text-[hsl(var(--pk-ink))] mb-3">
+              Not measured in {periodLabel}. Progress only.
+            </div>
+          )}
+          <p className="text-xs text-[hsl(var(--pk-ink-soft))] mb-3">
+            Prokhas has identified a population / pool of <span className="font-semibold">{bumiputeraTraining.poolIdentified} Bumiputera employees</span> (from Junior Executive to Senior Manager) during the period to undergo competency development through the completion of at least two (2) registered programmes.
+          </p>
+          <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-2">Status of completion of Bumiputera Competency Development Programmes as at {periodEndDateWords(periodId)}:</p>
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] overflow-hidden">
+            <table className="w-full text-sm">
+              <tbody>
+                <tr className="border-b border-[hsl(var(--pk-border))]">
+                  <td className="px-3 py-2 text-[hsl(var(--pk-ink-soft))]">Bumiputera staff attended one (1) programme</td>
+                  <td className="text-right px-3 py-2 tnum font-semibold">{bumiputeraTraining.attendedOne} staff</td>
+                </tr>
+                <tr>
+                  <td className="px-3 py-2 font-bold text-[hsl(var(--pk-ink))]">Bumiputera attended at least two (2) programmes</td>
+                  <td className="text-right px-3 py-2 tnum font-bold">{bumiputeraTraining.attendedTwoPlus} staff</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
           <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">Annual target {kpi13Target} staff{bumiputeraTraining.attendedOne === 0 ? " · training not yet commenced this financial year." : ` · stage: ${bumiputeraTraining.stage}.`}</p>
         </div>
