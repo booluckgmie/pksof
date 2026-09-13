@@ -69,7 +69,7 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           )}
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 7 · Weight 10.0%</div>
+            <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 7 · Weight 10.0%</div>
             <StatusChip status={kpi7.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">Process Improvements</div>
@@ -105,7 +105,7 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           )}
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 8 · Weight 10.0%</div>
+            <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 8 · Weight 10.0%</div>
             <StatusChip status={kpi8.status} />
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">New Technology Implementation</div>

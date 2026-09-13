@@ -46,7 +46,7 @@ export function CP009({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         )}
       >
         <div className="flex items-center justify-between mb-2">
-          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 10 · Weight {`${(kpiById("KPI10").weight * 100).toFixed(1)}%`}</div>
+          <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 10 · Weight {`${(kpiById("KPI10").weight * 100).toFixed(1)}%`}</div>
           <StatusChip status={kpi10.status} />
         </div>
         <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">People Development Programme</div>

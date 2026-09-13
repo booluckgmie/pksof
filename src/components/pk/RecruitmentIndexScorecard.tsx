@@ -43,7 +43,7 @@ export function RecruitmentIndexCardHeader({
   return (
     <>
       <div className="flex items-center justify-between mb-2">
-        <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 9 · Weight {weightPct}</div>
+        <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 9 · Weight {weightPct}</div>
         <StatusChip status={kpi9.status} />
       </div>
       <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2 inline-flex items-center gap-1.5">

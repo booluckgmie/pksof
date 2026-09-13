@@ -91,7 +91,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="lg:col-span-2 flex flex-col gap-5">
           <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5">
             <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-              <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 5 · Weight 7.5% · bi-annual</div>
+              <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 5 · Weight 7.5% · bi-annual</div>
               <StatusChip status={kpi5.status} />
             </div>
             <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">External Client Satisfaction</div>
@@ -122,7 +122,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
           <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5">
             <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-              <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 6 · Weight 7.5% · quarterly</div>
+              <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 6 · Weight 7.5% · quarterly</div>
               <StatusChip status={kpi6.status} />
             </div>
             <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Time Charter Compliance</div>
