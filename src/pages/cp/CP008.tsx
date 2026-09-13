@@ -13,7 +13,7 @@ import { useDetails } from "@/lib/details";
 import { useKpiTargets } from "@/lib/kpiTargets";
 import { useCurrentPeriodId } from "@/lib/orgSettings";
 import { kpiById } from "@/data/kpis";
-import { periods, periodById, periodEndDateWords } from "@/data/periods";
+import { periodById, periodEndDateWords, periodsUpTo } from "@/data/periods";
 import { cn } from "@/lib/utils";
 import type { PeriodId } from "@/types";
 
@@ -23,8 +23,9 @@ type Tab = "composition" | "procurement" | "training";
 
 export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId } = useSession();
+  const currentPeriodId = useCurrentPeriodId();
   // Local to this screen only — see CP003's own Reporting period filter for why.
-  const [periodId, setPeriodId] = useState<PeriodId>(useCurrentPeriodId());
+  const [periodId, setPeriodId] = useState<PeriodId>(currentPeriodId);
   const { latestValue } = useWorkflow();
   const { bumiputeraProcurementFor, bumiputeraTrainingByPeriod, headcountSummaryByPeriod } = useDetails();
   const { getFyTarget } = useKpiTargets();
@@ -53,7 +54,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     { fyTarget: 0, ytdTarget: 0, ytdActual: 0, variance: 0 }
   );
 
-  const fullCompositionTrend = periods
+  const fullCompositionTrend = periodsUpTo(currentPeriodId)
     .map((p) => {
       const s = headcountSummaryByPeriod[p.id];
       const total = s.bumiputera + s.nonBumiputera;
@@ -269,18 +270,21 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                     <td colSpan={5} className="px-3 py-4 text-center text-xs text-[hsl(var(--pk-ink-faint))]">No department-level data for {period.label} yet.</td>
                   </tr>
                 ) : (
-                  bumiputeraProcurement.map((d) => (
-                    <tr key={d.dept} className="border-t border-[hsl(var(--pk-border))]">
-                      <td className="px-3 py-2 text-[hsl(var(--pk-ink-soft))]">{d.dept}</td>
-                      <td className="text-right px-3 py-2 tnum">{fmtRM(d.fyTarget)}</td>
-                      <td className="text-right px-3 py-2 tnum">{fmtRM(d.ytdTarget)}</td>
-                      <td className="text-right px-3 py-2 tnum">{fmtRM(d.ytdActual)}</td>
-                      <td className={cn("text-right px-3 py-2 tnum", d.variance < 0 && "text-[hsl(var(--pk-bad))]")}>{fmtRM(d.variance)}</td>
-                    </tr>
-                  ))
+                  bumiputeraProcurement.map((d) => {
+                    const notMet = d.variance < 0;
+                    return (
+                      <tr key={d.dept} className={cn("border-t border-[hsl(var(--pk-border))]", notMet && "bg-[hsl(var(--pk-bad-soft))]")}>
+                        <td className="px-3 py-2 text-[hsl(var(--pk-ink-soft))]">{d.dept}</td>
+                        <td className="text-right px-3 py-2 tnum">{fmtRM(d.fyTarget)}</td>
+                        <td className="text-right px-3 py-2 tnum">{fmtRM(d.ytdTarget)}</td>
+                        <td className="text-right px-3 py-2 tnum">{fmtRM(d.ytdActual)}</td>
+                        <td className={cn("text-right px-3 py-2 tnum font-semibold", notMet && "text-[hsl(var(--pk-bad))]")}>{fmtRM(d.variance)}</td>
+                      </tr>
+                    );
+                  })
                 )}
                 {bumiputeraProcurement.length > 0 && (
-                  <tr className="border-t border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] font-bold">
+                  <tr className={cn("border-t border-[hsl(var(--pk-border))] font-bold", procTotals.variance < 0 ? "bg-[hsl(var(--pk-bad-soft))]" : "bg-[hsl(var(--pk-surface-2))]")}>
                     <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">Total</td>
                     <td className="text-right px-3 py-2 tnum">{fmtRM(procTotals.fyTarget)}</td>
                     <td className="text-right px-3 py-2 tnum">{fmtRM(procTotals.ytdTarget)}</td>
