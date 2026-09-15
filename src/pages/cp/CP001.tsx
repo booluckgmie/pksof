@@ -1,19 +1,13 @@
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { Gauge } from "@/components/pk/Gauge";
-import { PerspectiveCard } from "@/components/pk/PerspectiveCard";
+import { KpiPerformanceTable } from "@/components/pk/KpiPerformanceTable";
 import { InfoTip } from "@/components/pk/InfoTip";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { kpis } from "@/data/kpis";
-import { perspectives } from "@/data/perspectives";
-import { perspectiveRollup } from "@/lib/scoring";
 import { periodById } from "@/data/periods";
-
-const PERSPECTIVE_SCREEN: Record<string, ScreenId> = {
-  FIN: "CP003", MG: "CP004", CUST: "CP005", IBP: "CP006", OC: "CP007", BE: "CP008",
-};
 
 export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId } = useSession();
@@ -73,22 +67,8 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </div>
       </div>
 
-      <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Strategic Perspectives Performance (YTD)</div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {perspectives.map((p) => {
-          const roll = perspectiveRollup(p.id, getResult);
-          return (
-            <PerspectiveCard
-              key={p.id}
-              name={p.name}
-              weight={p.weight}
-              achievement={roll.achievementPct}
-              kpiCount={roll.kpiCount}
-              onOpen={() => onNavigate(PERSPECTIVE_SCREEN[p.id])}
-            />
-          );
-        })}
-      </div>
+      <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Corporate KPI Performance Status (YTD)</div>
+      <KpiPerformanceTable getResult={getResult} onNavigate={onNavigate} />
     </div>
   );
 }
