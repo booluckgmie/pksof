@@ -291,11 +291,11 @@ def cp_rows():
             vals = series(a, "flat", decimals=dec, spread=0.08, floor=0) if a is not None else fresh_series(0.2, "flat", decimals=dec, floor=0, seed_key=name + sub)
             rows.append(("metric", "recruitment_index", name, sub, f"{name} — {sub.title()}", vals))
 
-    rows.append(("section", "Bumiputera Procurement (KPI 11 support, RM mil)", None))
+    rows.append(("section", "Bumiputera Procurement (KPI 11 support, RM)", None))
     for dept in ["Administration & Security", "Corporate Communications", "Information Technology"]:
-        for sub, dirn in [("fy_target", "flat"), ("ytd_actual", "growth")]:
+        for sub, dirn, base in [("fy_target", "flat", 250000), ("ytd_actual", "growth", 130000)]:
             a = anchors.get(("bumiputera_procurement", dept, sub))
-            vals = series(a, dirn, decimals=2, spread=0.1) if a is not None else fresh_series(0.3, dirn, decimals=2, seed_key=dept + sub)
+            vals = series(a, dirn, decimals=0, spread=0.1) if a is not None else fresh_series(base, dirn, decimals=0, seed_key=dept + sub)
             rows.append(("metric", "bumiputera_procurement", dept, sub, f"{dept} — {sub.replace('_', ' ').upper()}", vals))
 
     rows.append(("section", "Bumiputera Training (KPI 13 support)", None))
@@ -394,23 +394,83 @@ def fh_rows():
             vals = series(a, dirn, decimals=1, spread=0.08, floor=-999) if a is not None else fresh_series(base, dirn, decimals=1, floor=-999, seed_key=dim + dim2)
             rows.append(("metric", "pl_detail", dim, dim2, f"{label} — {dim2.upper()}", vals))
 
-    rows.append(("section", "Balance Sheet Trend (RM mil)", None))
-    for dim, label in [("shareholders_fund", "Shareholders' Fund"), ("total_liabilities", "Total Liabilities")]:
-        a = anchors.get(("balance_sheet", dim, ""))
-        vals = series(a, "growth", decimals=1) if a is not None else fresh_series(500, "growth", decimals=1, seed_key=dim)
-        rows.append(("metric", "balance_sheet", dim, "", label, vals))
-
-    rows.append(("section", "Balance Sheet Line Items (RM mil)", None))
-    for label, dim2 in [
-        ("Cash & Equivalents", "asset"), ("Fixed Income Investments", "asset"),
-        ("Receivables & Others", "asset"), ("Fixed Assets (Net)", "asset"),
-        ("Trade & Other Payables", "liability"), ("Deferred Revenue", "liability"),
-        ("Other Liabilities", "liability"),
+    rows.append(("section", "Financial Position — Key Items (RM '000)", None))
+    for dim, dim2, label, base, dirn in [
+        ("deferred_tax_asset", "asset", "Deferred Tax Asset", 3000, "growth"),
+        ("tax_recoverable", "asset", "Tax Recoverable", 1000, "flat"),
+        ("due_from_related", "asset", "Due from Related Corporations", 14000, "growth"),
+        ("other_investments", "asset", "Other Investments", 650000, "growth"),
+        ("share_capital", "equity", "Share Capital", 48000, "flat"),
+        ("lease_liabilities", "liability", "Lease Liabilities", 9000, "growth"),
+        ("provision_for_tax", "liability", "Provision for Taxation", 10000, "flat"),
     ]:
-        a = anchors.get(("balance_sheet_lines", label, dim2))
-        dirn = "growth" if dim2 == "asset" else "flat"
-        vals = series(a, dirn, decimals=1) if a is not None else fresh_series(10, dirn, decimals=1, seed_key=label)
-        rows.append(("metric", "balance_sheet_lines", label, dim2, f"{label} ({dim2})", vals))
+        a = anchors.get(("fp_main", dim, dim2))
+        vals = series(a, dirn, decimals=0, spread=0.08) if a is not None else fresh_series(base, dirn, decimals=0, seed_key=dim + dim2)
+        rows.append(("metric", "fp_main", dim, dim2, f"{label} ({dim2})", vals))
+
+    FP_BREAKDOWN_SECTIONS = [
+        ("property_equipment", "Financial Position — Property and Equipment (RM '000)", [
+            ("freehold_buildings", "Freehold Buildings", 800),
+            ("office_renovation", "Office Renovation", 1000),
+            ("computer_equipment", "Computer Equipment", 3000),
+            ("office_equipment", "Office Equipment", 130),
+            ("office_furniture_fittings", "Office Furniture & Fittings", 75),
+            ("motor_vehicles", "Motor Vehicles", 15),
+            ("work_in_progress", "Work in Progress", 450),
+        ]),
+        ("rou_assets", "Financial Position — Right-of-Use Assets (RM '000)", [
+            ("office_space", "Office Space", 7200),
+            ("notebook_computer", "Notebook Computer", 600),
+            ("server", "Server", 210),
+            ("photocopier", "Photocopier", 95),
+        ]),
+        ("receivables_deposits_prepayments", "Financial Position — Receivables, Deposits and Prepayments (RM '000)", [
+            ("trade_receivables", "Trade Receivables", 7000),
+            ("profit_receivables_placements", "Profit Receivables on Placements", 3000),
+            ("reimbursable_personnel_cost", "Reimbursable Personnel Cost", 2000),
+            ("other_receivables", "Other Receivables", 3000),
+            ("prepayments", "Prepayments", 2500),
+            ("deposits", "Deposits", 2100),
+            ("accrued_revenue", "Accrued Revenue", 200),
+            ("impairment_receivables", "Impairment of Receivables", -85),
+            ("expected_credit_loss", "Expected Credit Loss", -400),
+        ]),
+        ("cash_equivalents", "Financial Position — Cash and Cash Equivalents (RM '000)", [
+            ("cash_and_bank_balances", "Cash and Bank Balances", 1300),
+            ("deposits_and_placements", "Deposits and Placements", 38000),
+        ]),
+        ("other_payables", "Financial Position — Other Payables (RM '000)", [
+            ("staff_related_provisions", "Staff-Related Provisions", 15000),
+            ("service_tax", "Service Tax", 2500),
+            ("dividend_payable", "Dividend Payable", 1400),
+            ("accrued_expenses_other_payables", "Accrued Expenses and Other Payables", 3800),
+            ("due_to_related_corp", "Due to Related Corporations", 100),
+            ("external_auditors_fee", "External Auditors' Fee", 140),
+            ("deposits_sale_properties", "Deposits on Sale of Properties", 100),
+            ("tax_agent_fee", "Tax Agent's Fee", 20),
+        ]),
+    ]
+    for parent_key, section_title, leaves in FP_BREAKDOWN_SECTIONS:
+        rows.append(("section", section_title, None))
+        for dim2, label, base in leaves:
+            a = anchors.get(("fp_breakdown", parent_key, dim2))
+            dirn = "flat" if base < 0 else "growth"
+            vals = series(a, dirn, decimals=0, spread=0.08, floor=-9999) if a is not None else fresh_series(base, dirn, decimals=0, floor=-9999, seed_key=parent_key + dim2)
+            rows.append(("metric", "fp_breakdown", parent_key, dim2, label, vals))
+
+    rows.append(("section", "Financial Position — Effective Profit Rate on Cash (%)", None))
+    a = anchors.get(("fp_note", "cash_effective_rate", ""))
+    vals = series(a, "flat", decimals=2, spread=0.03) if a is not None else fresh_series(3.2, "flat", decimals=2, seed_key="cash_effective_rate")
+    rows.append(("metric", "fp_note", "cash_effective_rate", "", "Effective Profit Rate — Cash and Cash Equivalents", vals))
+
+    rows.append(("section", "Aging of Receivables (RM '000)", None))
+    for dim, label, base in [
+        ("current", "Current", 4000), ("d1_30", "1 – 30 days", 180), ("d31_60", "31 – 60 days", 100),
+        ("d61_90", "61 – 90 days", 3000), ("d91_120", "91 – 120 days", 5), ("over_120", "Over 120 days", 85),
+    ]:
+        a = anchors.get(("fp_aging_receivables", dim, ""))
+        vals = series(a, "flat", decimals=0, spread=0.1, floor=0) if a is not None else fresh_series(base, "flat", decimals=0, floor=0, seed_key=dim)
+        rows.append(("metric", "fp_aging_receivables", dim, "", label, vals))
 
     rows.append(("section", "Receivables Aging (RM '000)", None))
     for label, dim, base in [
@@ -537,7 +597,7 @@ SCREEN_FOR = {
     "Client Satisfaction (KPI 5 support)": "CP005 Customer — External Client Satisfaction",
     "Time Charter Compliance (KPI 6 support, % per department)": "CP005 Customer — Time Charter Compliance department scoring + drilldown",
     "Recruitment Efficiency Index (KPI 9 support)": "CP007 Organisational Capacity · RP001 Section B — component scorecard",
-    "Bumiputera Procurement (KPI 11 support, RM mil)": "CP008 Bumiputera Empowerment — Procurement tab",
+    "Bumiputera Procurement (KPI 11 support, RM)": "CP008 Bumiputera Empowerment — Procurement tab (per-department table)",
     "Bumiputera Training (KPI 13 support)": "CP008 Bumiputera Empowerment — Training tab",
     "Financial Trend (RM mil / %)": "CP003 Financial Perspective (PBT/CIR charts) · PFH002 Financial Results QoQ",
     "Actual vs Budget vs Prior Year (RM mil)": "PFH003 Actual vs Budget vs PY",
@@ -546,8 +606,14 @@ SCREEN_FOR = {
     "Administrative Expense Detail (RM '000)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
     "Personnel Expense Detail (RM '000)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
     "P&L Detail below PBT (RM mil)": "PFH002 Financial Results — income statement below PBT (Actual vs Budget)",
-    "Balance Sheet Trend (RM mil)": "PFH004 Assets & Liabilities — balance sheet trend chart",
-    "Balance Sheet Line Items (RM mil)": "PFH004 Assets & Liabilities — asset/liability breakdown",
+    "Financial Position — Key Items (RM '000)": "PFH004 Financial Position — key balance sheet items",
+    "Financial Position — Property and Equipment (RM '000)": "PFH004 Financial Position — Property and Equipment note",
+    "Financial Position — Right-of-Use Assets (RM '000)": "PFH004 Financial Position — Right-of-Use Assets note",
+    "Financial Position — Receivables, Deposits and Prepayments (RM '000)": "PFH004 Financial Position — Receivables, Deposits and Prepayments note",
+    "Financial Position — Cash and Cash Equivalents (RM '000)": "PFH004 Financial Position — Cash and Cash Equivalents note",
+    "Financial Position — Other Payables (RM '000)": "PFH004 Financial Position — Other Payables note",
+    "Financial Position — Effective Profit Rate on Cash (%)": "PFH004 Financial Position — Cash and Cash Equivalents note",
+    "Aging of Receivables (RM '000)": "PFH004 Financial Position — Aging of Receivables table",
     "Receivables Aging (RM '000)": "Not yet displayed — entered for a future MEC-report drill-down (see supabase/README.md §Entry-only)",
     "Related Party Transactions (RM '000)": "PFH005 Related Party Transactions table (only quarters actually filed carry a figure — leave others blank)",
     "PBT Breakdown (RM mil)": "CP003 Financial Perspective — PBT card drill-down",
@@ -619,6 +685,8 @@ def build_workbook(qi: int, pillar: str) -> openpyxl.Workbook:
         ("counts, not a uniform number) stay entered directly in-app on CP004.", 11, False, "333333"),
         ("The Variance Commentary notes (PFH003) are also entered directly in-app — a commentary sentence per line, not a", 11, False, "333333"),
         ("number, so it doesn't fit this template's one-number-per-quarter column.", 11, False, "333333"),
+        ("PFH004's Other Investments deal schedule (each deal's own bank, dates, rating, instrument, tenure and interest", 11, False, "333333"),
+        ("rate) stays entered directly in-app too — it's a list of deals, not one figure per quarter.", 11, False, "333333"),
         ("No conditional formatting or colour-coded cells are used anywhere in this workbook — every figure is a plain", 11, False, "333333"),
         ("number, entered here and read as-is; status colours on the dashboard itself are computed from the value, not", 11, False, "333333"),
         ("carried in the file.", 11, False, "333333"),

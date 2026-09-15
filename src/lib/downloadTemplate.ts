@@ -115,6 +115,7 @@ export async function downloadPillarTemplate(module: Module, periodId: PeriodId,
     { text: "Initiative lists (Process/Tech Initiatives, People Development Programme) stay entered directly in-app — each row is a name, a date range and a status, not one number per quarter.", size: 11, bold: false, color: BODY },
     { text: "For Managed Entities KPI Detail and Governance KPI Detail, only the scored figures (Rating/Weighted) are here — the item catalog and its FY/YTD Target and YTD Actual wording (a mix of %, ratings and counts, not a uniform number) stay entered directly in-app on CP004.", size: 11, bold: false, color: BODY },
     { text: "The Variance Commentary notes (PFH003) are also entered directly in-app — a commentary sentence per line, not a number.", size: 11, bold: false, color: BODY },
+    { text: "PFH004's Other Investments deal schedule (each deal's own bank, dates, rating, instrument, tenure and interest rate) stays entered directly in-app too — it's a list of deals, not one figure per quarter.", size: 11, bold: false, color: BODY },
     { text: "", size: 11, bold: false, color: BODY },
     { text: "No conditional formatting or colour-coded cells are used anywhere in this workbook — every figure is a plain number; status colours on the dashboard itself are computed from the value, not carried in the file.", size: 11, bold: false, color: BODY },
   ]);
