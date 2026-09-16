@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+import { ChevronDown } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { StackedBarTrend } from "@/components/pk/Charts";
@@ -15,6 +17,9 @@ import { periods, periodById } from "@/data/periods";
 import { useState } from "react";
 import type { PeriodId } from "@/types";
 
+const TH_CLASS = "text-left font-bold px-3 py-2.5 whitespace-nowrap";
+const TH_RIGHT_CLASS = "text-right font-bold px-3 py-2.5 whitespace-nowrap";
+
 /** Mean of a department's own quarters that actually have a score — used both for the table's
  * trailing average column and to label it: two quarters reads as a half-year ("1H"), matching how
  * the client's own report names it; any other count falls back to a generic "Average". */
@@ -28,8 +33,9 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   // Local to this screen only — see CP003's own Reporting period filter for why.
   const [periodId, setPeriodId] = useState<PeriodId>(useCurrentPeriodId());
   const [compareIds, setCompareIds] = useState<PeriodId[]>([]);
+  const [showServiceDetail, setShowServiceDetail] = useState(false);
   const { latestValue } = useWorkflow();
-  const { timeCharterByDept } = useDetails();
+  const { timeCharterByDept, clientSatisfactionServicesFor } = useDetails();
   const { getFyTarget } = useKpiTargets();
   const kpi5 = latestValue("KPI5", entityId, periodId);
   const kpi6 = latestValue("KPI6", entityId, periodId);
@@ -53,6 +59,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   const avgLabel = timeCharterByDept.periods.length === 2 ? `1H ${periodById(timeCharterByDept.periods[1].id).fy.replace("FY", "")}` : "Average";
   const overallAvg = meanOf(timeCharterByDept.overallByPeriod);
+  const serviceBreakdown = clientSatisfactionServicesFor(periodId);
 
   return (
     <div>
@@ -78,7 +85,17 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-6 gap-5 items-start">
         <div className="lg:col-span-2 flex flex-col gap-5">
-          <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5">
+          <section
+            role="button"
+            tabIndex={0}
+            onClick={() => serviceBreakdown.hasData && setShowServiceDetail((v) => !v)}
+            onKeyDown={(e) => { if (serviceBreakdown.hasData && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setShowServiceDetail((v) => !v); } }}
+            className={cn(
+              "text-left rounded-xl border bg-[hsl(var(--pk-surface))] shadow-card p-5 transition-colors",
+              serviceBreakdown.hasData && "cursor-pointer",
+              showServiceDetail ? "border-[hsl(var(--pk-accent))]" : "border-[hsl(var(--pk-border))] hover:bg-[hsl(var(--pk-surface-2))]"
+            )}
+          >
             <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
               <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 5 · Weight 7.5% · bi-annual</div>
               <StatusChip status={kpi5.status} />
@@ -107,6 +124,14 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               </div>
               <StackedBarTrend data={satisfactionTrend} />
             </div>
+            {serviceBreakdown.hasData && (
+              <div className="flex items-center justify-end mt-2">
+                <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
+                  {showServiceDetail ? "Hide service breakdown" : "View service breakdown"}
+                  <ChevronDown className={cn("h-3 w-3 transition-transform", showServiceDetail && "rotate-180")} />
+                </span>
+              </div>
+            )}
           </section>
         </div>
 
@@ -169,6 +194,79 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
         )}
       </div>
+
+      {showServiceDetail && serviceBreakdown.hasData && (
+        <>
+          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2 mt-5">External Client Satisfaction — Service Breakdown</div>
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
+            <table className="w-full text-sm min-w-[760px]">
+              <thead>
+                <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))] divide-x divide-white/15">
+                  <th rowSpan={2} className={cn(TH_CLASS, "align-bottom")}>Services</th>
+                  <th rowSpan={2} className={cn(TH_RIGHT_CLASS, "align-bottom")}>Prior Rating</th>
+                  <th colSpan={4} className="text-center font-bold px-3 py-1.5 border-b border-white/15">Current Analysis</th>
+                </tr>
+                <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))] divide-x divide-white/15">
+                  <th className={TH_RIGHT_CLASS}>Avg Service Rating</th>
+                  <th className={TH_RIGHT_CLASS}>Surveys Sent</th>
+                  <th className={TH_RIGHT_CLASS}>Responses Received</th>
+                  <th className={TH_RIGHT_CLASS}>% of Responses</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(() => {
+                  let lastCategory = "";
+                  return serviceBreakdown.services.map((s) => {
+                    const showCategory = s.category !== lastCategory;
+                    lastCategory = s.category;
+                    return (
+                      <Fragment key={s.service}>
+                        {showCategory && (
+                          <tr>
+                            <td colSpan={6} className="pt-2.5 pb-1 px-3 text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-medium bg-[hsl(var(--pk-surface-2))]">
+                              {s.category}
+                            </td>
+                          </tr>
+                        )}
+                        <tr className="border-t border-[hsl(var(--pk-border))] divide-x divide-[hsl(var(--pk-border))]">
+                          <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">{s.service}</td>
+                          <td className="px-3 py-2 text-right tnum text-[hsl(var(--pk-ink-faint))]">{s.priorRating !== null ? s.priorRating.toFixed(1) : "—"}</td>
+                          <td className="px-3 py-2 text-right tnum font-medium">
+                            {s.rating !== null ? (
+                              <span className="inline-flex items-center gap-1.5 justify-end">
+                                {s.rating.toFixed(1)}
+                                <span className="text-[hsl(var(--pk-accent))] font-normal">{s.band}</span>
+                              </span>
+                            ) : "—"}
+                          </td>
+                          <td className="px-3 py-2 text-right tnum">{s.sent ?? "—"}</td>
+                          <td className="px-3 py-2 text-right tnum">{s.received ?? "—"}</td>
+                          <td className="px-3 py-2 text-right tnum">{s.responseRate !== null ? `${s.responseRate}%` : "—"}</td>
+                        </tr>
+                      </Fragment>
+                    );
+                  });
+                })()}
+                {serviceBreakdown.total && (
+                  <tr className="border-t-2 border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] font-semibold divide-x divide-[hsl(var(--pk-border))]">
+                    <td className="px-3 py-2.5">Corp. Average Rating</td>
+                    <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.priorRating !== null ? serviceBreakdown.total.priorRating.toFixed(1) : "—"}</td>
+                    <td className="px-3 py-2.5 text-right tnum">
+                      <span className="inline-flex items-center gap-1.5 justify-end">
+                        {serviceBreakdown.total.rating !== null ? serviceBreakdown.total.rating.toFixed(1) : "—"}
+                        <span className="text-[hsl(var(--pk-accent))] font-normal">{serviceBreakdown.total.band}</span>
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.sent ?? "—"}</td>
+                    <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.received ?? "—"}</td>
+                    <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.responseRate !== null ? `${serviceBreakdown.total.responseRate}%` : "—"}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   );
 }

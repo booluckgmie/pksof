@@ -781,6 +781,67 @@ export function useDetails() {
     return { fyTarget: row?.valueNum ?? 4.7, ytdActual: row?.valueNum2 ?? null, note: row?.textNote ?? "" };
   }, [records, entityId]);
 
+  /** External Client Satisfaction (KPI 5) per-service survey breakdown — matches the client's own
+   * "Appendix — External Client Satisfaction Rating" report exactly: a fixed catalog of services
+   * grouped into 3 categories, each carrying a prior-year comparison rating, the current average
+   * service rating, and the survey's own sent/received counts (packed into textNote as
+   * "sent|received" since detail_records only carries two numeric slots). The bi-annual survey
+   * doesn't run every quarter — hasData is false whenever this period has no rows at all. */
+  const CLIENT_SATISFACTION_CATALOG: { category: string; service: string }[] = [
+    { category: 'Managed Entities ("MEs") & Committee', service: "DINB" },
+    { category: 'Managed Entities ("MEs") & Committee', service: "GovCo" },
+    { category: 'Managed Entities ("MEs") & Committee', service: "SJPP" },
+    { category: 'Managed Entities ("MEs") & Committee', service: "SJKP" },
+    { category: 'Managed Entities ("MEs") & Committee', service: "CDRC" },
+    { category: "Advisory", service: "Corp. Advisory" },
+    { category: "Support Services", service: "Finance Outsourcing" },
+    { category: "Support Services", service: "Secretarial Services" },
+    { category: "Support Services", service: "IT Services" },
+    { category: "Support Services", service: "SAP Services" },
+  ];
+
+  function ratingBand(rating: number | null): string {
+    if (rating === null) return "";
+    if (rating >= 4.5) return "Excellent";
+    if (rating >= 4.0) return "Very Good";
+    if (rating >= 3.5) return "Good";
+    if (rating >= 3.0) return "Satisfactory";
+    return "Needs Improvement";
+  }
+
+  function splitSentReceived(textNote: string | null) {
+    const [sentStr, receivedStr] = (textNote ?? "").split("|");
+    const sent = sentStr ? Number(sentStr) : null;
+    const received = receivedStr ? Number(receivedStr) : null;
+    return { sent, received, responseRate: sent && received !== null ? Math.round((received / sent) * 100) : null };
+  }
+
+  function clientSatisfactionServicesFor(periodId: PeriodId) {
+    const rows = recordRows("client_satisfaction_service").filter((r) => r.periodId === periodId);
+    const byService = (service: string) => rows.find((r) => r.label === service);
+    const services = CLIENT_SATISFACTION_CATALOG.map(({ category, service }) => {
+      const r = byService(service);
+      return {
+        category,
+        service,
+        priorRating: r?.valueNum2 ?? null,
+        rating: r?.valueNum ?? null,
+        band: ratingBand(r?.valueNum ?? null),
+        ...splitSentReceived(r?.textNote ?? null),
+      };
+    });
+    const totalRow = byService("Corp. Average Rating");
+    const total = totalRow
+      ? {
+          priorRating: totalRow.valueNum2,
+          rating: totalRow.valueNum,
+          band: ratingBand(totalRow.valueNum),
+          ...splitSentReceived(totalRow.textNote),
+        }
+      : null;
+    return { services, total, hasData: rows.length > 0 };
+  }
+
   /** Per-department quarterly scoring — replaces the old flat SLA-target list. One row per
    * department per quarter (metric_key "time_charter_dept_score", dimension = department name,
    * value = that quarter's score), so the screen can both trend the Group average by quarter and
@@ -906,7 +967,7 @@ export function useDetails() {
     resignedByPeriod, turnoverTrend, bumiputeraTrainingByPeriod,
     quarterlyTrend, monthlyTrendFor, actualVsBudget, financialResultsFor, varianceCommentary, relatedPartyTransactionsUpTo,
     financialPositionFor, financialPositionBreakdownFor, agingOfReceivablesFor, otherInvestmentsDealsFor, cashEffectiveRateFor,
-    managedEntityRatingsFor, managedEntityKpiDetailFor, managedEntityKpiQuarterlyFor, clientSatisfaction, timeCharterByDept, governanceKpiFor,
+    managedEntityRatingsFor, managedEntityKpiDetailFor, managedEntityKpiQuarterlyFor, clientSatisfaction, clientSatisfactionServicesFor, timeCharterByDept, governanceKpiFor,
     processInitiatives, techInitiatives, bumiputeraProcurementFor, peopleDevRecordsFor,
     pbtBreakdown, cirBreakdown,
   };
