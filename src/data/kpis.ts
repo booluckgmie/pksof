@@ -14,12 +14,12 @@ export const kpis: KpiExt[] = [
   { id: "KPI5", no: 5, name: "External Client Satisfaction", perspective: "CUST", weight: 0.075, unit: "rating /5", fyTarget: 4.7, direction: "higher", formulaNote: "Bi-annual survey", dataOwner: "Corporate Communications" },
   { id: "KPI6", no: 6, name: "Time Charter Compliance", perspective: "CUST", weight: 0.075, unit: "%", fyTarget: 95.0, direction: "higher", formulaNote: "Service-level compliance, quarterly", dataOwner: "Operations" },
   { id: "KPI7", no: 7, name: "Process Improvements", perspective: "IBP", weight: 0.10, unit: "initiatives", fyTarget: 3, direction: "higher", formulaNote: "Count of completed initiatives", dataOwner: "Operational Excellence" },
-  { id: "KPI8", no: 8, name: "New Technology Implementation", perspective: "IBP", weight: 0.10, unit: "initiatives", fyTarget: 6, direction: "higher", formulaNote: "Count of completed initiatives", dataOwner: "IT Department" },
+  { id: "KPI8", no: 8, name: "New Technology Implementation", perspective: "IBP", weight: 0.10, unit: "initiatives", fyTarget: 7, direction: "higher", formulaNote: "Count of completed initiatives", dataOwner: "IT Department" },
   { id: "KPI9", no: 9, name: "Recruitment Efficiency Index", perspective: "OC", weight: 0.10, unit: "%", fyTarget: 80.0, direction: "higher", formulaNote: "TTH 20% + MRF Fulfilment 20% + Quality of Hire 40% + Offer Acceptance 20%", dataOwner: "Human Resource" },
   { id: "KPI10", no: 10, name: "People Development Programme", perspective: "OC", weight: 0.10, unit: "%", fyTarget: 100.0, direction: "higher", formulaNote: "Programme completion rate", dataOwner: "Human Resource" },
-  { id: "KPI11", no: 11, name: "Bumiputera Procurement", perspective: "BE", weight: 0.0167, unit: "RM mil", fyTarget: 2.2, direction: "higher", formulaNote: "YTD Actual ÷ FY Target × Weight", dataOwner: "Administration & Security" },
+  { id: "KPI11", no: 11, name: "Bumiputera Procurement", perspective: "BE", weight: 0.0167, unit: "RM mil", fyTarget: 2.5, direction: "higher", formulaNote: "YTD Actual ÷ FY Target × Weight", dataOwner: "Administration & Security" },
   { id: "KPI12", no: 12, name: "Bumiputera Composition", perspective: "BE", weight: 0.0167, unit: "%", fyTarget: 70.0, direction: "higher", formulaNote: "Bumiputera staff ÷ Total staff × 100", dataOwner: "Human Resource" },
-  { id: "KPI13", no: 13, name: "Bumiputera Training", perspective: "BE", weight: 0.0166, unit: "staff", fyTarget: 120, direction: "higher", formulaNote: "Staff completing ≥2 registered programmes", dataOwner: "Human Resource" },
+  { id: "KPI13", no: 13, name: "Bumiputera Training", perspective: "BE", weight: 0.0166, unit: "staff", fyTarget: 129, direction: "higher", formulaNote: "Staff completing ≥2 registered programmes", dataOwner: "Human Resource" },
 ];
 
 export const kpiById = (id: string) => kpis.find((k) => k.id === id)!;
