@@ -263,11 +263,21 @@ def cp_rows():
         vals = series(weighted_a, "flat", decimals=1, spread=0.08, floor=0) if weighted_a is not None else fresh_series(15, "flat", decimals=1, floor=0, seed_key=item)
         rows.append(("record", "governance_kpi", item, "", f"{item} — Weighted", vals, "valueNum2"))
 
-    rows.append(("section", "Client Satisfaction (KPI 5 support)", None))
-    cs_target, cs_actual, _ = record_anchors.get(("client_satisfaction", "", "External Client Satisfaction"), (None, None, None))
-    for label_suffix, field, a, base in [("FY TARGET", "valueNum", cs_target, 4.7), ("YTD ACTUAL", "valueNum2", cs_actual, 4.5)]:
-        vals = series(a, "flat", decimals=1, spread=0.03) if a is not None else fresh_series(base, "flat", decimals=1, seed_key="client_satisfaction" + field)
-        rows.append(("record", "client_satisfaction", "External Client Satisfaction", "", f"External Client Satisfaction — {label_suffix}", vals, field))
+    # Per-service rating only -- the prior-year comparison rating and the survey's sent/received
+    # counts are packed together in this record's own textNote (not split into templatable
+    # fields), so -- same as the item catalog on Managed Entities/Governance above -- they stay
+    # entered directly in-app (CP005). Real data only exists for Q4FY25 (the client's own
+    # "Appendix -- External Client Satisfaction Rating" report); the bi-annual survey didn't run
+    # in Q1FY26 or Q2FY26, so every other quarter is legitimately blank, not a projection.
+    rows.append(("section", "External Client Satisfaction — Service Breakdown (KPI 5 support)", None))
+    CLIENT_SATISFACTION_Q4FY25 = {
+        "DINB": 4.6, "GovCo": 4.0, "SJPP": 4.6, "SJKP": 4.6, "CDRC": 4.7,
+        "Corp. Advisory": 5.0, "Finance Outsourcing": 4.8, "Secretarial Services": 4.8,
+        "IT Services": 4.6, "SAP Services": 4.9, "Corp. Average Rating": 4.7,
+    }
+    for service, q4fy25_rating in CLIENT_SATISFACTION_Q4FY25.items():
+        vals = [None, None, q4fy25_rating, None, None]
+        rows.append(("record", "client_satisfaction_service", service, "", f"{service} — Rating", vals, "valueNum"))
 
     rows.append(("section", "Time Charter Compliance (KPI 6 support, % per department)", None))
     for dept in [
@@ -594,7 +604,7 @@ SCREEN_FOR = {
     "KPI Scorecard": "Main · every CP/PFH/RP screen for that KPI's own perspective",
     "Managed Entities KPI Detail (KPI 3 support)": "CP004 Mandate & Governance — Managed Entities Performance Summary table (per-entity, per-item Rating/Weighted; item catalog + targets stay in-app)",
     "Governance KPI Detail (KPI 4 support)": "CP004 Mandate & Governance — Governance Index panel (Weighted score only; FY Target/YTD Actual/Achievement text stays in-app)",
-    "Client Satisfaction (KPI 5 support)": "CP005 Customer — External Client Satisfaction",
+    "External Client Satisfaction — Service Breakdown (KPI 5 support)": "CP005 Customer — External Client Satisfaction service breakdown (bi-annual survey; item catalog and prior-year/response-count columns stay in-app)",
     "Time Charter Compliance (KPI 6 support, % per department)": "CP005 Customer — Time Charter Compliance department scoring + drilldown",
     "Recruitment Efficiency Index (KPI 9 support)": "CP007 Organisational Capacity · RP001 Section B — component scorecard",
     "Bumiputera Procurement (KPI 11 support, RM)": "CP008 Bumiputera Empowerment — Procurement tab (per-department table)",
@@ -683,6 +693,8 @@ def build_workbook(qi: int, pillar: str) -> openpyxl.Workbook:
         ("For Managed Entities KPI Detail and Governance KPI Detail, only the scored figures (Rating/Weighted) are here —", 11, False, "333333"),
         ("the item catalog (No./Section/description) and its FY/YTD Target and YTD Actual wording (a mix of %, ratings and", 11, False, "333333"),
         ("counts, not a uniform number) stay entered directly in-app on CP004.", 11, False, "333333"),
+        ("Likewise for External Client Satisfaction's service breakdown: only the current rating is here — each service's", 11, False, "333333"),
+        ("prior-year comparison rating and survey sent/received counts stay entered directly in-app on CP005.", 11, False, "333333"),
         ("The Variance Commentary notes (PFH003) are also entered directly in-app — a commentary sentence per line, not a", 11, False, "333333"),
         ("number, so it doesn't fit this template's one-number-per-quarter column.", 11, False, "333333"),
         ("PFH004's Other Investments deal schedule (each deal's own bank, dates, rating, instrument, tenure and interest", 11, False, "333333"),
