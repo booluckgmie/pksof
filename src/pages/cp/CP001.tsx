@@ -1,6 +1,7 @@
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { Gauge } from "@/components/pk/Gauge";
 import { KpiPerformanceTable } from "@/components/pk/KpiPerformanceTable";
+import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { InfoTip } from "@/components/pk/InfoTip";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
@@ -61,7 +62,9 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Corporate KPI Performance Status (YTD)</div>
-      <KpiPerformanceTable getResult={getResult} onNavigate={onNavigate} />
+      <DownloadableFrame filename="cp001-kpi-performance-status">
+        <KpiPerformanceTable getResult={getResult} onNavigate={onNavigate} />
+      </DownloadableFrame>
     </div>
   );
 }

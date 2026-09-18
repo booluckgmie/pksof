@@ -107,10 +107,10 @@ function UserMenu() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="text-2xs text-[hsl(var(--pk-ink-faint))] font-normal">Switch role (demo)</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-2xs text-[hsl(var(--pk-ink-faint))] font-normal">Switch role</DropdownMenuLabel>
         {UPLOADER_ROLES.map((r) => (
           <DropdownMenuItem key={r.id} disabled={r.id === role} onClick={() => switchRole(r)} className="cursor-pointer">
-            Login as {r.label}
+            {r.label}
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />

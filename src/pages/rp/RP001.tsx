@@ -2,6 +2,7 @@ import { ChevronRight } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatCard } from "@/components/pk/Misc";
 import { CategoryBar, BarTrend } from "@/components/pk/Charts";
+import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { RecruitmentIndexScorecard } from "@/components/pk/RecruitmentIndexScorecard";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
@@ -49,7 +50,15 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <DurationFilterBar duration={duration} onChange={setDuration} total={fullHeadcountTrend.length} label="" />
           </div>
           <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-2">Actual headcount (HRMS) vs approved establishment</div>
-          <BarTrend data={headcountTrend.map((h) => ({ label: h.period.replace(" FY", " '"), value: h.actual }))} />
+          <DownloadableFrame
+            filename="rp001-headcount-trend"
+            csvData={{
+              headers: ["Period", "Actual Headcount"],
+              rows: headcountTrend.map((h) => [h.period, h.actual]),
+            }}
+          >
+            <BarTrend data={headcountTrend.map((h) => ({ label: h.period.replace(" FY", " '"), value: h.actual }))} />
+          </DownloadableFrame>
         </div>
         <button onClick={() => onNavigate("RP001A")} className="group rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 text-left hover:border-[hsl(var(--pk-accent))] transition-colors">
           <div className="flex items-center justify-between mb-2">
