@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
@@ -13,7 +13,6 @@ import { useDetails } from "@/lib/details";
 import { useKpiTargets } from "@/lib/kpiTargets";
 import { useCurrentPeriodId } from "@/lib/orgSettings";
 import { periodById } from "@/data/periods";
-import { useState } from "react";
 import type { PeriodId } from "@/types";
 
 /** KPI 5's own survey years that predate this dashboard's data (only FY2025 onward is tracked
@@ -25,6 +24,8 @@ const KPI5_DUMMY_HISTORY: { fy: string; target: number; actual: number }[] = [
 
 const TH_CLASS = "text-left font-bold px-3 py-2.5 whitespace-nowrap";
 const TH_RIGHT_CLASS = "text-right font-bold px-3 py-2.5 whitespace-nowrap";
+
+type Expanded = "kpi5" | "kpi6" | null;
 
 /** Mean of a department's own quarters that actually have a score — used both for the table's
  * trailing average column and to label it: two quarters reads as a half-year ("1H"), matching how
@@ -39,7 +40,11 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   // Local to this screen only — see CP003's own Reporting period filter for why.
   const [periodId, setPeriodId] = useState<PeriodId>(useCurrentPeriodId());
   const [compareIds, setCompareIds] = useState<PeriodId[]>([]);
-  const [showServiceDetail, setShowServiceDetail] = useState(false);
+  const [expanded, setExpanded] = useState<Expanded>(null);
+  const toggle = (key: Exclude<Expanded, null>) => setExpanded((e) => (e === key ? null : key));
+  const onToggleKeyDown = (key: Exclude<Expanded, null>) => (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(key); }
+  };
   const { latestValue } = useWorkflow();
   const { timeCharterByDept, clientSatisfactionServicesFor } = useDetails();
   const { getFyTarget } = useKpiTargets();
@@ -86,7 +91,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     <div>
       <ScreenHeader id="CP005" subtitle="Customer Perspective performance for Management and Board reporting. Weight 15.0% · 2 KPIs." periodId={periodId} onNavigate={onNavigate} />
 
-      <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+      <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2">
         <div className="flex items-center gap-2">
           <span className="text-2xs text-[hsl(var(--pk-ink-faint))]">Reporting period</span>
           <PeriodPickerCompact periodId={periodId} onChange={setPeriodId} />
@@ -104,118 +109,97 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         ]}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-6 gap-5 items-start">
-        <div className="lg:col-span-2 flex flex-col gap-5">
-          <section
-            role="button"
-            tabIndex={0}
-            onClick={() => serviceBreakdown.hasData && setShowServiceDetail((v) => !v)}
-            onKeyDown={(e) => { if (serviceBreakdown.hasData && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setShowServiceDetail((v) => !v); } }}
-            className={cn(
-              "text-left rounded-xl border bg-[hsl(var(--pk-surface))] shadow-card p-5 transition-colors",
-              serviceBreakdown.hasData && "cursor-pointer",
-              showServiceDetail ? "border-[hsl(var(--pk-accent))]" : "border-[hsl(var(--pk-border))] hover:bg-[hsl(var(--pk-surface-2))]"
-            )}
-          >
-            <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-              <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 5 · Weight 7.5% · bi-annual</div>
-              <StatusChip status={kpi5.status} />
-            </div>
-            <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">External Client Satisfaction</div>
-            <div className={cn("tnum font-head text-2xl font-semibold mb-3", kpi5.ytdActual !== null ? "text-[hsl(var(--pk-ink))]" : "text-[hsl(var(--pk-ink-faint))]")}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => toggle("kpi5")}
+          onKeyDown={onToggleKeyDown("kpi5")}
+          className={cn(
+            "text-left rounded-lg border bg-[hsl(var(--pk-surface))] shadow-card p-4 cursor-pointer transition-colors",
+            expanded === "kpi5" ? "border-[hsl(var(--pk-accent))]" : "border-[hsl(var(--pk-border))] hover:bg-[hsl(var(--pk-surface-2))]"
+          )}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 5 · Weight 7.5% · bi-annual</div>
+            <StatusChip status={kpi5.status} />
+          </div>
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">External Client Satisfaction</div>
+          <div className="flex items-baseline gap-2 mb-2">
+            <span className={cn("tnum font-head text-2xl font-semibold", kpi5.ytdActual !== null ? "text-[hsl(var(--pk-ink))]" : "text-[hsl(var(--pk-ink-faint))]")}>
               {kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
-              <span className="text-sm font-head font-normal text-[hsl(var(--pk-ink-faint))]"> / target {kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}</span>
+            </span>
+            <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}</span>
+          </div>
+          <KpiMetricStrip
+            fy={fy}
+            periodLabel={kpi5PeriodLabel}
+            fyTarget={kpi5FyTarget.toFixed(1)}
+            ytdTarget={kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}
+            ytdActual={kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
+            achievement={kpi5.weighted !== null ? `${(kpi5.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi5.status}
+          />
+          {kpi5.ytdActual === null && (
+            <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-1">{kpi5.note ?? "Not yet reported for this year."}</p>
+          )}
+          <div className="mt-2 pt-3 border-t border-[hsl(var(--pk-border))]">
+            <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Historical trend (by year)</div>
+            <StackedBarTrend data={satisfactionYearlyTrend} />
+          </div>
+          {serviceBreakdown.hasData && (
+            <div className="flex items-center justify-end mt-2">
+              <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
+                {expanded === "kpi5" ? "Hide service breakdown" : "View service breakdown"}
+                <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "kpi5" && "rotate-180")} />
+              </span>
             </div>
-            <KpiMetricStrip
-              fy={fy}
-              periodLabel={kpi5PeriodLabel}
-              fyTarget={kpi5FyTarget.toFixed(1)}
-              ytdTarget={kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}
-              ytdActual={kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
-              achievement={kpi5.weighted !== null ? `${(kpi5.weighted * 100).toFixed(1)}%` : "—"}
-              status={kpi5.status}
-            />
-            {kpi5.ytdActual === null && (
-              <p className="text-xs text-[hsl(var(--pk-ink-faint))] mb-1">{kpi5.note ?? "Not yet reported for this year."}</p>
-            )}
-            <div className="mt-2 pt-4 border-t border-[hsl(var(--pk-border))]">
-              <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Historical trend (by year)</div>
-              <StackedBarTrend data={satisfactionYearlyTrend} />
-            </div>
-            {serviceBreakdown.hasData && (
-              <div className="flex items-center justify-end mt-2">
-                <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
-                  {showServiceDetail ? "Hide service breakdown" : "View service breakdown"}
-                  <ChevronDown className={cn("h-3 w-3 transition-transform", showServiceDetail && "rotate-180")} />
-                </span>
-              </div>
-            )}
-          </section>
+          )}
         </div>
 
-        {timeCharterByDept.periods.length > 0 && (
-          <div className="lg:col-span-4 flex flex-col gap-5">
-            <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5">
-              <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-                <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 6 · Weight 7.5% · quarterly</div>
-                <StatusChip status={kpi6.status} />
-              </div>
-              <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-3">Time Charter Compliance</div>
-              <KpiMetricStrip
-                fy={fy}
-                periodLabel={periodLabel}
-                fyTarget={`${kpi6FyTarget.toFixed(1)}%`}
-                ytdTarget={kpi6.ytdTarget !== null ? `${kpi6.ytdTarget.toFixed(1)}%` : "—"}
-                ytdActual={kpi6.ytdActual !== null ? `${kpi6.ytdActual.toFixed(1)}%` : "—"}
-                achievement={kpi6.weighted !== null ? `${(kpi6.weighted * 100).toFixed(1)}%` : "—"}
-                status={kpi6.status}
-              />
-              <p className="text-2xs text-[hsl(var(--pk-ink-faint))]">Group average across {timeCharterByDept.departments.length || "—"} departments, scored quarterly.</p>
-            </section>
-
-            <section className="rounded-xl border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5">
-              <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Summary of Results</div>
-              <div className="rounded-lg border border-[hsl(var(--pk-border))] overflow-x-auto">
-                <table className="w-full text-sm min-w-[560px]">
-                  <thead>
-                    <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
-                      <th className="text-left font-medium px-3 py-2.5 w-10">No</th>
-                      <th className="text-left font-medium px-3 py-2.5">Departments</th>
-                      {timeCharterByDept.periods.map((p) => (
-                        <th key={p.id} className="text-right font-medium px-3 py-2.5">{p.label}</th>
-                      ))}
-                      <th className="text-right font-medium px-3 py-2.5">{avgLabel}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {timeCharterByDept.departments.map((d, i) => (
-                      <tr key={d.department} className="border-t border-[hsl(var(--pk-border))]">
-                        <td className="px-3 py-2 text-[hsl(var(--pk-ink-faint))]">{i + 1}</td>
-                        <td className="px-3 py-2 font-medium text-[hsl(var(--pk-ink))]">{d.department}</td>
-                        {d.scores.map((v, j) => (
-                          <td key={timeCharterByDept.periods[j].id} className="text-right px-3 py-2 tnum text-[hsl(var(--pk-accent))]">{v !== null ? `${v.toFixed(1)}%` : "—"}</td>
-                        ))}
-                        <td className="text-right px-3 py-2 tnum font-semibold text-[hsl(var(--pk-accent))]">{(() => { const m = meanOf(d.scores); return m !== null ? `${m.toFixed(1)}%` : "—"; })()}</td>
-                      </tr>
-                    ))}
-                    <tr className="border-t-2 border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] font-semibold">
-                      <td className="px-3 py-2" colSpan={2}>Average Quarter Scoring</td>
-                      {timeCharterByDept.overallByPeriod.map((v, j) => (
-                        <td key={timeCharterByDept.periods[j].id} className="text-right px-3 py-2 tnum">{v !== null ? `${v.toFixed(1)}%` : "—"}</td>
-                      ))}
-                      <td className="text-right px-3 py-2 tnum">{overallAvg !== null ? `${overallAvg.toFixed(1)}%` : "—"}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => toggle("kpi6")}
+          onKeyDown={onToggleKeyDown("kpi6")}
+          className={cn(
+            "text-left rounded-lg border bg-[hsl(var(--pk-surface))] shadow-card p-4 cursor-pointer transition-colors",
+            expanded === "kpi6" ? "border-[hsl(var(--pk-accent))]" : "border-[hsl(var(--pk-border))] hover:bg-[hsl(var(--pk-surface-2))]"
+          )}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 6 · Weight 7.5% · quarterly</div>
+            <StatusChip status={kpi6.status} />
           </div>
-        )}
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">Time Charter Compliance</div>
+          <div className="flex items-baseline gap-2 mb-2">
+            <span className="tnum font-head text-2xl font-semibold text-[hsl(var(--pk-ink))]">{kpi6.ytdActual !== null ? `${kpi6.ytdActual.toFixed(1)}%` : "—"}</span>
+            <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi6.ytdTarget !== null ? `${kpi6.ytdTarget.toFixed(1)}%` : "—"}</span>
+          </div>
+          <KpiMetricStrip
+            fy={fy}
+            periodLabel={periodLabel}
+            fyTarget={`${kpi6FyTarget.toFixed(1)}%`}
+            ytdTarget={kpi6.ytdTarget !== null ? `${kpi6.ytdTarget.toFixed(1)}%` : "—"}
+            ytdActual={kpi6.ytdActual !== null ? `${kpi6.ytdActual.toFixed(1)}%` : "—"}
+            achievement={kpi6.weighted !== null ? `${(kpi6.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi6.status}
+          />
+          <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-2">Group average across {timeCharterByDept.departments.length || "—"} departments, scored quarterly.</p>
+          {timeCharterByDept.periods.length > 0 && (
+            <div className="flex items-center justify-end">
+              <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
+                {expanded === "kpi6" ? "Hide details" : "View details"}
+                <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "kpi6" && "rotate-180")} />
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {showServiceDetail && serviceBreakdown.hasData && (
+      {expanded === "kpi5" && serviceBreakdown.hasData && (
         <>
-          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2 mt-5">External Client Satisfaction — Summary of Results</div>
+          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">External Client Satisfaction — Summary of Results</div>
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
             <table className="w-full text-sm min-w-[760px]">
               <thead>
@@ -280,6 +264,45 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                     <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.responseRate !== null ? `${serviceBreakdown.total.responseRate}%` : "—"}</td>
                   </tr>
                 )}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      {expanded === "kpi6" && timeCharterByDept.periods.length > 0 && (
+        <>
+          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Summary of Results</div>
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
+            <table className="w-full text-sm min-w-[560px]">
+              <thead>
+                <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+                  <th className="text-left font-medium px-3 py-2.5 w-10">No</th>
+                  <th className="text-left font-medium px-3 py-2.5">Departments</th>
+                  {timeCharterByDept.periods.map((p) => (
+                    <th key={p.id} className="text-right font-medium px-3 py-2.5">{p.label}</th>
+                  ))}
+                  <th className="text-right font-medium px-3 py-2.5">{avgLabel}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {timeCharterByDept.departments.map((d, i) => (
+                  <tr key={d.department} className="border-t border-[hsl(var(--pk-border))]">
+                    <td className="px-3 py-2 text-[hsl(var(--pk-ink-faint))]">{i + 1}</td>
+                    <td className="px-3 py-2 font-medium text-[hsl(var(--pk-ink))]">{d.department}</td>
+                    {d.scores.map((v, j) => (
+                      <td key={timeCharterByDept.periods[j].id} className="text-right px-3 py-2 tnum text-[hsl(var(--pk-accent))]">{v !== null ? `${v.toFixed(1)}%` : "—"}</td>
+                    ))}
+                    <td className="text-right px-3 py-2 tnum font-semibold text-[hsl(var(--pk-accent))]">{(() => { const m = meanOf(d.scores); return m !== null ? `${m.toFixed(1)}%` : "—"; })()}</td>
+                  </tr>
+                ))}
+                <tr className="border-t-2 border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] font-semibold">
+                  <td className="px-3 py-2" colSpan={2}>Average Quarter Scoring</td>
+                  {timeCharterByDept.overallByPeriod.map((v, j) => (
+                    <td key={timeCharterByDept.periods[j].id} className="text-right px-3 py-2 tnum">{v !== null ? `${v.toFixed(1)}%` : "—"}</td>
+                  ))}
+                  <td className="text-right px-3 py-2 tnum">{overallAvg !== null ? `${overallAvg.toFixed(1)}%` : "—"}</td>
+                </tr>
               </tbody>
             </table>
           </div>
