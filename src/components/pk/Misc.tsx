@@ -1,13 +1,9 @@
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { toast } from "sonner";
-import { Download, RefreshCw, Bell, ChevronRight, Info, FileText, Presentation, Sheet, Loader2 } from "lucide-react";
-import { breadcrumbTrail, breadcrumbLabel, screenLabel, type ScreenId } from "@/lib/nav";
+import { RefreshCw, Bell, ChevronRight, Info } from "lucide-react";
+import { breadcrumbTrail, breadcrumbLabel, type ScreenId } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/session";
-import { periodById } from "@/data/periods";
-import type { PeriodId } from "@/types";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { exportScreenAsExcel, exportScreenAsPdf, exportScreenAsPptx } from "@/lib/exportReport";
 
 export function StatusLegend() {
   const items: { label: string; color: string }[] = [
@@ -59,62 +55,6 @@ export function StatCard({ label, value, sub, tone, rail }: { label: string; val
       <div className="tnum text-xl font-semibold mt-0.5" style={{ color }}>{value}</div>
       {sub && <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-0.5">{sub}</div>}
     </div>
-  );
-}
-
-type ExportFormat = "pdf" | "pptx" | "excel";
-
-const EXPORT_FORMATS: { format: ExportFormat; label: string; description: string; icon: typeof FileText }[] = [
-  { format: "pdf", label: "Export as PDF", description: "Branded report — cover page + full snapshot", icon: FileText },
-  { format: "pptx", label: "Export as PowerPoint", description: "Same report as slides, one per section", icon: Presentation },
-  { format: "excel", label: "Export as Excel", description: "Raw tables from this screen", icon: Sheet },
-];
-
-export function ExportMenu({ screenId, label = "Export", periodId: periodIdProp }: { screenId: ScreenId; label?: string; periodId?: PeriodId }) {
-  const { entityName, periodId: sessionPeriodId } = useSession();
-  const periodId = periodIdProp ?? sessionPeriodId;
-  const [pending, setPending] = useState<ExportFormat | null>(null);
-
-  const runExport = async (format: ExportFormat) => {
-    if (pending) return;
-    setPending(format);
-    const ctx = { screenId, screenLabel: screenLabel(screenId, entityName), entityName, periodLabel: periodById(periodId).label };
-    try {
-      if (format === "pdf") await exportScreenAsPdf(ctx);
-      else if (format === "pptx") await exportScreenAsPptx(ctx);
-      else await exportScreenAsExcel(ctx);
-      const formatLabel = format === "pptx" ? "PowerPoint" : format === "pdf" ? "PDF" : "Excel";
-      toast.success(`${ctx.screenLabel} exported`, { description: `Saved as ${formatLabel}.` });
-    } catch (err) {
-      toast.error("Export failed", { description: err instanceof Error ? err.message : "Something went wrong generating the file." });
-    } finally {
-      setPending(null);
-    }
-  };
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          disabled={pending !== null}
-          className="inline-flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-2.5 py-1.5 text-xs font-medium text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors disabled:opacity-60"
-        >
-          {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-          {label}
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
-        {EXPORT_FORMATS.map(({ format, label: itemLabel, description, icon: Icon }) => (
-          <DropdownMenuItem key={format} onClick={() => runExport(format)} className="gap-2.5 py-2 cursor-pointer">
-            <Icon className="h-4 w-4 text-[hsl(var(--pk-accent))] shrink-0" />
-            <div className="flex flex-col">
-              <span className="text-xs font-medium">{itemLabel}</span>
-              <span className="text-2xs text-[hsl(var(--pk-ink-faint))]">{description}</span>
-            </div>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }
 
