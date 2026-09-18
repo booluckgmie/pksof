@@ -118,10 +118,10 @@ export function Settings({ onNavigate: _onNavigate }: { onNavigate: (id: ScreenI
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[480px]">
             <thead>
-              <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
-                <th className="text-left font-medium pb-1.5">KPI</th>
-                <th className="text-right font-medium pb-1.5 pr-2 w-24">{targetFy} target</th>
-                <th className="text-right font-medium pb-1.5 pl-2 w-32">New target</th>
+              <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+                <th className="text-left font-medium py-1.5 pl-2">KPI</th>
+                <th className="text-right font-medium py-1.5 pr-2 w-24">{targetFy} target</th>
+                <th className="text-right font-medium py-1.5 pl-2 w-32">New target</th>
                 <th className="w-16"></th>
               </tr>
             </thead>
@@ -133,7 +133,7 @@ export function Settings({ onNavigate: _onNavigate }: { onNavigate: (id: ScreenI
                 const rowDirty = draftValue.trim() !== "" && Number(draftValue) !== live;
                 return (
                   <tr key={k.id} className="border-t border-[hsl(var(--pk-border))]">
-                    <td className="py-2 pr-2">
+                    <td className="py-2 pr-2 pl-2">
                       <span className="font-medium text-[hsl(var(--pk-ink))]">KPI {k.no} — {k.name}</span>
                       {override !== undefined && <span className="text-3xs text-[hsl(var(--pk-accent))] ml-1.5">(override)</span>}
                     </td>

@@ -34,25 +34,25 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="flex-1 w-full overflow-x-auto">
           <table className="w-full text-sm min-w-[420px]">
             <thead>
-              <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
-                <th className="text-left font-medium pb-1.5">Metric</th>
-                <th className="text-right font-medium pb-1.5">YTD</th>
-                <th className="text-right font-medium pb-1.5">Q2</th>
-                <th className="text-right font-medium pb-1.5">Q3</th>
-                <th className="text-right font-medium pb-1.5">Q4</th>
+              <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+                <th className="text-left font-medium px-2 py-1.5">Metric</th>
+                <th className="text-right font-medium px-2 py-1.5">YTD</th>
+                <th className="text-right font-medium px-2 py-1.5">Q2</th>
+                <th className="text-right font-medium px-2 py-1.5">Q3</th>
+                <th className="text-right font-medium px-2 py-1.5">Q4</th>
               </tr>
             </thead>
             <tbody className="tnum">
               <tr className="border-t border-[hsl(var(--pk-border))]">
-                <td className="py-1.5 text-[hsl(var(--pk-ink-soft))]">Cumulative Threshold</td>
-                <td className="text-right py-1.5">25.0%</td><td className="text-right py-1.5 text-[hsl(var(--pk-ink-faint))]">50.0%</td><td className="text-right py-1.5 text-[hsl(var(--pk-ink-faint))]">75.0%</td><td className="text-right py-1.5 text-[hsl(var(--pk-ink-faint))]">100.0%</td>
+                <td className="px-2 py-1.5 text-[hsl(var(--pk-ink-soft))]">Cumulative Threshold</td>
+                <td className="text-right px-2 py-1.5">25.0%</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">50.0%</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">75.0%</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">100.0%</td>
               </tr>
               <tr className="border-t border-[hsl(var(--pk-border))]">
-                <td className="py-1.5 text-[hsl(var(--pk-ink-soft))]">MOF's Threshold</td>
-                <td className="text-right py-1.5">20.0%</td><td className="text-right py-1.5 text-[hsl(var(--pk-ink-faint))]">40.0%</td><td className="text-right py-1.5 text-[hsl(var(--pk-ink-faint))]">60.0%</td><td className="text-right py-1.5 text-[hsl(var(--pk-ink-faint))]">80.0%</td>
+                <td className="px-2 py-1.5 text-[hsl(var(--pk-ink-soft))]">MOF's Threshold</td>
+                <td className="text-right px-2 py-1.5">20.0%</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">40.0%</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">60.0%</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">80.0%</td>
               </tr>
               <tr className="border-t border-[hsl(var(--pk-border))] font-semibold">
-                <td className="py-1.5 text-[hsl(var(--pk-ink))]">
+                <td className="px-2 py-1.5 text-[hsl(var(--pk-ink))]">
                   <span className="inline-flex items-center gap-1.5">
                     Result (Weighted Achievement)
                     <InfoTip title="Weighted Achievement">
@@ -60,7 +60,7 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                     </InfoTip>
                   </span>
                 </td>
-                <td className="text-right py-1.5 text-[hsl(var(--pk-good))]">{overall.toFixed(1)}%</td><td className="text-right py-1.5 text-[hsl(var(--pk-ink-faint))]">N/A</td><td className="text-right py-1.5 text-[hsl(var(--pk-ink-faint))]">N/A</td><td className="text-right py-1.5 text-[hsl(var(--pk-ink-faint))]">N/A</td>
+                <td className="text-right px-2 py-1.5 text-[hsl(var(--pk-good))]">{overall.toFixed(1)}%</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">N/A</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">N/A</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">N/A</td>
               </tr>
             </tbody>
           </table>

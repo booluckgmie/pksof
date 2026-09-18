@@ -179,27 +179,27 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </div>
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] border-b border-[hsl(var(--pk-border))]">
-                  <th className="text-left font-medium py-1.5">Age Band</th>
-                  <th className="text-right font-medium py-1.5">Headcount</th>
-                  <th className="text-right font-medium py-1.5">% of Workforce</th>
+                <tr className="text-3xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+                  <th className="text-left font-medium px-2 py-1.5">Age Band</th>
+                  <th className="text-right font-medium px-2 py-1.5">Headcount</th>
+                  <th className="text-right font-medium px-2 py-1.5">% of Workforce</th>
                 </tr>
               </thead>
               <tbody>
                 {ageBreakdown.map((a) => (
                   <tr key={a.band} className="border-b border-[hsl(var(--pk-border))] last:border-b-0">
-                    <td className="py-1.5 flex items-center gap-1.5 text-[hsl(var(--pk-ink))]">
+                    <td className="px-2 py-1.5 flex items-center gap-1.5 text-[hsl(var(--pk-ink))]">
                       <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: AGE_BAND_COLORS[a.band] }} />
                       {a.band}
                     </td>
-                    <td className="text-right py-1.5 tnum">{a.count}</td>
-                    <td className="text-right py-1.5 tnum font-semibold text-[hsl(var(--pk-accent))]">{totalEmployees > 0 ? `${((a.count / totalEmployees) * 100).toFixed(1)}%` : "—"}</td>
+                    <td className="text-right px-2 py-1.5 tnum">{a.count}</td>
+                    <td className="text-right px-2 py-1.5 tnum font-semibold text-[hsl(var(--pk-accent))]">{totalEmployees > 0 ? `${((a.count / totalEmployees) * 100).toFixed(1)}%` : "—"}</td>
                   </tr>
                 ))}
                 <tr className="font-semibold">
-                  <td className="py-1.5 text-[hsl(var(--pk-ink))]">Total</td>
-                  <td className="text-right py-1.5 tnum">{headcountSummary.totalEmployees}</td>
-                  <td className="text-right py-1.5 tnum">100.0%</td>
+                  <td className="px-2 py-1.5 text-[hsl(var(--pk-ink))]">Total</td>
+                  <td className="text-right px-2 py-1.5 tnum">{headcountSummary.totalEmployees}</td>
+                  <td className="text-right px-2 py-1.5 tnum">100.0%</td>
                 </tr>
               </tbody>
             </table>
@@ -215,7 +215,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
         <table className="w-full text-sm min-w-[680px]">
           <thead>
-            <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
+            <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
               <th className="text-left font-medium px-3 py-2">Job Band Level</th>
               <th className="text-left font-medium px-3 py-2">Grade Code</th>
               <th className="text-right font-medium px-3 py-2">Male</th>

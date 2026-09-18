@@ -374,7 +374,7 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
               <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
                 <table className="w-full text-sm min-w-[680px]">
                   <thead>
-                    <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
+                    <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
                       <th className="text-left font-medium px-3 py-2">Action</th>
                       <th className="text-left font-medium px-3 py-2">User</th>
                       <th className="text-left font-medium px-3 py-2">Entity</th>

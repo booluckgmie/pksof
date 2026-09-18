@@ -203,7 +203,7 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                                 <div className="overflow-x-auto p-2">
                                   <table className="w-full text-xs min-w-[640px]">
                                     <thead>
-                                      <tr className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
+                                      <tr className="text-3xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
                                         <th className="text-left font-medium px-2 py-1">Deal Date</th>
                                         <th className="text-left font-medium px-2 py-1">Maturity Date</th>
                                         <th className="text-left font-medium px-2 py-1">Bank</th>

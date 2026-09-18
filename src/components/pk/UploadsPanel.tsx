@@ -42,12 +42,12 @@ function UploadRowDetails({ uploadId }: { uploadId: string }) {
     <div className="overflow-x-auto">
       <table className="w-full text-xs min-w-[560px]">
         <thead>
-          <tr className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
+          <tr className="text-3xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
             <th className="text-left font-medium py-1 px-3">Type</th>
-            <th className="text-left font-medium py-1">Sheet</th>
-            <th className="text-left font-medium py-1">Field</th>
-            <th className="text-left font-medium py-1">Period</th>
-            <th className="text-right font-medium py-1">Value</th>
+            <th className="text-left font-medium py-1 px-2">Sheet</th>
+            <th className="text-left font-medium py-1 px-2">Field</th>
+            <th className="text-left font-medium py-1 px-2">Period</th>
+            <th className="text-right font-medium py-1 px-2">Value</th>
             <th className="text-left font-medium py-1 px-3">Outcome</th>
           </tr>
         </thead>
@@ -55,10 +55,10 @@ function UploadRowDetails({ uploadId }: { uploadId: string }) {
           {rows.map((r) => (
             <tr key={r.id} className="border-t border-[hsl(var(--pk-border))]">
               <td className="py-1.5 px-3 text-[hsl(var(--pk-ink-faint))]">{DEST_LABEL[r.dest]}</td>
-              <td className="py-1.5 text-[hsl(var(--pk-ink-soft))]">{r.sheet}</td>
-              <td className="py-1.5 text-[hsl(var(--pk-ink))]">{r.label}</td>
-              <td className="py-1.5 text-[hsl(var(--pk-ink-faint))]">{periodById(r.periodId)?.label ?? r.periodId}</td>
-              <td className="py-1.5 text-right tnum">{r.value ?? "—"}</td>
+              <td className="py-1.5 px-2 text-[hsl(var(--pk-ink-soft))]">{r.sheet}</td>
+              <td className="py-1.5 px-2 text-[hsl(var(--pk-ink))]">{r.label}</td>
+              <td className="py-1.5 px-2 text-[hsl(var(--pk-ink-faint))]">{periodById(r.periodId)?.label ?? r.periodId}</td>
+              <td className="py-1.5 px-2 text-right tnum">{r.value ?? "—"}</td>
               <td className="py-1.5 px-3">
                 {r.status === "saved" ? (
                   <span className="text-[hsl(var(--pk-good))] font-medium">Saved</span>
@@ -264,7 +264,7 @@ export function UploadsPanel({ entityId, assignedModule, canDelete = false, show
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
             <table className="w-full text-sm min-w-[760px]">
               <thead>
-                <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
+                <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
                   <th className="text-left font-medium px-3 py-2">File</th>
                   <th className="text-left font-medium px-3 py-2">{entityId ? "Sheets" : "Entity / Sheets"}</th>
                   <th className="text-left font-medium px-3 py-2">Periods</th>

@@ -30,7 +30,7 @@ export function KpiPerformanceTable({
     <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
       <table className="w-full text-sm min-w-[900px]">
         <thead>
-          <tr className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] bg-[hsl(var(--pk-surface-2))]">
+          <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
             <th className="text-left font-medium px-3 py-2">Perspective</th>
             <th className="text-right font-medium px-3 py-2">Wt</th>
             <th className="text-left font-medium px-3 py-2">#</th>
@@ -41,7 +41,7 @@ export function KpiPerformanceTable({
             <th className="text-right font-medium px-3 py-2">
               <span className="inline-flex items-center gap-1">
                 Weighted
-                <InfoTip title="Weighted Achievement" side="bottom">
+                <InfoTip title="Weighted Achievement" side="bottom" className="text-white/70 hover:text-white hover:bg-white/15">
                   KPI Weight × Achievement, capped at the KPI's own weighting — a lower-is-better KPI (like Cost-to-Income Ratio) uses FY Target ÷ Actual instead.
                 </InfoTip>
               </span>
