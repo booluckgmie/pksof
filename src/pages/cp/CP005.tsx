@@ -215,7 +215,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       {showServiceDetail && serviceBreakdown.hasData && (
         <>
-          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2 mt-5">Summary of Results</div>
+          <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2 mt-5">External Client Satisfaction — Summary of Results</div>
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
             <table className="w-full text-sm min-w-[760px]">
               <thead>

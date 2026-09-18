@@ -247,7 +247,10 @@ function paginateSections(sections: ExportSection[], maxHeightPx: number): Rende
 // ---------- PDF ----------
 
 export async function exportScreenAsPdf(ctx: ExportContext): Promise<void> {
-  const { jsPDF } = await import("jspdf");
+  const [{ jsPDF }, { INTER_REGULAR_BASE64, INTER_BOLD_BASE64 }] = await Promise.all([
+    import("jspdf"),
+    import("@/lib/fonts/interFontData"),
+  ]);
   const [{ canvas, el, usingBundle }, logo] = await Promise.all([captureContent(ctx), loadLogo()]);
 
   try {
@@ -255,6 +258,14 @@ export async function exportScreenAsPdf(ctx: ExportContext): Promise<void> {
     // uploaded Q1 2026 CKPI/MEC PDFs) and exactly the PPTX slide's 13.33in x 7.5in
     // widescreen at 72pt/in. Matching page size means both exports scale identically.
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: [960, 540] });
+
+    // jsPDF has no built-in Inter — embed it so the PDF matches the app's own type instead of
+    // falling back to Helvetica. PPTX/Excel intentionally keep their own defaults (Arial/Calibri).
+    doc.addFileToVFS("Inter-Regular.ttf", INTER_REGULAR_BASE64);
+    doc.addFont("Inter-Regular.ttf", "Inter", "normal");
+    doc.addFileToVFS("Inter-Bold.ttf", INTER_BOLD_BASE64);
+    doc.addFont("Inter-Bold.ttf", "Inter", "bold");
+
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
     const margin = 36;
@@ -269,7 +280,7 @@ export async function exportScreenAsPdf(ctx: ExportContext): Promise<void> {
     };
 
     const drawFooter = () => {
-      doc.setFont("helvetica", "normal");
+      doc.setFont("Inter", "normal");
       doc.setFontSize(8);
       doc.setTextColor(INK_FAINT_HEX);
       doc.text("Strictly Confidential", margin, pageH - 18);
@@ -283,13 +294,13 @@ export async function exportScreenAsPdf(ctx: ExportContext): Promise<void> {
 
     // Cover page
     drawLogo(90, margin);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("Inter", "bold");
     doc.setFontSize(30);
     doc.setTextColor(TITLE_BLUE_HEX);
     const titleLines = doc.splitTextToSize(ctx.screenLabel, pageW - margin * 2 - 200);
     doc.text(titleLines, margin, pageH / 2 - 60);
 
-    doc.setFont("helvetica", "normal");
+    doc.setFont("Inter", "normal");
     doc.setFontSize(13);
     doc.setTextColor(NAVY_HEX);
     const subY = pageH / 2 - 60 + titleLines.length * 34 + 20;
@@ -318,7 +329,7 @@ export async function exportScreenAsPdf(ctx: ExportContext): Promise<void> {
       doc.addPage();
       page += 1;
 
-      doc.setFont("helvetica", "bold");
+      doc.setFont("Inter", "bold");
       doc.setFontSize(16);
       doc.setTextColor(TITLE_BLUE_HEX);
       doc.text(pg.title.toUpperCase(), margin, margin + 8);
