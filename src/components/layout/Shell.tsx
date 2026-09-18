@@ -2,7 +2,9 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Menu, Search, LogIn, User, BookOpen } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CommandPalette } from "@/components/layout/CommandPalette";
+import { NotificationsBell } from "@/components/pk/Misc";
 import { useSession } from "@/lib/session";
+import { useWorkflow } from "@/lib/workflow";
 import { cn } from "@/lib/utils";
 import { screens, type ScreenId } from "@/lib/nav";
 import prokhasLogo from "@/assets/prokhas-logo.png";
@@ -82,6 +84,7 @@ export function Shell({
   children: ReactNode;
 }) {
   const { loggedIn, userName, roleLabel, logout, isRestrictedPillar } = useSession();
+  const { pending } = useWorkflow();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -137,13 +140,16 @@ export function Shell({
               <kbd className="hidden sm:inline font-mono-pk text-3xs px-1 rounded border border-[hsl(var(--pk-border))]">⌘K</kbd>
             </button>
             {loggedIn ? (
-              <button
-                onClick={logout}
-                className="h-8 w-8 shrink-0 rounded-full bg-[hsl(var(--pk-navy))] flex items-center justify-center text-white/85 hover:opacity-90 transition-opacity"
-                title={`${userName} · ${roleLabel} — sign out`}
-              >
-                <User className="h-4 w-4" />
-              </button>
+              <>
+                <button
+                  onClick={logout}
+                  className="h-8 w-8 shrink-0 rounded-full bg-[hsl(var(--pk-navy))] flex items-center justify-center text-white/85 hover:opacity-90 transition-opacity"
+                  title={`${userName} · ${roleLabel} — sign out`}
+                >
+                  <User className="h-4 w-4" />
+                </button>
+                <NotificationsBell count={pending.length} />
+              </>
             ) : (
               <button
                 onClick={onOpenLogin}

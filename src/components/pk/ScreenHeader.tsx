@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { screenLabel, breadcrumbTrail, type ScreenId } from "@/lib/nav";
-import { Breadcrumb, ExportMenu, NotificationsBell } from "@/components/pk/Misc";
-import { useWorkflow } from "@/lib/workflow";
+import { Breadcrumb, ExportMenu } from "@/components/pk/Misc";
 import { useSession } from "@/lib/session";
 import type { PeriodId } from "@/types";
 
@@ -21,7 +20,6 @@ export function ScreenHeader({
    * with no period concept of their own can omit this and ExportMenu falls back to the session period. */
   periodId?: PeriodId;
 }) {
-  const { pending } = useWorkflow();
   const { entityName } = useSession();
   // A single-item trail (Main only, today) just repeats the H1 below it — skip that row's
   // wording entirely rather than show a breadcrumb of one.
@@ -32,8 +30,10 @@ export function ScreenHeader({
       <div className="flex items-center justify-between gap-3">
         {showBreadcrumb && <Breadcrumb current={id} onNavigate={onNavigate} />}
         <div className="flex items-center gap-2 ml-auto">
-          <ExportMenu screenId={id} periodId={periodId} />
-          <NotificationsBell count={pending.length} />
+          {/* Hidden, not removed — see Shell.tsx's top bar for where notifications moved. */}
+          <div className="hidden">
+            <ExportMenu screenId={id} periodId={periodId} />
+          </div>
         </div>
       </div>
       <div className="flex items-end justify-between gap-4 flex-wrap">
