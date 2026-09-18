@@ -243,7 +243,17 @@ export function CategoryBar({
               <text x={trackW + 6} y={y + barH / 2 + 4} fontSize={11} fontWeight={700} className="fill-[hsl(var(--pk-ink))] tnum">
                 {pct.toFixed(1)}%
               </text>
-              <text x={8} y={y + barH / 2 + 4} fontSize={10} fontWeight={600} className="fill-white tnum" style={{ mixBlendMode: "difference" }}>
+              <text
+                x={8}
+                y={y + barH / 2 + 4}
+                fontSize={10}
+                fontWeight={600}
+                fill="white"
+                stroke="hsl(var(--pk-ink))"
+                strokeWidth={2.2}
+                paintOrder="stroke"
+                className="tnum"
+              >
                 {s.value}{unit}
               </text>
             </g>
