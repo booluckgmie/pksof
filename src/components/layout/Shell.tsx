@@ -59,7 +59,7 @@ function BrandHome({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         if (entityId !== "HQ") setEntityId("HQ");
         onNavigate("MAIN");
       }}
-      title="Back to Main Screen"
+      title="Back to Performance Dashboard"
       className="flex items-center gap-2 shrink-0 rounded-md pl-1.5 pr-2.5 py-1 -ml-1.5 transition-colors hover:bg-[hsl(var(--pk-surface-2))]"
     >
       <img src={prokhasLogo} alt="Prokhas" className="h-6 w-auto shrink-0" />

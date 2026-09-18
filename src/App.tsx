@@ -199,7 +199,7 @@ function AuthedApp() {
             }}
             className="mt-1 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] text-xs font-medium px-3 py-1.5 hover:opacity-90 transition-opacity"
           >
-            {loginRequired ? "Sign in" : entityBlocksGroup && !isRestrictedPillar ? "Back to Prokhas Group view" : "Back to Main Screen"}
+            {loginRequired ? "Sign in" : entityBlocksGroup && !isRestrictedPillar ? "Back to Prokhas Group view" : "Back to Performance Dashboard"}
           </button>
         </div>
       ) : (

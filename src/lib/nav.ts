@@ -16,7 +16,7 @@ export interface ScreenDef {
 }
 
 export const screens: Record<ScreenId, ScreenDef> = {
-  MAIN: { id: "MAIN", code: "MAIN001", label: "Main Screen", level: "L1", group: "main" },
+  MAIN: { id: "MAIN", code: "MAIN001", label: "Performance Dashboard", level: "L1", group: "main" },
 
   CP001: { id: "CP001", code: "CP001", label: "Corporate Performance", level: "L1", group: "cp", parent: "MAIN" },
   CP002: { id: "CP002", code: "CP002", label: "Corporate KPI Performance Status", level: "L2", group: "cp", parent: "CP001" },
@@ -57,9 +57,9 @@ export function breadcrumbTrail(id: ScreenId): ScreenDef[] {
   return trail;
 }
 
-/** Screen label, personalised to the signed-in pillar — the Main Screen is always "<Entity> Main Screen". */
+/** Screen label, personalised to the signed-in pillar — the Main Screen is always "<Entity> Performance Dashboard". */
 export function screenLabel(id: ScreenId, entityName: string): string {
-  if (id === "MAIN") return `${entityName} Main Screen`;
+  if (id === "MAIN") return `${entityName} Performance Dashboard`;
   return screens[id].label;
 }
 

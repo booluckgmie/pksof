@@ -42,7 +42,7 @@ export class ScreenErrorBoundary extends Component<Props, State> {
             }}
             className="mt-1 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] text-xs font-medium px-3 py-1.5 hover:opacity-90 transition-opacity"
           >
-            Back to Main Screen
+            Back to Performance Dashboard
           </button>
         </div>
       );
