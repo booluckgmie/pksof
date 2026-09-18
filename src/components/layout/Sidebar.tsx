@@ -120,7 +120,7 @@ export function Sidebar({
   mobileOpen?: boolean;
   onCloseMobile?: () => void;
 }) {
-  const { role, roleLabel, userName, canEnterData, canVerify, logout, isRestrictedPillar, homeEntityName, entityId, entityName } = useSession();
+  const { role, roleLabel, canEnterData, canVerify, logout, isRestrictedPillar, homeEntityName, entityId, entityName } = useSession();
   const entityModules = entityById(entityId).modules;
   const { submissions } = useWorkflow();
 
@@ -271,7 +271,7 @@ export function Sidebar({
             <User className="h-4 w-4 text-white/70" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-medium truncate">{userName}</div>
+            <div className="text-xs font-medium truncate">Logged in as</div>
             <div className="text-3xs text-white/45 truncate">{roleLabel}</div>
           </div>
           <button onClick={logout} className="text-white/45 hover:text-white transition-colors shrink-0" title="Sign out">
