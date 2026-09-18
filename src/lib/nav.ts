@@ -77,12 +77,19 @@ export const fhNav: ScreenId[] = ["PFH001", "PFH002", "PFH003", "PFH004", "PFH00
 // RP002-RP004 stay fully routable (URL, breadcrumb) — just hidden from the sidebar/search nav below.
 export const rpNav: ScreenId[] = ["RP001", "RP001A"];
 
+// Corporate Performance's own pager order: CP002 (a KPI-status table that duplicates CP001's
+// own drill-downs) is skipped entirely, and CP009 — which is really just KPI10's own detail
+// view, not a distinct perspective — is placed by KPI number (after CP007, which covers KPI9-10
+// at the perspective level) rather than by its screen-id suffix.
+const cpPageOrder: ScreenId[] = ["CP001", "CP003", "CP004", "CP005", "CP006", "CP007", "CP009", "CP008"];
+
 /** The full "reading order" through the dashboard's own content — MAIN, then each pillar's
- * screens end to end, used by the bottom-of-page Previous/Next pager (see PageNav). Deliberately
- * wider than rpNav (includes RP002-004, which are real content just hidden from the sidebar/
- * search nav) and excludes the utility screens (Data Entry, Verify & Publish, Settings,
- * Glossary) — those aren't part of the "next page" reading flow. */
-export const pageOrder: ScreenId[] = ["MAIN", ...cpNav, ...fhNav, "RP001", "RP001A", "RP002", "RP003", "RP004"];
+ * screens end to end, used by the bottom-of-page Previous/Next pager (see PageNav). Financial
+ * Health and Resource & People simply follow their own sidebar order (fhNav/rpNav) — so RP002-004
+ * (hidden from the sidebar/search nav) are hidden here too, not just Corporate Performance's own
+ * KPI-numbering exceptions above. Excludes the utility screens (Data Entry, Verify & Publish,
+ * Settings, Glossary) — those aren't part of the "next page" reading flow. */
+export const pageOrder: ScreenId[] = ["MAIN", ...cpPageOrder, ...fhNav, ...rpNav];
 
 /** The previous/next screen in `pageOrder` relative to `id` — null at either end, and both null
  * for a screen outside the reading order (e.g. Data Entry, Settings), so PageNav renders nothing. */

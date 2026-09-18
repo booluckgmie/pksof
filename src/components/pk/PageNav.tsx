@@ -23,7 +23,7 @@ export function PageNav({ current, onNavigate }: { current: ScreenId; onNavigate
           <ChevronLeft className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))] shrink-0" />
           <span className="flex flex-col leading-tight">
             <span className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Previous</span>
-            <span className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] group-hover:text-[hsl(var(--pk-ink))]">{screenLabel(prev.id, entityName)}</span>
+            <span title={screenLabel(prev.id, entityName)} className="block max-w-[8ch] truncate text-3xs font-medium text-[hsl(var(--pk-ink-soft))] group-hover:text-[hsl(var(--pk-ink))]">{screenLabel(prev.id, entityName)}</span>
           </span>
         </button>
       )}
@@ -34,7 +34,7 @@ export function PageNav({ current, onNavigate }: { current: ScreenId; onNavigate
         >
           <span className="flex flex-col leading-tight">
             <span className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Next</span>
-            <span className="text-xs font-medium text-[hsl(var(--pk-ink-soft))] group-hover:text-[hsl(var(--pk-ink))]">{screenLabel(next.id, entityName)}</span>
+            <span title={screenLabel(next.id, entityName)} className="block max-w-[8ch] truncate text-3xs font-medium text-[hsl(var(--pk-ink-soft))] group-hover:text-[hsl(var(--pk-ink))]">{screenLabel(next.id, entityName)}</span>
           </span>
           <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))] shrink-0" />
         </button>
