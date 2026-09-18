@@ -1,5 +1,7 @@
 import prokhasLogoUrl from "@/assets/prokhas-logo.png";
 import { requestFhExportBundle, releaseFhExportBundle } from "@/components/pk/FhExportBundle";
+import { requestCpExportBundle, releaseCpExportBundle } from "@/components/pk/CpExportBundle";
+import { requestRpExportBundle, releaseRpExportBundle } from "@/components/pk/RpExportBundle";
 
 // Report export (PDF / PPTX / Excel) for the current screen.
 //
@@ -41,8 +43,21 @@ const MAX_SLICE_PX = 2200;
 // output, not just lower fidelity. Left off; scale above is the safe lever.)
 
 /** Financial Health's parent/overview screen — exporting from here bundles all five FH tabs
- * into one report instead of just this screen's own content. See FhExportBundle. */
-const FH_BUNDLE_SCREEN_ID = "PFH001";
+ * into one report instead of just this screen's own content. See FhExportBundle.
+ *
+ * "CP_PILLAR_REPORT" / "RP_PILLAR_REPORT" are pseudo screen-ids, never a real ScreenId — they
+ * exist only so Main.tsx's per-pillar "download full report" button can request the whole
+ * Corporate Performance / Resource & People module the same way PFH001 already bundles all of
+ * Financial Health, without changing what a normal visit-then-export from CP001/RP001's own
+ * page produces (still just that one screen). */
+export const CP_PILLAR_REPORT_ID = "CP_PILLAR_REPORT";
+export const RP_PILLAR_REPORT_ID = "RP_PILLAR_REPORT";
+
+const PILLAR_BUNDLES: Record<string, { request: () => Promise<HTMLElement>; release: () => void }> = {
+  PFH001: { request: requestFhExportBundle, release: releaseFhExportBundle },
+  [CP_PILLAR_REPORT_ID]: { request: requestCpExportBundle, release: releaseCpExportBundle },
+  [RP_PILLAR_REPORT_ID]: { request: requestRpExportBundle, release: releaseRpExportBundle },
+};
 
 function pad2(n: number) {
   return String(n).padStart(2, "0");
@@ -68,8 +83,9 @@ export interface ExportContext {
 }
 
 async function resolveCaptureTarget(ctx: ExportContext): Promise<{ el: HTMLElement; usingBundle: boolean }> {
-  if (ctx.screenId === FH_BUNDLE_SCREEN_ID) {
-    const el = await requestFhExportBundle();
+  const bundle = PILLAR_BUNDLES[ctx.screenId];
+  if (bundle) {
+    const el = await bundle.request();
     return { el, usingBundle: true };
   }
   const el = document.getElementById("screen-content");
@@ -345,7 +361,7 @@ export async function exportScreenAsPdf(ctx: ExportContext): Promise<void> {
 
     doc.save(filenameFor(ctx.screenLabel, "pdf"));
   } finally {
-    if (usingBundle) releaseFhExportBundle();
+    if (usingBundle) PILLAR_BUNDLES[ctx.screenId]?.release();
   }
 }
 
@@ -439,7 +455,7 @@ export async function exportScreenAsPptx(ctx: ExportContext): Promise<void> {
 
     await pres.writeFile({ fileName: filenameFor(ctx.screenLabel, "pptx") });
   } finally {
-    if (usingBundle) releaseFhExportBundle();
+    if (usingBundle) PILLAR_BUNDLES[ctx.screenId]?.release();
   }
 }
 
@@ -620,6 +636,6 @@ export async function exportScreenAsExcel(ctx: ExportContext): Promise<void> {
 
     XLSX.writeFile(wb, filenameFor(ctx.screenLabel, "xlsx"));
   } finally {
-    if (usingBundle) releaseFhExportBundle();
+    if (usingBundle) PILLAR_BUNDLES[ctx.screenId]?.release();
   }
 }

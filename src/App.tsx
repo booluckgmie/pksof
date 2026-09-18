@@ -36,6 +36,8 @@ import { screens, type ScreenId } from "@/lib/nav";
 import { Toaster } from "@/components/ui/sonner";
 import { ScreenErrorBoundary } from "@/components/pk/ScreenErrorBoundary";
 import { FhExportBundle } from "@/components/pk/FhExportBundle";
+import { CpExportBundle } from "@/components/pk/CpExportBundle";
+import { RpExportBundle } from "@/components/pk/RpExportBundle";
 import { entities, entityById } from "@/data/entities";
 import type { EntityId, Module } from "@/types";
 
@@ -209,6 +211,8 @@ function AuthedApp() {
       )}
       <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} />
       <FhExportBundle />
+      <CpExportBundle />
+      <RpExportBundle />
     </Shell>
   );
 }

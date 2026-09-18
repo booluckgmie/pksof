@@ -30,10 +30,7 @@ export function ScreenHeader({
       <div className="flex items-center justify-between gap-3">
         {showBreadcrumb && <Breadcrumb current={id} onNavigate={onNavigate} />}
         <div className="flex items-center gap-2 ml-auto">
-          {/* Hidden, not removed — see Shell.tsx's top bar for where notifications moved. */}
-          <div className="hidden">
-            <ExportMenu screenId={id} periodId={periodId} />
-          </div>
+          <ExportMenu screenId={id} periodId={periodId} />
         </div>
       </div>
       <div className="flex items-end justify-between gap-4 flex-wrap">

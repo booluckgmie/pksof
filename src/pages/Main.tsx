@@ -4,6 +4,8 @@ import { StatCard } from "@/components/pk/Misc";
 import { InfoNote } from "@/components/pk/Misc";
 import { NoDataState } from "@/components/pk/DataOrigin";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
+import { PillarReportButton } from "@/components/pk/PillarReportButton";
+import { CP_PILLAR_REPORT_ID, RP_PILLAR_REPORT_ID } from "@/lib/exportReport";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -131,6 +133,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 <StatCard label="Overall Achievement" value={`${overall.toFixed(1)}%`} tone={overallTone} />
                 <StatCard label="KPI(s) Tracked" value={String(kpis.length)} />
               </div>
+              <PillarReportButton bundleScreenId={CP_PILLAR_REPORT_ID} pillarLabel="Corporate Performance" entityName={entityName} periodLabel={period.label} />
             </div>
           )}
 
@@ -144,6 +147,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 <StatCard label="PBT (KPI 1)" value={kpi1.ytdActual !== null ? `RM ${kpi1.ytdActual.toFixed(1)}m` : "—"} tone={kpi1.status === "met" ? "good" : kpi1.status === "not-met" ? "bad" : "default"} />
                 <StatCard label="Cost-to-Income" value={kpi2.ytdActual !== null ? `${kpi2.ytdActual.toFixed(1)}%` : "—"} tone={kpi2.status === "met" ? "good" : kpi2.status === "not-met" ? "bad" : "default"} />
               </div>
+              <PillarReportButton bundleScreenId="PFH001" pillarLabel="Financial Health" entityName={entityName} periodLabel={period.label} />
             </div>
           )}
 
@@ -157,6 +161,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 <StatCard label="Recruitment Index" value={kpi9.ytdActual !== null ? `${kpi9.ytdActual.toFixed(1)}%` : "—"} tone={kpi9.status === "met" ? "good" : "default"} />
                 <StatCard label="Bumiputera Comp." value={kpi12.ytdActual !== null ? `${kpi12.ytdActual.toFixed(1)}%` : "—"} tone={kpi12.status === "met" ? "good" : "default"} />
               </div>
+              <PillarReportButton bundleScreenId={RP_PILLAR_REPORT_ID} pillarLabel="Resource & People" entityName={entityName} periodLabel={period.label} />
             </div>
           )}
         </div>
