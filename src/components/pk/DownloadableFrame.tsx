@@ -93,7 +93,9 @@ export function DownloadableFrame({
       {children}
       <div
         data-download-frame-control
-        className="absolute top-1.5 right-1.5 opacity-0 group-hover/dlframe:opacity-100 focus-within:opacity-100 transition-opacity z-10"
+        // Always visible below `sm` — touch devices only fake :hover on a first tap, which would
+        // otherwise cost a mobile user an extra tap just to reveal this before they can use it.
+        className="absolute top-1.5 right-1.5 opacity-100 sm:opacity-0 sm:group-hover/dlframe:opacity-100 sm:focus-within:opacity-100 transition-opacity z-10"
       >
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
