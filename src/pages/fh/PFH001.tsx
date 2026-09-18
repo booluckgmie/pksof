@@ -1,12 +1,24 @@
 import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { FhTabs } from "@/components/pk/FhTabs";
-import { FinancialResultsHistoryChart } from "@/components/pk/Charts";
+import { StatusChip } from "@/components/pk/StatusChip";
+import { BarTrend, LineTrend, FinancialResultsHistoryChart } from "@/components/pk/Charts";
+import { DataOriginBadge } from "@/components/pk/DataOrigin";
+import { InfoTip } from "@/components/pk/InfoTip";
+import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
+import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
+import { BreakdownTable } from "@/components/pk/BreakdownTable";
+import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
+import { useDetails } from "@/lib/details";
+import { useKpiTargets } from "@/lib/kpiTargets";
 import { useCurrentPeriodId } from "@/lib/orgSettings";
+import { kpiById } from "@/data/kpis";
+import { periodById } from "@/data/periods";
 import type { PeriodId } from "@/types";
 
 /** The client's own historical "Overview of Financial Results" exhibit — Revenue/PBT by
@@ -34,6 +46,17 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const [periodId, setPeriodId] = useState<PeriodId>(useCurrentPeriodId());
   const [compareIds, setCompareIds] = useState<PeriodId[]>([]);
   const { latestValue } = useWorkflow();
+  const { quarterlyTrend: fullTrend, pbtBreakdown, cirBreakdown } = useDetails();
+  const { getFyTarget } = useKpiTargets();
+  const kpi1 = latestValue("KPI1", entityId, periodId);
+  const kpi2 = latestValue("KPI2", entityId, periodId);
+  const period = periodById(periodId);
+  const fy = period.fy;
+  const periodLabel = period.label.replace(" FY", " ");
+  const kpi1FyTarget = getFyTarget("KPI1", fy);
+  const kpi2FyTarget = getFyTarget("KPI2", fy);
+  const { duration, setDuration, filtered: quarterlyTrend } = useDurationFilter(fullTrend);
+  const [openBreakdown, setOpenBreakdown] = useState<{ pbt: boolean; cir: boolean }>({ pbt: false, cir: false });
 
   return (
     <div>
@@ -75,6 +98,95 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             { label: "Impact from changes in SJPP income recognition structure", from: 3, to: FINANCIAL_RESULTS_HISTORY.length - 1 },
           ]}
         />
+      </div>
+
+      {/* KPI 1 / KPI 2 detail — the same two cards as CP003's own Financial Perspective screen,
+          so a Financial Health viewer sees PBT/CIR's own quarterly trend and breakdown without
+          leaving this overview. */}
+      <div className="mb-3">
+        <DurationFilterBar duration={duration} onChange={setDuration} total={fullTrend.length} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+          <div className="flex items-center justify-between mb-1">
+            <div>
+              <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 1 · Weight {(kpiById("KPI1").weight * 100).toFixed(1)}%</div>
+              <div className="font-head font-bold text-[hsl(var(--pk-ink))] inline-flex items-center gap-1.5">
+                Profit Before Tax (PBT)
+                <InfoTip title="Weighted Achievement">YTD Actual ÷ FY Target × Weight, capped at 12.5%.</InfoTip>
+              </div>
+            </div>
+            <StatusChip status={kpi1.status} />
+          </div>
+
+          <KpiMetricStrip
+            fy={fy}
+            periodLabel={periodLabel}
+            fyTarget={`RM ${kpi1FyTarget.toFixed(1)}m`}
+            ytdTarget={kpi1.ytdTarget !== null ? `RM ${kpi1.ytdTarget.toFixed(1)}m` : "—"}
+            ytdActual={kpi1.ytdActual !== null ? `RM ${kpi1.ytdActual.toFixed(1)}m` : "—"}
+            achievement={kpi1.weighted !== null ? `${(kpi1.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi1.status}
+          />
+
+          <button
+            type="button"
+            onClick={() => setOpenBreakdown((s) => ({ ...s, pbt: !s.pbt }))}
+            className="w-full text-left group"
+            title="Click for the income-statement breakdown behind this figure"
+          >
+            <BarTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.pbt }))} unit="m" />
+            <div className="flex items-center justify-center gap-1 text-2xs text-[hsl(var(--pk-accent))] mt-1 group-hover:opacity-75 transition-opacity">
+              {openBreakdown.pbt ? "Hide breakdown" : "Click chart for income-statement breakdown"}
+              <ChevronDown className={cn("h-3 w-3 transition-transform", openBreakdown.pbt && "rotate-180")} />
+            </div>
+          </button>
+
+          {openBreakdown.pbt && <div className="mt-2"><BreakdownTable rows={pbtBreakdown} unit="RM 'mil" /></div>}
+
+          <div className="mt-2"><DataOriginBadge result={kpi1} /></div>
+        </div>
+
+        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+          <div className="flex items-center justify-between mb-1">
+            <div>
+              <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 2 · Weight {(kpiById("KPI2").weight * 100).toFixed(1)}% · lower is better</div>
+              <div className="font-head font-bold text-[hsl(var(--pk-ink))] inline-flex items-center gap-1.5">
+                Cost-to-Income Ratio
+                <InfoTip title="Weighted Achievement">FY Target ÷ YTD Actual × Weight, capped at 12.5% — a lower actual than target scores full achievement.</InfoTip>
+              </div>
+            </div>
+            <StatusChip status={kpi2.status} />
+          </div>
+
+          <KpiMetricStrip
+            fy={fy}
+            periodLabel={periodLabel}
+            fyTarget={`${kpi2FyTarget.toFixed(1)}%`}
+            ytdTarget={kpi2.ytdTarget !== null ? `${kpi2.ytdTarget.toFixed(1)}%` : "—"}
+            ytdActual={kpi2.ytdActual !== null ? `${kpi2.ytdActual.toFixed(1)}%` : "—"}
+            achievement={kpi2.weighted !== null ? `${(kpi2.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi2.status}
+          />
+
+          <button
+            type="button"
+            onClick={() => setOpenBreakdown((s) => ({ ...s, cir: !s.cir }))}
+            className="w-full text-left group"
+            title="Click for the cost breakdown behind this figure"
+          >
+            <LineTrend data={quarterlyTrend.map((q) => ({ label: q.period.replace(" FY", " '"), value: q.cir }))} unit="%" />
+            <div className="flex items-center justify-center gap-1 text-2xs text-[hsl(var(--pk-accent))] mt-1 group-hover:opacity-75 transition-opacity">
+              {openBreakdown.cir ? "Hide breakdown" : "Click chart for cost breakdown"}
+              <ChevronDown className={cn("h-3 w-3 transition-transform", openBreakdown.cir && "rotate-180")} />
+            </div>
+          </button>
+
+          {openBreakdown.cir && <div className="mt-2"><BreakdownTable rows={cirBreakdown} unit="RM 'mil" /></div>}
+
+          <div className="mt-2"><DataOriginBadge result={kpi2} /></div>
+        </div>
       </div>
     </div>
   );
