@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Menu, Search, LogIn, User, BookOpen } from "lucide-react";
+import { Menu, Search, LogIn, LogOut, BookOpen } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { NotificationsBell } from "@/components/pk/Misc";
@@ -146,7 +146,7 @@ export function Shell({
                   className="h-8 w-8 shrink-0 rounded-full bg-[hsl(var(--pk-navy))] flex items-center justify-center text-white/85 hover:opacity-90 transition-opacity"
                   title={`${userName} · ${roleLabel} — sign out`}
                 >
-                  <User className="h-4 w-4" />
+                  <LogOut className="h-4 w-4" />
                 </button>
                 <NotificationsBell count={pending.length} />
               </>
