@@ -5,6 +5,7 @@ import { CommandPalette } from "@/components/layout/CommandPalette";
 import { UPLOADER_ROLES } from "@/components/layout/LoginDialog";
 import { NotificationsBell } from "@/components/pk/Misc";
 import { InstallAppButton } from "@/components/pk/InstallAppButton";
+import { PageNav } from "@/components/pk/PageNav";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -208,6 +209,9 @@ export function Shell({
           </div>
         </div>
         <main id="screen-content" className="flex-1 px-3.5 sm:px-6 py-4 sm:py-6 max-w-[1180px] w-full mx-auto bg-[hsl(var(--pk-paper))]">{children}</main>
+        <div className="px-3.5 sm:px-6 pb-4 sm:pb-6 max-w-[1180px] w-full mx-auto bg-[hsl(var(--pk-paper))]">
+          <PageNav current={current} onNavigate={onNavigate} />
+        </div>
         <footer className="shrink-0 border-t border-[hsl(var(--pk-border))] px-3.5 sm:px-6 py-3 text-center text-2xs text-[hsl(var(--pk-ink-faint))]">
           Designed by Operational Excellence Department (OED) &middot; Prokhas Sdn Bhd
         </footer>
