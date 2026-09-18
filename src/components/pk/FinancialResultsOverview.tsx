@@ -1,4 +1,4 @@
-import { GroupedBarTrend, QoQHorizontalBars } from "@/components/pk/Charts";
+import { QoQHorizontalBars } from "@/components/pk/Charts";
 import { InfoNote } from "@/components/pk/Misc";
 import { FinancialResultsTable } from "@/components/pk/FinancialResultsTable";
 import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
@@ -110,18 +110,15 @@ export function FinancialResultsOverview({
               </p>
             )}
             <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
-              <div>
-                <div className="text-3xs text-[hsl(var(--pk-ink-faint))] text-center mb-1">RM million</div>
-                <GroupedBarTrend
-                  aLabel="Actual"
-                  bLabel="Budget"
-                  data={[
-                    { label: "Total Income", a: Math.round((c.totalIncome ?? 0) / 100) / 10, b: Math.round((b.totalIncome ?? 0) / 100) / 10 },
-                    { label: "Total Expenses", a: Math.round(Math.abs(c.expenses ?? 0) / 100) / 10, b: Math.round(Math.abs(b.expenses ?? 0) / 100) / 10 },
-                    { label: "Profit Before Tax", a: Math.round((c.pbt ?? 0) / 100) / 10, b: Math.round((b.pbt ?? 0) / 100) / 10 },
-                  ]}
-                />
-              </div>
+              <QoQHorizontalBars
+                currentLabel="Actual"
+                compareLabel="Budget"
+                categories={[
+                  { label: "Total Income", current: c.totalIncome ?? 0, compare: b.totalIncome ?? 0 },
+                  { label: "Total Expenses", current: Math.abs(c.expenses ?? 0), compare: Math.abs(b.expenses ?? 0) },
+                  { label: "Profit Before Tax", current: c.pbt ?? 0, compare: b.pbt ?? 0 },
+                ]}
+              />
               <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
                 <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlights</div>
                 {isRealQuarter ? (
