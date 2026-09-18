@@ -11,8 +11,9 @@ import type { EntityId, Module, Role } from "@/types";
 
 /** Login is restricted to roles that can actually write (upload data and/or verify/publish) —
  * Board & Directors and Executive Management are read-only, and read access is already open to
- * everyone without signing in, so offering them as a login choice here would be pointless. */
-const UPLOADER_ROLES = roleDefs.filter((r) => r.canEnterData || r.canVerify);
+ * everyone without signing in, so offering them as a login choice here would be pointless.
+ * Exported so Shell's account-switcher menu offers the same set. */
+export const UPLOADER_ROLES = roleDefs.filter((r) => r.canEnterData || r.canVerify);
 
 /** Wired for a future identity provider but not shown yet — flip to true once one exists. Kept
  * as a real code path (not deleted) so "SSO available but hidden" is a toggle, not a rebuild. */

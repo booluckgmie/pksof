@@ -1,12 +1,17 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { Menu, Search, LogIn, LogOut, BookOpen } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Menu, Search, LogIn, LogOut, User, BookOpen } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CommandPalette } from "@/components/layout/CommandPalette";
+import { UPLOADER_ROLES } from "@/components/layout/LoginDialog";
 import { NotificationsBell } from "@/components/pk/Misc";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
+import { useOrgSettings } from "@/lib/orgSettings";
 import { cn } from "@/lib/utils";
 import { screens, type ScreenId } from "@/lib/nav";
+import { entityById } from "@/data/entities";
+import { resolveCurrentPeriodId } from "@/data/periods";
 import prokhasLogo from "@/assets/prokhas-logo.png";
 
 const PILLAR_NAV: { id: ScreenId; label: string; group: string }[] = [
@@ -72,6 +77,52 @@ function BrandHome({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   );
 }
 
+/** The top bar's account button — a dropdown to quickly switch role (demo convenience, since
+ * this prototype has no real identity provider) or sign out, rather than a bare logout button. */
+function UserMenu() {
+  const { role, roleLabel, userName, login, logout } = useSession();
+  const { fiscalYearEndMonth } = useOrgSettings();
+  const latestPeriodId = useMemo(() => resolveCurrentPeriodId(new Date(), fiscalYearEndMonth), [fiscalYearEndMonth]);
+
+  const switchRole = (nextRole: typeof UPLOADER_ROLES[number]) => {
+    if (nextRole.id === role) return;
+    const homeEntity = "HQ" as const;
+    login({
+      role: nextRole.id,
+      userName: userName || "reporting.officer",
+      homeEntity,
+      periodId: latestPeriodId,
+      assignedModule: nextRole.moduleLocked ? entityById(homeEntity).modules[0] : null,
+    });
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className="h-8 w-8 shrink-0 rounded-full bg-[hsl(var(--pk-navy))] flex items-center justify-center text-white/85 hover:opacity-90 transition-opacity"
+          title={`${userName} · ${roleLabel} — account`}
+        >
+          <User className="h-4 w-4" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel className="text-2xs text-[hsl(var(--pk-ink-faint))] font-normal">Switch role (demo)</DropdownMenuLabel>
+        {UPLOADER_ROLES.map((r) => (
+          <DropdownMenuItem key={r.id} disabled={r.id === role} onClick={() => switchRole(r)} className="cursor-pointer">
+            Login as {r.label}
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={logout} className="cursor-pointer text-[hsl(var(--pk-bad))]">
+          <LogOut className="h-3.5 w-3.5 mr-2" />
+          Logout
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function Shell({
   current,
   onNavigate,
@@ -83,7 +134,7 @@ export function Shell({
   onOpenLogin: () => void;
   children: ReactNode;
 }) {
-  const { loggedIn, userName, roleLabel, logout, isRestrictedPillar } = useSession();
+  const { loggedIn, isRestrictedPillar } = useSession();
   const { pending } = useWorkflow();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -141,13 +192,7 @@ export function Shell({
             </button>
             {loggedIn ? (
               <>
-                <button
-                  onClick={logout}
-                  className="h-8 w-8 shrink-0 rounded-full bg-[hsl(var(--pk-navy))] flex items-center justify-center text-white/85 hover:opacity-90 transition-opacity"
-                  title={`${userName} · ${roleLabel} — sign out`}
-                >
-                  <LogOut className="h-4 w-4" />
-                </button>
+                <UserMenu />
                 <NotificationsBell count={pending.length} />
               </>
             ) : (
