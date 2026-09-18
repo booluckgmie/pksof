@@ -14,27 +14,27 @@ export function PageNav({ current, onNavigate }: { current: ScreenId; onNavigate
   if (!prev && !next) return null;
 
   return (
-    <div className="flex items-center justify-end gap-2 flex-wrap">
+    <div className="flex items-stretch gap-2">
       {prev && (
         <button
           onClick={() => onNavigate(prev.id)}
-          className="group flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-3 py-2 text-left hover:border-[hsl(var(--pk-accent))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
+          className="group flex-1 min-w-0 flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-3 py-2 text-left hover:border-[hsl(var(--pk-accent))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
         >
           <ChevronLeft className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))] shrink-0" />
-          <span className="flex flex-col leading-tight">
+          <span className="flex flex-col leading-tight min-w-0">
             <span className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Previous</span>
-            <span title={screenLabel(prev.id, entityName)} className="block max-w-[8ch] truncate text-3xs font-medium text-[hsl(var(--pk-ink-soft))] group-hover:text-[hsl(var(--pk-ink))]">{screenLabel(prev.id, entityName)}</span>
+            <span title={screenLabel(prev.id, entityName)} className="block truncate text-xs font-medium text-[hsl(var(--pk-ink-soft))] group-hover:text-[hsl(var(--pk-ink))]">{screenLabel(prev.id, entityName)}</span>
           </span>
         </button>
       )}
       {next && (
         <button
           onClick={() => onNavigate(next.id)}
-          className="group flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-3 py-2 text-right hover:border-[hsl(var(--pk-accent))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
+          className="group flex-1 min-w-0 flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-3 py-2 text-right hover:border-[hsl(var(--pk-accent))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
         >
-          <span className="flex flex-col leading-tight">
+          <span className="flex flex-col leading-tight min-w-0 flex-1">
             <span className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Next</span>
-            <span title={screenLabel(next.id, entityName)} className="block max-w-[8ch] truncate text-3xs font-medium text-[hsl(var(--pk-ink-soft))] group-hover:text-[hsl(var(--pk-ink))]">{screenLabel(next.id, entityName)}</span>
+            <span title={screenLabel(next.id, entityName)} className="block truncate text-xs font-medium text-[hsl(var(--pk-ink-soft))] group-hover:text-[hsl(var(--pk-ink))]">{screenLabel(next.id, entityName)}</span>
           </span>
           <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))] shrink-0" />
         </button>
