@@ -139,7 +139,7 @@ export function Sidebar({
         )}
       >
         <div className="flex items-center gap-2.5 px-4 h-14 border-b border-white/10 shrink-0">
-          <div className="leading-tight flex-1 min-w-0">
+          <div className="invisible leading-tight flex-1 min-w-0">
             <div className="font-head font-bold text-base tracking-tight lowercase">
               pro<span className="text-[hsl(var(--pk-accent-lt))]">khas</span>
             </div>
