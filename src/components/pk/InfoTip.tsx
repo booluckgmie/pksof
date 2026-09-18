@@ -34,11 +34,11 @@ export function InfoTip({
           }}
           aria-label={title ? `Show calculation for ${title}` : "Show calculation"}
           className={cn(
-            "inline-flex items-center justify-center h-4 w-4 rounded-full text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-accent))] hover:bg-[hsl(var(--pk-accent-soft))] transition-colors shrink-0",
+            "inline-flex items-center justify-center h-3 w-3 self-start -translate-y-0.5 rounded-full text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-accent))] hover:bg-[hsl(var(--pk-accent-soft))] transition-colors shrink-0",
             className
           )}
         >
-          <Info className="h-3.5 w-3.5" />
+          <Info className="h-2.5 w-2.5" />
         </button>
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
