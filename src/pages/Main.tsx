@@ -63,7 +63,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
           <div>
             <div className="text-3xs uppercase tracking-[0.14em] text-[hsl(var(--pk-accent-lt))] font-semibold">
-              {isRestrictedPillar ? `${entityName} pillar` : "Prokhas · wholly owned by MOF Inc."}
+              {isRestrictedPillar ? `${entityName} pillar` : "Prokhas Sdn Bhd"}
             </div>
             <h1 className="font-head text-2xl sm:text-3xl font-semibold tracking-tight mt-1">
               {isRestrictedPillar ? `${entityName} Performance` : "Group Performance"}
