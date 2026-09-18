@@ -4,7 +4,6 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { FhTabs } from "@/components/pk/FhTabs";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { BarTrend, LineTrend, FinancialResultsHistoryChart } from "@/components/pk/Charts";
-import { DataOriginBadge } from "@/components/pk/DataOrigin";
 import { InfoTip } from "@/components/pk/InfoTip";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
@@ -144,8 +143,6 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </button>
 
           {openBreakdown.pbt && <div className="mt-2"><BreakdownTable rows={pbtBreakdown} unit="RM 'mil" /></div>}
-
-          <div className="mt-2"><DataOriginBadge result={kpi1} /></div>
         </div>
 
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
@@ -184,8 +181,6 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </button>
 
           {openBreakdown.cir && <div className="mt-2"><BreakdownTable rows={cirBreakdown} unit="RM 'mil" /></div>}
-
-          <div className="mt-2"><DataOriginBadge result={kpi2} /></div>
         </div>
       </div>
     </div>
