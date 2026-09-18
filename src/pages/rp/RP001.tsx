@@ -31,7 +31,7 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   return (
     <div>
-      <ScreenHeader id="RP001" subtitle="Resource & People · Demographics and Recruitment Efficiency Index. Perspective weight fixed at 20%." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
+      <ScreenHeader id="RP001" subtitle="Tracks headcount metrics and recruitment efficiency across key hiring stages." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <SectionLabel>Section A — Demographics: Total Headcount</SectionLabel>
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-5">

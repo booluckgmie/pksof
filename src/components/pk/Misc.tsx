@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Download, RefreshCw, Bell, ChevronRight, Info, FileText, Presentation, Sheet, Loader2 } from "lucide-react";
-import { breadcrumbTrail, screenLabel, type ScreenId } from "@/lib/nav";
+import { breadcrumbTrail, breadcrumbLabel, screenLabel, type ScreenId } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/session";
 import { periodById } from "@/data/periods";
@@ -164,7 +164,7 @@ export function Breadcrumb({ current, onNavigate }: { current: ScreenId; onNavig
               i === trail.length - 1 && "text-[hsl(var(--pk-ink))] font-medium pointer-events-none"
             )}
           >
-            {screenLabel(s.id, entityName)}
+            {breadcrumbLabel(s.id, entityName)}
           </button>
         </span>
       ))}

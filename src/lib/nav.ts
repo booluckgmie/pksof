@@ -63,6 +63,15 @@ export function screenLabel(id: ScreenId, entityName: string): string {
   return screens[id].label;
 }
 
+/** Breadcrumb-only label — RP001's own label is specific enough to be its page title but too
+ * specific to double as the section crumb every RP screen's trail runs through (unlike CP001,
+ * whose label "Corporate Performance" already works as both). Falls back to screenLabel for
+ * everything else. */
+export function breadcrumbLabel(id: ScreenId, entityName: string): string {
+  if (id === "RP001") return "Resource & People";
+  return screenLabel(id, entityName);
+}
+
 export const cpNav: ScreenId[] = ["CP001", "CP002", "CP003", "CP004", "CP005", "CP006", "CP007", "CP008", "CP009"];
 export const fhNav: ScreenId[] = ["PFH001", "PFH002", "PFH003", "PFH004", "PFH005"];
 // RP002-RP004 stay fully routable (URL, breadcrumb) — just hidden from the sidebar/search nav below.
