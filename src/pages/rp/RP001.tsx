@@ -35,7 +35,7 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <SectionLabel>Section A — Demographics: Total Headcount</SectionLabel>
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-5">
-        <StatCard label="Total Employees" value={String(headcountSummary.totalEmployees)} />
+        <StatCard label="Total Employee(s)" value={String(headcountSummary.totalEmployees)} />
         <StatCard label="Bumiputera" value={String(headcountSummary.bumiputera)} tone="good" />
         <StatCard label="Non-Bumiputera" value={String(headcountSummary.nonBumiputera)} />
         <StatCard label="Approved Headcount" value={String(headcountSummary.approvedHeadcount)} />

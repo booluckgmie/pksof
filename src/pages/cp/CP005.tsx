@@ -205,14 +205,14 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 <table className="w-full text-sm min-w-[760px]">
                   <thead>
                     <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))] divide-x divide-white/15">
-                      <th rowSpan={2} className={cn(TH_CLASS, "align-bottom")}>Services</th>
+                      <th rowSpan={2} className={cn(TH_CLASS, "align-bottom")}>Service(s)</th>
                       <th rowSpan={2} className={cn(TH_RIGHT_CLASS, "align-bottom")}>Prior Rating</th>
                       <th colSpan={4} className="text-center font-bold px-3 py-1.5 border-b border-white/15">Current Analysis</th>
                     </tr>
                     <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))] divide-x divide-white/15">
                       <th className={TH_RIGHT_CLASS}>Avg Service Rating</th>
-                      <th className={TH_RIGHT_CLASS}>Surveys Sent</th>
-                      <th className={TH_RIGHT_CLASS}>Responses Received</th>
+                      <th className={TH_RIGHT_CLASS}>Survey(s) Sent</th>
+                      <th className={TH_RIGHT_CLASS}>Response(s) Received</th>
                       <th className={TH_RIGHT_CLASS}>% of Responses</th>
                     </tr>
                   </thead>
@@ -283,7 +283,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               <thead>
                 <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
                   <th className="text-left font-medium px-3 py-2.5 w-10">No</th>
-                  <th className="text-left font-medium px-3 py-2.5">Departments</th>
+                  <th className="text-left font-medium px-3 py-2.5">Department(s)</th>
                   {timeCharterByDept.periods.map((p) => (
                     <th key={p.id} className="text-right font-medium px-3 py-2.5">{p.label}</th>
                   ))}

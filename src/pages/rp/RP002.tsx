@@ -41,7 +41,7 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-5">
         <StatCard label="Approved Headcount" value={String(headcountSummary.approvedHeadcount)} sub="Approved establishment" />
-        <StatCard label="Filled Position" value={String(headcountSummary.filledPosition)} tone="good" sub="Active employees" />
+        <StatCard label="Filled Position" value={String(headcountSummary.filledPosition)} tone="good" sub="Active employee(s)" />
         <StatCard label="Vacant Position" value={String(vacant)} tone="pending" sub="Approved − filled" />
       </div>
 

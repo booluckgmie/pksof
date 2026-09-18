@@ -65,7 +65,7 @@ export function FinancialResultsOverview({
                 ]}
               />
               <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
-                <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlights (current quarter against preceding quarter)</div>
+                <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlight(s) (current quarter against preceding quarter)</div>
                 {isRealQuarter ? (
                   <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
                     <li>Lower income by <span className="font-semibold">RM9.8 million</span> mainly due to lower income from acquired loans by RM7.5 million and fee from advisory services by RM1.0 million.</li>
@@ -120,7 +120,7 @@ export function FinancialResultsOverview({
                 ]}
               />
               <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
-                <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlights</div>
+                <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlight(s)</div>
                 {isRealQuarter ? (
                   <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
                     <li>Higher income by <span className="font-semibold">RM5.5 million (12%)</span> mainly attributable to higher income from acquired loans by RM3.9 million and fee from managing SJPP by RM2.0 million, offset by lower fee from advisory services by RM426,000.</li>

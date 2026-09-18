@@ -46,7 +46,7 @@ export function PFH005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-5">
         <StatCard label={`Total RPT Value, RM'000 (${rptPeriods[0]?.label ?? "latest quarter"})`} value={fmt(total)} />
-        <StatCard label="Line Items" value={String(items.length)} />
+        <StatCard label="Line Item(s)" value={String(items.length)} />
       </div>
 
       {isRestrictedPillar && (

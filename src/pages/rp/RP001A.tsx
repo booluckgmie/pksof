@@ -113,7 +113,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <SplitBar segments={[{ label: "Male", value: genderBreakdown.male, color: "hsl(var(--pk-navy))" }, { label: "Female", value: genderBreakdown.female, color: "hsl(var(--pk-accent))" }]} />
           </div>
           <div className="sm:w-52 shrink-0">
-            <StatCard label="Total Employees" value={String(headcountSummary.totalEmployees)} />
+            <StatCard label="Total Employee(s)" value={String(headcountSummary.totalEmployees)} />
           </div>
         </div>
         <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">Gender is a mandatory HRMS field — no blanks permitted. Male + Female reconciles to Total Employees ({headcountSummary.totalEmployees}).</p>
@@ -130,7 +130,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 color: GRADE_CATEGORY_COLORS[cat],
               }))}
               centerValue={String(GRADE_CODE_GRAND_TOTAL)}
-              centerLabel="Total Employees"
+              centerLabel="Total Employee(s)"
             />
           </div>
           <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-2.5 w-full">
@@ -146,7 +146,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               </div>
             ))}
             <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-3 py-2.5">
-              <div className="text-xs font-semibold text-[hsl(var(--pk-ink))]">Total Employees</div>
+              <div className="text-xs font-semibold text-[hsl(var(--pk-ink))]">Total Employee(s)</div>
               <div className="tnum font-head text-xl font-bold text-[hsl(var(--pk-ink))] mt-1">{GRADE_CODE_GRAND_TOTAL}</div>
               <div className="text-2xs text-[hsl(var(--pk-ink-faint))] tnum">100.0%</div>
             </div>
@@ -174,7 +174,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               <Donut
                 segments={ageBreakdown.map((a) => ({ label: a.band, value: a.count, color: AGE_BAND_COLORS[a.band] ?? "hsl(var(--pk-ink-faint))" }))}
                 centerValue={String(headcountSummary.totalEmployees)}
-                centerLabel="Total Employees"
+                centerLabel="Total Employee(s)"
               />
             </div>
             <table className="w-full text-xs">

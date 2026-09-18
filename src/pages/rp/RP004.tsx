@@ -35,8 +35,8 @@ export function RP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <SectionLabel>Section A — Demographics: Turnover Rate</SectionLabel>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
-        <StatCard label="Total Employees" value={String(headcountSummary.totalEmployees)} sub="HRMS active employees" />
-        <StatCard label={`Employees Resigned (${period.label.split(" ")[0]})`} value={String(resigned)} sub="Resigned during quarter" />
+        <StatCard label="Total Employee(s)" value={String(headcountSummary.totalEmployees)} sub="HRMS active employee(s)" />
+        <StatCard label={`Employee(s) Resigned (${period.label.split(" ")[0]})`} value={String(resigned)} sub="Resigned during quarter" />
         <StatCard label="Turnover Rate" value={`${turnoverRate.toFixed(1)}%`} tone="good" sub="Resigned ÷ Total × 100" />
         <StatCard label="Industry Benchmark" value={`${industryBenchmark.toFixed(1)}%`} sub="Financial services" />
       </div>

@@ -85,7 +85,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       {!isRestrictedPillar && (
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card hover:shadow-floating transition-shadow p-4 mb-5">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            <StatCard label="Total KPIs" value={String(kpis.length)} />
+            <StatCard label="Total KPI(s)" value={String(kpis.length)} />
             <StatCard label="KPI Met" value={String(met)} tone="good" />
             <StatCard label="KPI Not Met" value={String(notMet)} tone={notMet > 0 ? "bad" : "default"} />
             <StatCard label="Not Measurable" value={String(notMeasurable)} tone="pending" />
@@ -129,7 +129,7 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               </button>
               <div className="grid grid-cols-2 gap-2">
                 <StatCard label="Overall Achievement" value={`${overall.toFixed(1)}%`} tone={overallTone} />
-                <StatCard label="KPIs Tracked" value={String(kpis.length)} />
+                <StatCard label="KPI(s) Tracked" value={String(kpis.length)} />
               </div>
             </div>
           )}

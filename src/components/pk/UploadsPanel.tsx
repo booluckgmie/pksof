@@ -267,9 +267,9 @@ export function UploadsPanel({ entityId, assignedModule, canDelete = false, show
                 <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
                   <th className="text-left font-medium px-3 py-2">File</th>
                   <th className="text-left font-medium px-3 py-2">{entityId ? "Sheets" : "Entity / Sheets"}</th>
-                  <th className="text-left font-medium px-3 py-2">Periods</th>
+                  <th className="text-left font-medium px-3 py-2">Period(s)</th>
                   <th className="text-left font-medium px-3 py-2">Uploaded</th>
-                  <th className="text-right font-medium px-3 py-2">Rows</th>
+                  <th className="text-right font-medium px-3 py-2">Row(s)</th>
                   {canDelete && <th className="w-16"></th>}
                   <th className="w-8"></th>
                 </tr>

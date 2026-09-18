@@ -28,8 +28,8 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <ScreenHeader id="RP003" subtitle="Resource & People · Turnover analysis and Bumiputera Composition." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
-        <StatCard label="Total Employees" value={String(headcountSummary.totalEmployees)} />
-        <StatCard label="Employees Resigned" value={String(resigned)} />
+        <StatCard label="Total Employee(s)" value={String(headcountSummary.totalEmployees)} />
+        <StatCard label="Employee(s) Resigned" value={String(resigned)} />
         <StatCard label="Turnover Rate" value={`${turnoverRate.toFixed(1)}%`} tone="good" />
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card px-4 py-3">
           <div className="flex items-center gap-1 text-3xs uppercase tracking-[0.1em] text-[hsl(var(--pk-ink-faint))] font-semibold">
