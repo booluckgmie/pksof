@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { screens, screenLabel, breadcrumbTrail, type ScreenId } from "@/lib/nav";
-import { Breadcrumb, ExportMenu, LevelPill, NotificationsBell, RefreshButton } from "@/components/pk/Misc";
+import { screenLabel, breadcrumbTrail, type ScreenId } from "@/lib/nav";
+import { Breadcrumb, ExportMenu, NotificationsBell, RefreshButton } from "@/components/pk/Misc";
 import { useWorkflow } from "@/lib/workflow";
 import { useSession } from "@/lib/session";
 import type { PeriodId } from "@/types";
@@ -23,7 +23,6 @@ export function ScreenHeader({
   periodId?: PeriodId;
   lastUpdated?: string;
 }) {
-  const s = screens[id];
   const { pending } = useWorkflow();
   const { entityName } = useSession();
   // A single-item trail (Main only, today) just repeats the H1 below it — skip that row's
@@ -41,13 +40,7 @@ export function ScreenHeader({
           <NotificationsBell count={pending.length} />
         </div>
       </div>
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-2.5">
-          <LevelPill level={s.level} />
-          <span className="font-mono-pk text-2xs text-[hsl(var(--pk-ink-faint))]">{s.code}</span>
-        </div>
-      </div>
-      <div className="flex items-end justify-between gap-4 flex-wrap -mt-1">
+      <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-head text-2xl font-bold text-[hsl(var(--pk-ink))]">{screenLabel(id, entityName)}</h1>
           {subtitle && <p className="text-sm text-[hsl(var(--pk-ink-faint))] mt-1">{subtitle}</p>}

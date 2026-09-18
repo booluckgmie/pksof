@@ -172,14 +172,6 @@ export function Breadcrumb({ current, onNavigate }: { current: ScreenId; onNavig
   );
 }
 
-export function LevelPill({ level }: { level: string }) {
-  return (
-    <span className="font-mono-pk text-3xs px-1.5 py-0.5 rounded border border-[hsl(var(--pk-border))] text-[hsl(var(--pk-navy))] bg-[hsl(var(--pk-navy-soft))]">
-      {level}
-    </span>
-  );
-}
-
 export function ProgressBar({ value, max, label }: { value: number; max: number; label?: string }) {
   const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   return (
