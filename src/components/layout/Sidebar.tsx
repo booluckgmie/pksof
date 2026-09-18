@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import {
   LayoutGrid, TrendingUp, Landmark, ShieldCheck, Users, Workflow, GraduationCap, Handshake,
   Wallet, ClipboardList, FileText, Scale, ArrowLeftRight, User, IdCard, LogOut, PenLine, CheckSquare, Lock, X,
@@ -6,9 +7,20 @@ import {
 import { cn } from "@/lib/utils";
 import { cpNav, fhNav, rpNav, screens, type ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
+import { useWorkflow } from "@/lib/workflow";
+import { fetchUploadEvents } from "@/lib/api/uploads";
 import { entityById } from "@/data/entities";
 import { YearQuarterDropdowns } from "@/components/pk/PeriodPicker";
 import { RefreshButton } from "@/components/pk/Misc";
+
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+/** "D Month YYYY, HH:MM" — same format the export filenames/cover pages use. */
+function formatLastUpdated(d: Date) {
+  return `${pad2(d.getDate())} ${d.toLocaleString("en-US", { month: "long" })} ${d.getFullYear()}, ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
 
 const CP_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   CP001: LayoutGrid, CP002: ClipboardList, CP003: Landmark, CP004: ShieldCheck,
@@ -110,6 +122,26 @@ export function Sidebar({
 }) {
   const { role, roleLabel, userName, canEnterData, canVerify, logout, isRestrictedPillar, homeEntityName, entityId, entityName } = useSession();
   const entityModules = entityById(entityId).modules;
+  const { submissions } = useWorkflow();
+
+  // "Last updated" is the latest of any published/submitted KPI value or any Excel upload,
+  // across the whole org — not scoped to the current screen or period, since this lives in the
+  // sidebar rather than a per-page header.
+  const [uploadedAts, setUploadedAts] = useState<string[]>([]);
+  useEffect(() => {
+    fetchUploadEvents()
+      .then((events) => setUploadedAts(events.map((e) => e.uploadedAt)))
+      .catch(() => {});
+  }, []);
+  const lastUpdated = useMemo(() => {
+    const timestamps = [
+      ...submissions.flatMap((s) => [s.reviewedAt, s.submittedAt].filter((t): t is string => !!t)),
+      ...uploadedAts,
+    ];
+    if (timestamps.length === 0) return null;
+    const latestMs = Math.max(...timestamps.map((t) => new Date(t).getTime()));
+    return formatLastUpdated(new Date(latestMs));
+  }, [submissions, uploadedAts]);
   // "Main/admin users" get the full perspective submenu; "normal" upload/verify roles get a
   // slim sidebar (Main + their own Data Governance items) — they can still reach every screen
   // as a guest would, via Main's own subpage dropdowns, without the full tree taking up space.
@@ -230,7 +262,7 @@ export function Sidebar({
         </nav>
 
         <div className="border-t border-white/10 px-3 py-2.5 flex items-center justify-between gap-2">
-          <span className="text-3xs text-white/45">Last updated 6 May 2026, 09:30</span>
+          <span className="text-3xs text-white/45">Last updated {lastUpdated ?? "—"}</span>
           <RefreshButton dark />
         </div>
 
