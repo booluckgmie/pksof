@@ -307,7 +307,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </div>
           )}
           <p className="text-xs text-[hsl(var(--pk-ink-soft))] mb-3">
-            Prokhas has identified a population / pool of <span className="font-semibold">{bumiputeraTraining.poolIdentified} Bumiputera employees</span> (from Junior Executive to Senior Manager) during the period to undergo competency development through the completion of at least two (2) registered programmes.
+            Prokhas Sdn Bhd has identified a population / pool of <span className="font-semibold">{bumiputeraTraining.poolIdentified} Bumiputera employees</span> (from Junior Executive to Senior Manager) during the period to undergo competency development through the completion of at least two (2) registered programmes.
           </p>
           <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-2">Status of completion of Bumiputera Competency Development Programmes as at {periodEndDateWords(periodId)}:</p>
           <div className="rounded-lg border border-[hsl(var(--pk-border))] overflow-hidden">

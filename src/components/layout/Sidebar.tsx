@@ -163,7 +163,7 @@ export function Sidebar({
                 <Lock className="h-3 w-3" />Scoped to {homeEntityName}
               </div>
               <p className="text-2xs text-white/55 mt-1.5 leading-snug">
-                {`Corporate Performance, Financial Health and Resource & People are Prokhas' own dashboards — not part of ${homeEntityName}'s pillar. ${homeEntityName}'s own modules are scoped for a later phase of this engagement.`}
+                {`Corporate Performance, Financial Health and Resource & People are Prokhas Sdn Bhd's own dashboards — not part of ${homeEntityName}'s pillar. ${homeEntityName}'s own modules are scoped for a later phase of this engagement.`}
               </p>
             </div>
           ) : isAdminTier ? (
@@ -174,7 +174,7 @@ export function Sidebar({
                     <Lock className="h-3 w-3" />Viewing {entityName}
                   </div>
                   <p className="text-2xs text-white/55 mt-1.5 leading-snug">
-                    Corporate Performance is Prokhas' own scorecard — hidden while viewing a Managed Entity's own dashboards.
+                    Corporate Performance is Prokhas Sdn Bhd's own scorecard — hidden while viewing a Managed Entity's own dashboards.
                   </p>
                 </div>
               )}

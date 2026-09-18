@@ -188,8 +188,8 @@ function AuthedApp() {
               : settingsBlocked
                 ? "Organisation-wide settings are restricted to the System Administrator role."
                 : entityBlocksGroup && !isRestrictedPillar
-                  ? `Corporate Performance is Prokhas' own scorecard for managing the Group — ${entityName} doesn't have one of its own, only its Financial Health and Resource & People dashboards.`
-                  : `This dashboard belongs to Prokhas' own scorecard. Your login is scoped to ${homeEntityName} and can't view it.`}
+                  ? `Corporate Performance is Prokhas Sdn Bhd's own scorecard for managing the Group — ${entityName} doesn't have one of its own, only its Financial Health and Resource & People dashboards.`
+                  : `This dashboard belongs to Prokhas Sdn Bhd's own scorecard. Your login is scoped to ${homeEntityName} and can't view it.`}
           </p>
           <button
             onClick={() => {

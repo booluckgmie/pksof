@@ -65,4 +65,5 @@ export function screenLabel(id: ScreenId, entityName: string): string {
 
 export const cpNav: ScreenId[] = ["CP001", "CP002", "CP003", "CP004", "CP005", "CP006", "CP007", "CP008", "CP009"];
 export const fhNav: ScreenId[] = ["PFH001", "PFH002", "PFH003", "PFH004", "PFH005"];
-export const rpNav: ScreenId[] = ["RP001", "RP001A", "RP002", "RP003", "RP004"];
+// RP002-RP004 stay fully routable (URL, breadcrumb) — just hidden from the sidebar/search nav below.
+export const rpNav: ScreenId[] = ["RP001", "RP001A"];
