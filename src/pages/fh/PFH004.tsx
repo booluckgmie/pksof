@@ -4,6 +4,7 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { FhTabs } from "@/components/pk/FhTabs";
 import { InfoNote } from "@/components/pk/Misc";
 import { PeriodPickerCompact, useLocalPeriodId } from "@/components/pk/PeriodPicker";
+import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { useDetails } from "@/lib/details";
 import { periodEndDateLabel, periodEndDateWords } from "@/data/periods";
 import { cn } from "@/lib/utils";
@@ -81,7 +82,7 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               The Group remains financially strong, with <span className="font-semibold text-[hsl(var(--pk-accent))]">shareholders' funds of {fmtM(fp.totalEquity.current)}</span> as of {periodEndDateWords(periodId)}.
             </p>
             <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
-              <div className="overflow-x-auto">
+              <DownloadableFrame filename="pfh004-financial-position-summary" className="overflow-x-auto">
                 <table className="w-full text-sm min-w-[480px]">
                   <thead>
                     <tr>
@@ -113,7 +114,7 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                     })}
                   </tbody>
                 </table>
-              </div>
+              </DownloadableFrame>
               <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
                 <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlights</div>
                 {isRealQuarter ? (

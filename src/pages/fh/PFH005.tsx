@@ -5,6 +5,7 @@ import { FhTabs } from "@/components/pk/FhTabs";
 import { StatCard } from "@/components/pk/Misc";
 import { pillarRowClass } from "@/components/pk/PillarGate";
 import { PeriodPickerCompact, useLocalPeriodId } from "@/components/pk/PeriodPicker";
+import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
 import { useDetails } from "@/lib/details";
@@ -55,7 +56,7 @@ export function PFH005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </div>
       )}
       <p className="text-xs text-[hsl(var(--pk-ink-soft))] mb-2">The significant related party transactions of the Company are shown below.</p>
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
+      <DownloadableFrame filename="pfh005-related-party-transactions" className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
         <table className="w-full text-sm min-w-[520px]">
           <thead>
             <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
@@ -98,7 +99,7 @@ export function PFH005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             ))}
           </tbody>
         </table>
-      </div>
+      </DownloadableFrame>
       <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">Only approved transactions are displayed, supported by valid source documents. Updated quarterly by Finance / Company Secretary.</p>
     </div>
   );

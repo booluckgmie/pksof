@@ -5,6 +5,7 @@ import { StatusChip } from "@/components/pk/StatusChip";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { RecruitmentIndexCardHeader, RecruitmentIndexTable } from "@/components/pk/RecruitmentIndexScorecard";
 import { PeopleDevPlanTable } from "@/components/pk/PeopleDevPlanTable";
+import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
@@ -103,9 +104,15 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       {expanded === "kpi9" && (
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
-          <RecruitmentIndexTable recruitmentIndex={recruitmentIndex} />
-        </div>
+        recruitmentIndex ? (
+          <DownloadableFrame filename="cp007-recruitment-index-detail" className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
+            <RecruitmentIndexTable recruitmentIndex={recruitmentIndex} />
+          </DownloadableFrame>
+        ) : (
+          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
+            <RecruitmentIndexTable recruitmentIndex={recruitmentIndex} />
+          </div>
+        )
       )}
 
       {expanded === "kpi10" && (

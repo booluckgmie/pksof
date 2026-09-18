@@ -2,6 +2,7 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatCard } from "@/components/pk/Misc";
 import { SplitBar, GroupedBarTrend, Donut } from "@/components/pk/Charts";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
+import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import type { ScreenId } from "@/lib/nav";
 import { useDetails } from "@/lib/details";
 
@@ -120,7 +121,19 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       <SectionLabel>Section B — Breakdown by Grade (5 approved bands)</SectionLabel>
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-5">
+      <DownloadableFrame
+        filename="rp001a-breakdown-by-grade"
+        className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-5"
+        csvData={{
+          headers: ["Job Band Level", "Grade Code", "Headcount", "% of Workforce"],
+          rows: GRADE_CATEGORY_ORDER.map((cat) => [
+            GRADE_INFO[cat]?.displayLabel ?? cat,
+            GRADE_INFO[cat]?.code ?? "—",
+            GRADE_CODE_CATEGORY_TOTALS[cat],
+            `${((GRADE_CODE_CATEGORY_TOTALS[cat] / GRADE_CODE_GRAND_TOTAL) * 100).toFixed(1)}%`,
+          ]),
+        }}
+      >
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <div className="w-40 shrink-0">
             <Donut
@@ -153,23 +166,31 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
         </div>
         <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">As at Q2 FY2026 · HRMS establishment listing (16 grade codes across 5 job band levels). Source: HRMS.</p>
-      </div>
+      </DownloadableFrame>
 
       <SectionLabel>Section C — Breakdown by Age Group (4 bands)</SectionLabel>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="text-2xs font-bold underline text-[hsl(var(--pk-ink-faint))] mb-2">Male / Female Headcount per Age Band (HRMS)</div>
-          <GroupedBarTrend
-            data={ageGenderBreakdown.map((a) => ({ label: a.band, a: a.male, b: a.female }))}
-            aLabel="Male"
-            bLabel="Female"
-            aColor="hsl(var(--pk-navy))"
-            bColor="hsl(var(--pk-accent))"
-          />
+          <DownloadableFrame
+            filename="rp001a-age-band-by-gender"
+            csvData={{
+              headers: ["Age Band", "Male", "Female"],
+              rows: ageGenderBreakdown.map((a) => [a.band, a.male, a.female]),
+            }}
+          >
+            <GroupedBarTrend
+              data={ageGenderBreakdown.map((a) => ({ label: a.band, a: a.male, b: a.female }))}
+              aLabel="Male"
+              bLabel="Female"
+              aColor="hsl(var(--pk-navy))"
+              bColor="hsl(var(--pk-accent))"
+            />
+          </DownloadableFrame>
         </div>
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="text-2xs font-bold underline text-[hsl(var(--pk-ink-faint))] mb-2">Workforce Age Profile — By Band</div>
-          <div className="flex flex-col sm:flex-row items-center gap-4">
+          <DownloadableFrame filename="rp001a-workforce-age-profile" className="flex flex-col sm:flex-row items-center gap-4">
             <div className="w-40 shrink-0">
               <Donut
                 segments={ageBreakdown.map((a) => ({ label: a.band, value: a.count, color: AGE_BAND_COLORS[a.band] ?? "hsl(var(--pk-ink-faint))" }))}
@@ -203,7 +224,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </DownloadableFrame>
           <div className="flex items-center justify-between mt-3">
             <p className="text-2xs text-[hsl(var(--pk-ink-faint))]">Average Age: <span className="font-semibold text-[hsl(var(--pk-ink))]">{averageAge.toFixed(1)} years</span></p>
             <p className="text-2xs text-[hsl(var(--pk-ink-faint))]">Source: HRMS</p>
@@ -212,7 +233,24 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       </div>
 
       <SectionLabel>Section D — Cross-tab: Job Band Level × Gender × Average Age</SectionLabel>
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
+      <DownloadableFrame
+        filename="rp001a-job-band-gender-age-crosstab"
+        className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto"
+        csvData={{
+          headers: ["Job Band Level", "Grade Code", "Male", "Female", "Total", "% of Workforce", "Average Age"],
+          rows: [
+            ...GRADE_CODE_ROWS.map((row) => {
+              const rowTotal = row.male + row.female;
+              return [
+                GRADE_INFO[row.category]?.displayLabel ?? row.category, row.code, row.male, row.female, rowTotal,
+                totalEmployees > 0 ? `${((rowTotal / totalEmployees) * 100).toFixed(1)}%` : "—",
+                GRADE_CATEGORY_AVG_AGE[row.category].toFixed(1),
+              ];
+            }),
+            ["Total", "", GRADE_CODE_MALE_TOTAL, GRADE_CODE_FEMALE_TOTAL, GRADE_CODE_GRAND_TOTAL, "100.0%", averageAge.toFixed(1)],
+          ],
+        }}
+      >
         <table className="w-full text-sm min-w-[680px]">
           <thead>
             <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
@@ -259,7 +297,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </tr>
           </tbody>
         </table>
-      </div>
+      </DownloadableFrame>
       <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-2 flex items-center justify-between flex-wrap gap-2">
         <span>As at Q2 FY2026 · Job Band Level derived from HRMS grade code (SM1–SM3, TS1–TS2, TS3–TS5, TS6–TS8, OS1–OS4). Total headcount shall reconcile with active employees.</span>
         <span>Source: HRMS</span>

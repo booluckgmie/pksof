@@ -3,6 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { Donut, LineTrend } from "@/components/pk/Charts";
+import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
@@ -75,15 +76,19 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <ComparePeriodsPicker selected={compareIds} onChange={setCompareIds} />
       </div>
 
-      <PeriodComparisonTable
-        periodIds={compareIds}
-        onRemove={(id) => setCompareIds((prev) => prev.filter((x) => x !== id))}
-        rows={[
-          { label: "Bumiputera Composition — Weighted Achievement", get: (id) => { const r = latestValue("KPI12", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
-          { label: "Bumiputera Procurement — Weighted Achievement", get: (id) => { const r = latestValue("KPI11", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
-          { label: "Bumiputera Training — Weighted Achievement", get: (id) => { const r = latestValue("KPI13", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
-        ]}
-      />
+      {compareIds.length > 0 && (
+        <DownloadableFrame filename="cp008-period-comparison">
+          <PeriodComparisonTable
+            periodIds={compareIds}
+            onRemove={(id) => setCompareIds((prev) => prev.filter((x) => x !== id))}
+            rows={[
+              { label: "Bumiputera Composition — Weighted Achievement", get: (id) => { const r = latestValue("KPI12", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
+              { label: "Bumiputera Procurement — Weighted Achievement", get: (id) => { const r = latestValue("KPI11", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
+              { label: "Bumiputera Training — Weighted Achievement", get: (id) => { const r = latestValue("KPI13", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
+            ]}
+          />
+        </DownloadableFrame>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div
@@ -199,7 +204,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
             <div className="text-2xs font-bold underline text-[hsl(var(--pk-ink-faint))] mb-2">Bumiputera Composition</div>
-            <div className="flex flex-col sm:flex-row items-center gap-4">
+            <DownloadableFrame filename="cp008-bumiputera-composition" className="flex flex-col sm:flex-row items-center gap-4">
               <div className="w-36 shrink-0">
                 <Donut
                   segments={[
@@ -236,7 +241,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                   </tr>
                 </tbody>
               </table>
-            </div>
+            </DownloadableFrame>
           </div>
           {compositionTrend.length > 1 && (
             <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
@@ -244,7 +249,12 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 <div className="text-2xs font-bold underline text-[hsl(var(--pk-ink-faint))]">Composition trend by quarter</div>
                 <DurationFilterBar duration={compDuration} onChange={setCompDuration} total={fullCompositionTrend.length} label="" />
               </div>
-              <LineTrend data={compositionTrend} unit="%" />
+              <DownloadableFrame
+                filename="cp008-composition-trend"
+                csvData={{ headers: ["Period", "Bumiputera %"], rows: compositionTrend.map((d) => [d.label, d.value.toFixed(1)]) }}
+              >
+                <LineTrend data={compositionTrend} unit="%" />
+              </DownloadableFrame>
             </div>
           )}
         </div>
@@ -253,7 +263,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       {expanded === "procurement" && (
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-hidden mb-4">
           <div className="px-4 pt-3.5 pb-1 font-head font-bold text-[hsl(var(--pk-ink))]">Bumiputera Procurement by Department</div>
-          <div className="overflow-x-auto">
+          <DownloadableFrame filename="cp008-procurement-by-department" className="overflow-x-auto">
             <table className="w-full text-sm min-w-[520px]">
               <thead>
                 <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
@@ -294,7 +304,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 )}
               </tbody>
             </table>
-          </div>
+          </DownloadableFrame>
         </div>
       )}
 
@@ -310,7 +320,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             Prokhas Sdn Bhd has identified a population / pool of <span className="font-semibold">{bumiputeraTraining.poolIdentified} Bumiputera employees</span> (from Junior Executive to Senior Manager) during the period to undergo competency development through the completion of at least two (2) registered programmes.
           </p>
           <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-2">Status of completion of Bumiputera Competency Development Programmes as at {periodEndDateWords(periodId)}:</p>
-          <div className="rounded-lg border border-[hsl(var(--pk-border))] overflow-hidden">
+          <DownloadableFrame filename="cp008-bumiputera-training-status" className="rounded-lg border border-[hsl(var(--pk-border))] overflow-hidden">
             <table className="w-full text-sm">
               <tbody>
                 <tr className="border-b border-[hsl(var(--pk-border))]">
@@ -323,7 +333,7 @@ export function CP008({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </DownloadableFrame>
           <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">Annual target {kpi13Target} staff{bumiputeraTraining.attendedOne === 0 ? " · training not yet commenced this financial year." : ` · stage: ${bumiputeraTraining.stage}.`}</p>
         </div>
       )}

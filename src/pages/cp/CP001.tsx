@@ -26,6 +26,7 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="w-full rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-5 flex flex-col md:flex-row items-center gap-6 mb-6">
         <Gauge value={overall} cumulativeThreshold={period.cumulativeThreshold} mofThreshold={period.mofThreshold} label="YTD achievement" size={220} />
         <div className="flex-1 w-full overflow-x-auto">
+          <DownloadableFrame filename="cp001-ytd-achievement-thresholds">
           <table className="w-full text-sm min-w-[420px]">
             <thead>
               <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
@@ -58,6 +59,7 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               </tr>
             </tbody>
           </table>
+          </DownloadableFrame>
         </div>
       </div>
 

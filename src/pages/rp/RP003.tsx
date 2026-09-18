@@ -3,6 +3,7 @@ import { StatCard } from "@/components/pk/Misc";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { InfoTip } from "@/components/pk/InfoTip";
 import { LineTrend, CategoryBar } from "@/components/pk/Charts";
+import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
@@ -49,24 +50,40 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </div>
             <DurationFilterBar duration={duration} onChange={setDuration} total={fullTurnoverTrend.length} label="" />
           </div>
-          <LineTrend
-            data={turnoverTrend.map((t) => ({ label: t.period.replace(" FY", " '"), value: t.rate }))}
-            unit="%"
-            referenceLine={{ value: industryBenchmark, label: "Industry benchmark" }}
-          />
+          <DownloadableFrame
+            filename="rp003-turnover-trend"
+            csvData={{
+              headers: ["Period", "Turnover Rate (%)", "Industry Benchmark (%)"],
+              rows: turnoverTrend.map((t) => [t.period, t.rate, industryBenchmark]),
+            }}
+          >
+            <LineTrend
+              data={turnoverTrend.map((t) => ({ label: t.period.replace(" FY", " '"), value: t.rate }))}
+              unit="%"
+              referenceLine={{ value: industryBenchmark, label: "Industry benchmark" }}
+            />
+          </DownloadableFrame>
         </div>
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))]">KPI 12 — Bumiputera Composition</div>
             <StatusChip status={kpi12.status} />
           </div>
-          <CategoryBar segments={[{ label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" }, { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" }]} />
+          <DownloadableFrame
+            filename="rp003-bumiputera-composition"
+            csvData={{
+              headers: ["Category", "Headcount"],
+              rows: [["Bumiputera", headcountSummary.bumiputera], ["Non-Bumiputera", headcountSummary.nonBumiputera]],
+            }}
+          >
+            <CategoryBar segments={[{ label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" }, { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" }]} />
+          </DownloadableFrame>
         </div>
       </div>
 
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
         <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">KPI 12 performance detail</div>
-        <div className="overflow-x-auto">
+        <DownloadableFrame filename="rp003-kpi12-performance-detail" className="overflow-x-auto">
           <table className="w-full text-sm min-w-[480px]">
             <thead>
               <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
@@ -83,7 +100,7 @@ export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               </tr>
             </tbody>
           </table>
-        </div>
+        </DownloadableFrame>
       </div>
     </div>
   );

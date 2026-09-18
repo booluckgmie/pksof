@@ -4,6 +4,7 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { InfoTip } from "@/components/pk/InfoTip";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
+import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import { cn } from "@/lib/utils";
 import { anonymizedEntityLabel } from "@/lib/anonymize";
@@ -280,7 +281,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               Not fully measured this quarter — progress only for components not yet due.
             </div>
           )}
-          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
+          <DownloadableFrame filename="cp004-governance-index-breakdown" className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))] divide-x divide-white/15">
@@ -315,7 +316,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </DownloadableFrame>
           <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-2 flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-sm shrink-0 bg-[hsl(var(--pk-bad-soft))] border border-[hsl(var(--pk-bad))]" />
             Highlighted rows have a Weighted Achievement below the component's full weight — not yet met.

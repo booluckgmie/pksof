@@ -1,5 +1,6 @@
 import { QoQHorizontalBars } from "@/components/pk/Charts";
 import { InfoNote } from "@/components/pk/Misc";
+import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { FinancialResultsTable } from "@/components/pk/FinancialResultsTable";
 import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
 import { useDetails } from "@/lib/details";
@@ -55,15 +56,27 @@ export function FinancialResultsOverview({
               </p>
             )}
             <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
-              <QoQHorizontalBars
-                currentLabel={shortQ(period.label)}
-                compareLabel={shortQ(results.qoq.compareLabel)}
-                categories={[
-                  { label: "Total Income", current: c.totalIncome ?? 0, compare: b.totalIncome ?? 0 },
-                  { label: "Total Expenses", current: Math.abs(c.expenses ?? 0), compare: Math.abs(b.expenses ?? 0) },
-                  { label: "Profit Before Tax", current: c.pbt ?? 0, compare: b.pbt ?? 0 },
-                ]}
-              />
+              <DownloadableFrame
+                filename="financial-results-current-vs-preceding-quarter"
+                csvData={{
+                  headers: ["Category", shortQ(period.label), shortQ(results.qoq.compareLabel)],
+                  rows: [
+                    ["Total Income", c.totalIncome ?? 0, b.totalIncome ?? 0],
+                    ["Total Expenses", Math.abs(c.expenses ?? 0), Math.abs(b.expenses ?? 0)],
+                    ["Profit Before Tax", c.pbt ?? 0, b.pbt ?? 0],
+                  ],
+                }}
+              >
+                <QoQHorizontalBars
+                  currentLabel={shortQ(period.label)}
+                  compareLabel={shortQ(results.qoq.compareLabel)}
+                  categories={[
+                    { label: "Total Income", current: c.totalIncome ?? 0, compare: b.totalIncome ?? 0 },
+                    { label: "Total Expenses", current: Math.abs(c.expenses ?? 0), compare: Math.abs(b.expenses ?? 0) },
+                    { label: "Profit Before Tax", current: c.pbt ?? 0, compare: b.pbt ?? 0 },
+                  ]}
+                />
+              </DownloadableFrame>
               <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
                 <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlight(s) (current quarter against preceding quarter)</div>
                 {isRealQuarter ? (
@@ -110,15 +123,27 @@ export function FinancialResultsOverview({
               </p>
             )}
             <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
-              <QoQHorizontalBars
-                currentLabel="Actual"
-                compareLabel="Budget"
-                categories={[
-                  { label: "Total Income", current: c.totalIncome ?? 0, compare: b.totalIncome ?? 0 },
-                  { label: "Total Expenses", current: Math.abs(c.expenses ?? 0), compare: Math.abs(b.expenses ?? 0) },
-                  { label: "Profit Before Tax", current: c.pbt ?? 0, compare: b.pbt ?? 0 },
-                ]}
-              />
+              <DownloadableFrame
+                filename="financial-results-actual-vs-budget"
+                csvData={{
+                  headers: ["Category", "Actual", "Budget"],
+                  rows: [
+                    ["Total Income", c.totalIncome ?? 0, b.totalIncome ?? 0],
+                    ["Total Expenses", Math.abs(c.expenses ?? 0), Math.abs(b.expenses ?? 0)],
+                    ["Profit Before Tax", c.pbt ?? 0, b.pbt ?? 0],
+                  ],
+                }}
+              >
+                <QoQHorizontalBars
+                  currentLabel="Actual"
+                  compareLabel="Budget"
+                  categories={[
+                    { label: "Total Income", current: c.totalIncome ?? 0, compare: b.totalIncome ?? 0 },
+                    { label: "Total Expenses", current: Math.abs(c.expenses ?? 0), compare: Math.abs(b.expenses ?? 0) },
+                    { label: "Profit Before Tax", current: c.pbt ?? 0, compare: b.pbt ?? 0 },
+                  ]}
+                />
+              </DownloadableFrame>
               <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
                 <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlight(s)</div>
                 {isRealQuarter ? (
@@ -142,34 +167,38 @@ export function FinancialResultsOverview({
       <div className="mb-4">
         {tableKind === "qoq" ? (
           results.qoq ? (
-            <FinancialResultsTable
-              title="Current Quarter vs Preceding Quarter"
-              currentLabel={period.label}
-              compareLabel={results.qoq.compareLabel}
-              current={results.current!}
-              compare={results.qoq.compare}
-              revenueCurrent={results.qoq.revenue}
-              revenueCompare={results.qoq.revenueCompare}
-              expensesCurrent={results.qoq.expenses}
-              expensesCompare={results.qoq.expensesCompare}
-            />
+            <DownloadableFrame filename="financial-results-table-current-vs-preceding-quarter">
+              <FinancialResultsTable
+                title="Current Quarter vs Preceding Quarter"
+                currentLabel={period.label}
+                compareLabel={results.qoq.compareLabel}
+                current={results.current!}
+                compare={results.qoq.compare}
+                revenueCurrent={results.qoq.revenue}
+                revenueCompare={results.qoq.revenueCompare}
+                expensesCurrent={results.qoq.expenses}
+                expensesCompare={results.qoq.expensesCompare}
+              />
+            </DownloadableFrame>
           ) : (
             <div className="rounded-lg border border-dashed border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-6 text-center">
               <p className="text-xs text-[hsl(var(--pk-ink-faint))]">No preceding-quarter figures to compare {period.label} against yet.</p>
             </div>
           )
         ) : results.budget ? (
-          <FinancialResultsTable
-            title="Actual vs Budget"
-            currentLabel={`${period.label} Actual`}
-            compareLabel={`${period.label} Budget`}
-            current={results.current!}
-            compare={results.budget.compare}
-            revenueCurrent={results.budget.revenue}
-            revenueCompare={results.budget.revenueCompare}
-            expensesCurrent={results.budget.expenses}
-            expensesCompare={results.budget.expensesCompare}
-          />
+          <DownloadableFrame filename="financial-results-table-actual-vs-budget">
+            <FinancialResultsTable
+              title="Actual vs Budget"
+              currentLabel={`${period.label} Actual`}
+              compareLabel={`${period.label} Budget`}
+              current={results.current!}
+              compare={results.budget.compare}
+              revenueCurrent={results.budget.revenue}
+              revenueCompare={results.budget.revenueCompare}
+              expensesCurrent={results.budget.expenses}
+              expensesCompare={results.budget.expensesCompare}
+            />
+          </DownloadableFrame>
         ) : (
           <div className="rounded-lg border border-dashed border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-6 text-center">
             <p className="text-xs text-[hsl(var(--pk-ink-faint))]">No budget figures entered for {period.label} yet.</p>

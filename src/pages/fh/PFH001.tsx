@@ -9,6 +9,7 @@ import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
 import { BreakdownTable } from "@/components/pk/BreakdownTable";
+import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
@@ -76,27 +77,39 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       />
       <FhTabs current="PFH001" onNavigate={onNavigate} />
 
-      <PeriodComparisonTable
-        periodIds={compareIds}
-        onRemove={(id) => setCompareIds((prev) => prev.filter((x) => x !== id))}
-        rows={[
-          { label: "Profit Before Tax — YTD Actual", get: (id) => { const r = latestValue("KPI1", entityId, id); return r.ytdActual !== null ? `RM ${r.ytdActual.toFixed(1)}m` : "—"; } },
-          { label: "Profit Before Tax — Weighted Achievement", get: (id) => { const r = latestValue("KPI1", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
-          { label: "Cost-to-Income Ratio — YTD Actual", get: (id) => { const r = latestValue("KPI2", entityId, id); return r.ytdActual !== null ? `${r.ytdActual.toFixed(1)}%` : "—"; } },
-          { label: "Cost-to-Income Ratio — Weighted Achievement", get: (id) => { const r = latestValue("KPI2", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
-        ]}
-      />
+      {compareIds.length > 0 && (
+        <DownloadableFrame filename="pfh001-period-comparison">
+          <PeriodComparisonTable
+            periodIds={compareIds}
+            onRemove={(id) => setCompareIds((prev) => prev.filter((x) => x !== id))}
+            rows={[
+              { label: "Profit Before Tax — YTD Actual", get: (id) => { const r = latestValue("KPI1", entityId, id); return r.ytdActual !== null ? `RM ${r.ytdActual.toFixed(1)}m` : "—"; } },
+              { label: "Profit Before Tax — Weighted Achievement", get: (id) => { const r = latestValue("KPI1", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
+              { label: "Cost-to-Income Ratio — YTD Actual", get: (id) => { const r = latestValue("KPI2", entityId, id); return r.ytdActual !== null ? `${r.ytdActual.toFixed(1)}%` : "—"; } },
+              { label: "Cost-to-Income Ratio — Weighted Achievement", get: (id) => { const r = latestValue("KPI2", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
+            ]}
+          />
+        </DownloadableFrame>
+      )}
 
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-5">
         <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">Overview of Financial Results</div>
-        <FinancialResultsHistoryChart
-          data={FINANCIAL_RESULTS_HISTORY}
-          dividerBeforeIndex={FINANCIAL_RESULTS_HISTORY.length - 1}
-          banner={[
-            { label: "Old SJPP income recognition structure", from: 0, to: 2 },
-            { label: "Impact from changes in SJPP income recognition structure", from: 3, to: FINANCIAL_RESULTS_HISTORY.length - 1 },
-          ]}
-        />
+        <DownloadableFrame
+          filename="pfh001-overview-of-financial-results"
+          csvData={{
+            headers: ["Period", "Revenue (RM mil)", "PBT (RM mil)"],
+            rows: FINANCIAL_RESULTS_HISTORY.map((h) => [h.label, h.revenue, h.pbt]),
+          }}
+        >
+          <FinancialResultsHistoryChart
+            data={FINANCIAL_RESULTS_HISTORY}
+            dividerBeforeIndex={FINANCIAL_RESULTS_HISTORY.length - 1}
+            banner={[
+              { label: "Old SJPP income recognition structure", from: 0, to: 2 },
+              { label: "Impact from changes in SJPP income recognition structure", from: 3, to: FINANCIAL_RESULTS_HISTORY.length - 1 },
+            ]}
+          />
+        </DownloadableFrame>
       </div>
 
       {/* KPI 1 / KPI 2 detail — the same two cards as CP003's own Financial Perspective screen,
@@ -142,7 +155,17 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </div>
           </button>
 
-          {openBreakdown.pbt && <div className="mt-2"><BreakdownTable rows={pbtBreakdown} unit="RM 'mil" /></div>}
+          {openBreakdown.pbt && (
+            <div className="mt-2">
+              {pbtBreakdown.length > 0 ? (
+                <DownloadableFrame filename="pfh001-pbt-breakdown">
+                  <BreakdownTable rows={pbtBreakdown} unit="RM 'mil" />
+                </DownloadableFrame>
+              ) : (
+                <BreakdownTable rows={pbtBreakdown} unit="RM 'mil" />
+              )}
+            </div>
+          )}
         </div>
 
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
@@ -180,7 +203,17 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </div>
           </button>
 
-          {openBreakdown.cir && <div className="mt-2"><BreakdownTable rows={cirBreakdown} unit="RM 'mil" /></div>}
+          {openBreakdown.cir && (
+            <div className="mt-2">
+              {cirBreakdown.length > 0 ? (
+                <DownloadableFrame filename="pfh001-cir-breakdown">
+                  <BreakdownTable rows={cirBreakdown} unit="RM 'mil" />
+                </DownloadableFrame>
+              ) : (
+                <BreakdownTable rows={cirBreakdown} unit="RM 'mil" />
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { StatusChip } from "@/components/pk/StatusChip";
 import { StackedBarTrend } from "@/components/pk/Charts";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { NoDataState } from "@/components/pk/DataOrigin";
+import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
 import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
@@ -100,15 +101,19 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <ComparePeriodsPicker selected={compareIds} onChange={setCompareIds} />
       </div>
 
-      <PeriodComparisonTable
-        periodIds={compareIds}
-        onRemove={(id) => setCompareIds((prev) => prev.filter((x) => x !== id))}
-        rows={[
-          { label: "External Client Satisfaction — YTD Actual", get: (id) => { const r = latestValue("KPI5", entityId, id); return r.ytdActual !== null ? r.ytdActual.toFixed(1) : "—"; } },
-          { label: "External Client Satisfaction — Weighted Achievement", get: (id) => { const r = latestValue("KPI5", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
-          { label: "Time Charter Compliance — Weighted Achievement", get: (id) => { const r = latestValue("KPI6", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
-        ]}
-      />
+      {compareIds.length > 0 && (
+        <DownloadableFrame filename="cp005-period-comparison">
+          <PeriodComparisonTable
+            periodIds={compareIds}
+            onRemove={(id) => setCompareIds((prev) => prev.filter((x) => x !== id))}
+            rows={[
+              { label: "External Client Satisfaction — YTD Actual", get: (id) => { const r = latestValue("KPI5", entityId, id); return r.ytdActual !== null ? r.ytdActual.toFixed(1) : "—"; } },
+              { label: "External Client Satisfaction — Weighted Achievement", get: (id) => { const r = latestValue("KPI5", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
+              { label: "Time Charter Compliance — Weighted Achievement", get: (id) => { const r = latestValue("KPI6", entityId, id); return r.weighted !== null ? `${(r.weighted * 100).toFixed(1)}%` : "—"; } },
+            ]}
+          />
+        </DownloadableFrame>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div
@@ -196,12 +201,44 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 mb-4 items-start">
           <div className="lg:col-span-3 rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
             <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Historical trend (by year)</div>
-            <StackedBarTrend data={satisfactionYearlyTrend} />
+            <DownloadableFrame
+              filename="cp005-satisfaction-historical-trend"
+              csvData={{
+                headers: ["Year", "Actual", "Gap to target"],
+                rows: satisfactionYearlyTrend.map((y) => [y.label, y.segments[0].value.toFixed(1), y.segments[1].value.toFixed(1)]),
+              }}
+            >
+              <StackedBarTrend data={satisfactionYearlyTrend} />
+            </DownloadableFrame>
           </div>
 
           <div className="lg:col-span-7">
             {serviceBreakdown.hasData ? (
-              <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
+              <DownloadableFrame
+                filename="cp005-service-breakdown"
+                className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto"
+                csvData={{
+                  headers: ["Category", "Service(s)", "Prior Rating", "Avg Service Rating", "Band", "Survey(s) Sent", "Response(s) Received", "% of Responses"],
+                  rows: [
+                    ...serviceBreakdown.services.map((s) => [
+                      s.category, s.service,
+                      s.priorRating !== null ? s.priorRating.toFixed(1) : "—",
+                      s.rating !== null ? s.rating.toFixed(1) : "—",
+                      s.rating !== null ? s.band : "—",
+                      s.sent ?? "—", s.received ?? "—",
+                      s.responseRate !== null ? `${s.responseRate}%` : "—",
+                    ]),
+                    ...(serviceBreakdown.total ? [[
+                      "", "Corp. Average Rating",
+                      serviceBreakdown.total.priorRating !== null ? serviceBreakdown.total.priorRating.toFixed(1) : "—",
+                      serviceBreakdown.total.rating !== null ? serviceBreakdown.total.rating.toFixed(1) : "—",
+                      serviceBreakdown.total.rating !== null ? serviceBreakdown.total.band : "—",
+                      serviceBreakdown.total.sent ?? "—", serviceBreakdown.total.received ?? "—",
+                      serviceBreakdown.total.responseRate !== null ? `${serviceBreakdown.total.responseRate}%` : "—",
+                    ]] : []),
+                  ],
+                }}
+              >
                 <table className="w-full text-sm min-w-[760px]">
                   <thead>
                     <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))] divide-x divide-white/15">
@@ -267,7 +304,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                     )}
                   </tbody>
                 </table>
-              </div>
+              </DownloadableFrame>
             ) : (
               <NoDataState title="No service ratings recorded" body="The External Client Satisfaction survey is bi-annual — service-level ratings for this year haven't been published yet." />
             )}
@@ -278,7 +315,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       {expanded === "kpi6" && timeCharterByDept.periods.length > 0 && (
         <>
           <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Summary of Results</div>
-          <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
+          <DownloadableFrame filename="cp005-time-charter-by-department" className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
             <table className="w-full text-sm min-w-[560px]">
               <thead>
                 <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
@@ -310,7 +347,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </DownloadableFrame>
         </>
       )}
     </div>

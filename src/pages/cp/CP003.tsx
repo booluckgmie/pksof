@@ -8,6 +8,7 @@ import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
 import { BreakdownTable } from "@/components/pk/BreakdownTable";
+import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -59,7 +60,11 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <ComparePeriodsPicker selected={compareIds} onChange={setCompareIds} />
       </div>
 
-      <PeriodComparisonTable periodIds={compareIds} rows={compareRows} onRemove={(id) => setCompareIds((prev) => prev.filter((x) => x !== id))} />
+      {compareIds.length > 0 && (
+        <DownloadableFrame filename="cp003-period-comparison">
+          <PeriodComparisonTable periodIds={compareIds} rows={compareRows} onRemove={(id) => setCompareIds((prev) => prev.filter((x) => x !== id))} />
+        </DownloadableFrame>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
@@ -97,7 +102,17 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </div>
           </button>
 
-          {openBreakdown.pbt && <div className="mt-2"><BreakdownTable rows={pbtBreakdown} unit="RM 'mil" /></div>}
+          {openBreakdown.pbt && (
+            <div className="mt-2">
+              {pbtBreakdown.length > 0 ? (
+                <DownloadableFrame filename="cp003-pbt-breakdown">
+                  <BreakdownTable rows={pbtBreakdown} unit="RM 'mil" />
+                </DownloadableFrame>
+              ) : (
+                <BreakdownTable rows={pbtBreakdown} unit="RM 'mil" />
+              )}
+            </div>
+          )}
         </div>
 
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
@@ -135,7 +150,17 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </div>
           </button>
 
-          {openBreakdown.cir && <div className="mt-2"><BreakdownTable rows={cirBreakdown} unit="RM 'mil" /></div>}
+          {openBreakdown.cir && (
+            <div className="mt-2">
+              {cirBreakdown.length > 0 ? (
+                <DownloadableFrame filename="cp003-cir-breakdown">
+                  <BreakdownTable rows={cirBreakdown} unit="RM 'mil" />
+                </DownloadableFrame>
+              ) : (
+                <BreakdownTable rows={cirBreakdown} unit="RM 'mil" />
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
