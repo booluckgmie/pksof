@@ -8,6 +8,7 @@ import { cpNav, fhNav, rpNav, screens, type ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { entityById } from "@/data/entities";
 import { YearQuarterDropdowns } from "@/components/pk/PeriodPicker";
+import { RefreshButton } from "@/components/pk/Misc";
 
 const CP_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   CP001: LayoutGrid, CP002: ClipboardList, CP003: Landmark, CP004: ShieldCheck,
@@ -227,6 +228,11 @@ export function Sidebar({
             <NavTag id="GLOSSARY" icon={BookOpen} active={current === "GLOSSARY"} onClick={() => navigate("GLOSSARY")} />
           </div>
         </nav>
+
+        <div className="border-t border-white/10 px-3 py-2.5 flex items-center justify-between gap-2">
+          <span className="text-3xs text-white/45">Last updated 6 May 2026, 09:30</span>
+          <RefreshButton dark />
+        </div>
 
         <div className="border-t border-white/10 p-3 flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">

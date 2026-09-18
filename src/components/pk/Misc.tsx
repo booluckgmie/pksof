@@ -118,14 +118,19 @@ export function ExportMenu({ screenId, label = "Export", periodId: periodIdProp 
   );
 }
 
-export function RefreshButton({ onClick }: { onClick?: () => void }) {
+export function RefreshButton({ onClick, dark = false }: { onClick?: () => void; dark?: boolean }) {
   return (
     <button
       onClick={() => {
         onClick?.();
         toast.success("Dashboard refreshed", { description: "Figures reflect the latest Published data." });
       }}
-      className="inline-flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-2.5 py-1.5 text-xs font-medium text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
+        dark
+          ? "border border-white/15 bg-white/5 text-white/70 hover:bg-white/10"
+          : "border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))]"
+      )}
     >
       <RefreshCw className="h-3.5 w-3.5" />
       Refresh
