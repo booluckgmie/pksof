@@ -4,7 +4,6 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { StackedBarTrend } from "@/components/pk/Charts";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
-import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
 import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
@@ -13,9 +12,16 @@ import { useWorkflow } from "@/lib/workflow";
 import { useDetails } from "@/lib/details";
 import { useKpiTargets } from "@/lib/kpiTargets";
 import { useCurrentPeriodId } from "@/lib/orgSettings";
-import { periods, periodById } from "@/data/periods";
+import { periodById } from "@/data/periods";
 import { useState } from "react";
 import type { PeriodId } from "@/types";
+
+/** KPI 5's own survey years that predate this dashboard's data (only FY2025 onward is tracked
+ * live) — illustrative history so the yearly trend doesn't open on a single bar. */
+const KPI5_DUMMY_HISTORY: { fy: string; target: number; actual: number }[] = [
+  { fy: "FY2023", target: 4.3, actual: 4.2 },
+  { fy: "FY2024", target: 4.4, actual: 4.5 },
+];
 
 const TH_CLASS = "text-left font-bold px-3 py-2.5 whitespace-nowrap";
 const TH_RIGHT_CLASS = "text-right font-bold px-3 py-2.5 whitespace-nowrap";
@@ -37,29 +43,44 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { latestValue } = useWorkflow();
   const { timeCharterByDept, clientSatisfactionServicesFor } = useDetails();
   const { getFyTarget } = useKpiTargets();
-  const kpi5 = latestValue("KPI5", entityId, periodId);
   const kpi6 = latestValue("KPI6", entityId, periodId);
   const period = periodById(periodId);
   const fy = period.fy;
   const periodLabel = period.label.replace(" FY", " ");
-  const kpi5FyTarget = getFyTarget("KPI5", fy);
   const kpi6FyTarget = getFyTarget("KPI6", fy);
 
-  const fullSatisfactionTrend = periods
-    .map((p) => ({ p, r: latestValue("KPI5", entityId, p.id) }))
-    .filter((x) => x.r.ytdActual !== null)
-    .map(({ p, r }) => ({
-      label: p.label.replace("FY20", "FY"),
+  // KPI 5 is a bi-annual survey reported once a year (year-end), not something that varies by
+  // quarter — regardless of which quarter the page's own picker is on, its card always shows the
+  // selected FY's own annual result (Q4 of that FY), and its trend is a bar per year, not per
+  // quarter.
+  const kpi5PeriodId = `Q4FY${fy.slice(-2)}` as PeriodId;
+  const kpi5 = latestValue("KPI5", entityId, kpi5PeriodId);
+  const kpi5FyTarget = getFyTarget("KPI5", fy);
+  const kpi5PeriodLabel = fy.replace("FY", "");
+
+  const satisfactionYearlyTrend = [
+    ...KPI5_DUMMY_HISTORY.map((y) => ({
+      label: y.fy,
       segments: [
-        { label: "Actual", value: r.ytdActual as number, color: r.status === "met" ? "hsl(var(--pk-good))" : "hsl(var(--pk-warn))" },
-        { label: "Gap to target", value: Math.max((r.ytdTarget ?? 0) - (r.ytdActual as number), 0), color: "hsl(var(--pk-surface-2))" },
+        { label: "Actual", value: y.actual, color: y.actual >= y.target ? "hsl(var(--pk-good))" : "hsl(var(--pk-warn))" },
+        { label: "Gap to target", value: Math.max(y.target - y.actual, 0), color: "hsl(var(--pk-surface-2))" },
       ],
-    }));
-  const { duration, setDuration, filtered: satisfactionTrend } = useDurationFilter(fullSatisfactionTrend);
+    })),
+    ...["FY2025", "FY2026"]
+      .map((yFy) => ({ yFy, r: latestValue("KPI5", entityId, `Q4FY${yFy.slice(-2)}` as PeriodId) }))
+      .filter((x) => x.r.ytdActual !== null)
+      .map(({ yFy, r }) => ({
+        label: yFy,
+        segments: [
+          { label: "Actual", value: r.ytdActual as number, color: r.status === "met" ? "hsl(var(--pk-good))" : "hsl(var(--pk-warn))" },
+          { label: "Gap to target", value: Math.max((r.ytdTarget ?? 0) - (r.ytdActual as number), 0), color: "hsl(var(--pk-surface-2))" },
+        ],
+      })),
+  ];
 
   const avgLabel = timeCharterByDept.periods.length === 2 ? `1H ${periodById(timeCharterByDept.periods[1].id).fy.replace("FY", "")}` : "Average";
   const overallAvg = meanOf(timeCharterByDept.overallByPeriod);
-  const serviceBreakdown = clientSatisfactionServicesFor(periodId);
+  const serviceBreakdown = clientSatisfactionServicesFor(kpi5PeriodId);
 
   return (
     <div>
@@ -107,7 +128,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </div>
             <KpiMetricStrip
               fy={fy}
-              periodLabel={periodLabel}
+              periodLabel={kpi5PeriodLabel}
               fyTarget={kpi5FyTarget.toFixed(1)}
               ytdTarget={kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}
               ytdActual={kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
@@ -115,14 +136,11 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               status={kpi5.status}
             />
             {kpi5.ytdActual === null && (
-              <p className="text-xs text-[hsl(var(--pk-ink-faint))] mb-1">{kpi5.note ?? "Not yet reported for this period."}</p>
+              <p className="text-xs text-[hsl(var(--pk-ink-faint))] mb-1">{kpi5.note ?? "Not yet reported for this year."}</p>
             )}
             <div className="mt-2 pt-4 border-t border-[hsl(var(--pk-border))]">
-              <div className="flex items-center justify-between flex-wrap gap-1.5 mb-2">
-                <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">Historical trend</div>
-                <DurationFilterBar duration={duration} onChange={setDuration} total={fullSatisfactionTrend.length} label="" />
-              </div>
-              <StackedBarTrend data={satisfactionTrend} />
+              <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Historical trend (by year)</div>
+              <StackedBarTrend data={satisfactionYearlyTrend} />
             </div>
             {serviceBreakdown.hasData && (
               <div className="flex items-center justify-end mt-2">
