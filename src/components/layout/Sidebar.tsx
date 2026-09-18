@@ -57,6 +57,9 @@ function GroupLabel({ children }: { children: React.ReactNode }) {
 function SidebarFilters() {
   const { entityId, setEntityId, periodId, setPeriodId, pillarLocked, entityName } = useSession();
   const viewingManagedEntity = !pillarLocked && entityId !== "HQ";
+  // The sidebar's own "Entity" field shows the full legal name for HQ — entityName elsewhere
+  // (page titles, breadcrumbs) intentionally stays the short "Prokhas".
+  const entityDisplayName = entityId === "HQ" ? "Prokhas Sdn Bhd" : entityName;
 
   return (
     <div className="px-4 py-3 border-b border-white/10 flex flex-col gap-2.5 shrink-0">
@@ -65,11 +68,11 @@ function SidebarFilters() {
         {pillarLocked ? (
           <div className="flex items-center gap-1.5 text-sm font-medium text-white">
             <Lock className="h-3 w-3 text-white/40 shrink-0" />
-            <span className="truncate">{entityName}</span>
+            <span className="truncate">{entityDisplayName}</span>
           </div>
         ) : viewingManagedEntity ? (
           <>
-            <div className="text-sm font-medium text-white truncate">{entityName}</div>
+            <div className="text-sm font-medium text-white truncate">{entityDisplayName}</div>
             <button
               onClick={() => setEntityId("HQ")}
               className="mt-1.5 text-2xs font-medium text-[hsl(var(--pk-accent-lt))] hover:underline"
@@ -79,7 +82,7 @@ function SidebarFilters() {
           </>
         ) : (
           <>
-            <div className="text-sm font-medium text-white truncate">{entityName}</div>
+            <div className="text-sm font-medium text-white truncate">{entityDisplayName}</div>
             <p className="text-3xs text-white/35 mt-1 leading-snug">Drill in from a Managed Entity's row (e.g. CP004) to view its own dashboards.</p>
           </>
         )}

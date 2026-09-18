@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 
 /** Options adapt to how much history is actually available — see DurationFilterBar. */
 export const DURATION_OPTIONS = [
-  { id: "2q", label: "Last 2Q", n: 2 },
-  { id: "4q", label: "Last 4Q", n: 4 },
-  { id: "8q", label: "Last 8Q", n: 8 },
-  { id: "12q", label: "Last 12Q", n: 12 },
+  { id: "2q", label: "Last Q2", n: 2 },
+  { id: "4q", label: "Last Q4", n: 4 },
+  { id: "8q", label: "Last Q8", n: 8 },
+  { id: "12q", label: "Last Q12", n: 12 },
   { id: "all", label: "All", n: Infinity },
 ] as const;
 export type DurationId = (typeof DURATION_OPTIONS)[number]["id"];
