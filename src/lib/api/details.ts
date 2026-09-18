@@ -92,12 +92,16 @@ export async function fetchDetailMetrics(): Promise<DetailMetricRow[]> {
   return rows.map(toMetric);
 }
 
-/** Same pagination guard as fetchDetailMetrics — this table is smaller today but grows the same way. */
+/** Same pagination guard as fetchDetailMetrics — this table is smaller today but grows the same way.
+ * Ordered by id (the SEED-#### insertion sequence) so callers that read multiple rows of the same
+ * record_type/category back out a stable, meaningful order (e.g. a managed entity's own KPI items
+ * in their original a/b(i)/b(ii)/… sequence) instead of whatever order Postgres happens to return
+ * without an explicit sort. */
 export async function fetchDetailRecords(): Promise<DetailRecordRow[]> {
   const pageSize = 1000;
   const rows: RecordDbRow[] = [];
   for (let from = 0; ; from += pageSize) {
-    const { data, error } = await getSupabase().from("detail_records").select("*").range(from, from + pageSize - 1);
+    const { data, error } = await getSupabase().from("detail_records").select("*").order("id", { ascending: true }).range(from, from + pageSize - 1);
     if (error) throw error;
     rows.push(...(data as RecordDbRow[]));
     if (data.length < pageSize) break;
