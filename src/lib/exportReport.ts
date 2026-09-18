@@ -106,13 +106,19 @@ async function captureContent(ctx: ExportContext): Promise<{ canvas: HTMLCanvasE
   return { canvas, el, usingBundle };
 }
 
+// JPEG, not PNG — these slices are opaque screenshots (html2canvas is always given a white
+// backgroundColor), so there's no alpha channel to lose, and PNG's lossless DEFLATE compresses
+// anti-aliased text/gradients far worse than JPEG does. A multi-screen pillar bundle (20-30+
+// pages) was landing near 60MB at PNG; JPEG at this quality brings the same report under 2MB.
+const SLICE_JPEG_QUALITY = 0.82;
+
 function canvasSlice(canvas: HTMLCanvasElement, offsetPx: number, sliceH: number): string {
   const sliceCanvas = document.createElement("canvas");
   sliceCanvas.width = canvas.width;
   sliceCanvas.height = sliceH;
   const sctx = sliceCanvas.getContext("2d")!;
   sctx.drawImage(canvas, 0, offsetPx, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-  return sliceCanvas.toDataURL("image/png");
+  return sliceCanvas.toDataURL("image/jpeg", SLICE_JPEG_QUALITY);
 }
 
 // Loads the real Prokhas logo (src/assets/prokhas-logo.png, the same file used in-app) as a
@@ -354,7 +360,7 @@ export async function exportScreenAsPdf(ctx: ExportContext): Promise<void> {
 
       const sliceImg = canvasSlice(canvas, pg.offsetPx, pg.sliceH);
       const sliceHpt = (pg.sliceH * contentW) / canvas.width;
-      doc.addImage(sliceImg, "PNG", margin, contentTop, contentW, sliceHpt);
+      doc.addImage(sliceImg, "JPEG", margin, contentTop, contentW, sliceHpt);
 
       drawFooter();
     });

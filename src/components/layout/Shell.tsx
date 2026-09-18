@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { CommandPalette } from "@/components/layout/CommandPalette";
 import { UPLOADER_ROLES } from "@/components/layout/LoginDialog";
 import { NotificationsBell } from "@/components/pk/Misc";
+import { InstallAppButton } from "@/components/pk/InstallAppButton";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
@@ -175,6 +176,7 @@ export function Shell({
           </div>
           <PillarNav current={current} onNavigate={onNavigate} isRestrictedPillar={isRestrictedPillar} />
           <div className="flex items-center gap-2.5 shrink-0">
+            <InstallAppButton />
             <button
               onClick={() => onNavigate("GLOSSARY")}
               title="Glossary"
