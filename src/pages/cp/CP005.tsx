@@ -26,6 +26,8 @@ const KPI5_DUMMY_HISTORY: { fy: string; target: number; actual: number }[] = [
 const TH_CLASS = "text-left font-bold px-3 py-2.5 whitespace-nowrap";
 const TH_RIGHT_CLASS = "text-right font-bold px-3 py-2.5 whitespace-nowrap";
 
+type Expanded = "kpi5" | "kpi6" | null;
+
 /** Mean of a department's own quarters that actually have a score — used both for the table's
  * trailing average column and to label it: two quarters reads as a half-year ("1H"), matching how
  * the client's own report names it; any other count falls back to a generic "Average". */
@@ -39,12 +41,10 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   // Local to this screen only — see CP003's own Reporting period filter for why.
   const [periodId, setPeriodId] = useState<PeriodId>(useCurrentPeriodId());
   const [compareIds, setCompareIds] = useState<PeriodId[]>([]);
-  // KPI 5's own service breakdown (see below) is always shown alongside its card — only KPI 6's
-  // department detail is big enough to warrant hiding behind a click.
-  const [kpi6DetailOpen, setKpi6DetailOpen] = useState(false);
-  const toggleKpi6Detail = () => setKpi6DetailOpen((v) => !v);
-  const onKpi6DetailKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleKpi6Detail(); }
+  const [expanded, setExpanded] = useState<Expanded>(null);
+  const toggle = (key: Exclude<Expanded, null>) => setExpanded((e) => (e === key ? null : key));
+  const onToggleKeyDown = (key: Exclude<Expanded, null>) => (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(key); }
   };
   const { latestValue } = useWorkflow();
   const { timeCharterByDept, clientSatisfactionServicesFor } = useDetails();
@@ -110,160 +110,172 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         ]}
       />
 
-      {/* KPI 5 — a full-width card like every other CP screen's KPI card, so the metric strip
-          has room to lay out its four boxes properly (a fixed 20%-width column was too narrow
-          for that). Its historical-trend chart and service breakdown then sit in their own
-          20/80 row directly underneath, both always visible rather than behind a click — the
-          table is the point of this KPI's section, not a detail. */}
-      <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 5 · Weight 7.5% · bi-annual</div>
-          <StatusChip status={kpi5.status} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => toggle("kpi5")}
+          onKeyDown={onToggleKeyDown("kpi5")}
+          className={cn(
+            "text-left rounded-lg border bg-[hsl(var(--pk-surface))] shadow-card p-4 cursor-pointer transition-colors",
+            expanded === "kpi5" ? "border-[hsl(var(--pk-accent))]" : "border-[hsl(var(--pk-border))] hover:bg-[hsl(var(--pk-surface-2))]"
+          )}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 5 · Weight 7.5% · bi-annual</div>
+            <StatusChip status={kpi5.status} />
+          </div>
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">External Client Satisfaction</div>
+          <div className="flex items-baseline gap-2 mb-2">
+            <span className={cn("tnum font-head text-2xl font-semibold", kpi5.ytdActual !== null ? "text-[hsl(var(--pk-ink))]" : "text-[hsl(var(--pk-ink-faint))]")}>
+              {kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
+            </span>
+            <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}</span>
+          </div>
+          <KpiMetricStrip
+            fy={fy}
+            periodLabel={kpi5PeriodLabel}
+            fyTarget={kpi5FyTarget.toFixed(1)}
+            ytdTarget={kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}
+            ytdActual={kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
+            achievement={kpi5.weighted !== null ? `${(kpi5.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi5.status}
+          />
+          {kpi5.ytdActual === null && (
+            <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-1">{kpi5.note ?? "Not yet reported for this year."}</p>
+          )}
+          <div className="flex items-center justify-end">
+            <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
+              {expanded === "kpi5" ? "Hide details" : "View details"}
+              <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "kpi5" && "rotate-180")} />
+            </span>
+          </div>
         </div>
-        <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">External Client Satisfaction</div>
-        <div className="flex items-baseline gap-2 mb-2">
-          <span className={cn("tnum font-head text-2xl font-semibold", kpi5.ytdActual !== null ? "text-[hsl(var(--pk-ink))]" : "text-[hsl(var(--pk-ink-faint))]")}>
-            {kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
-          </span>
-          <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}</span>
-        </div>
-        <KpiMetricStrip
-          fy={fy}
-          periodLabel={kpi5PeriodLabel}
-          fyTarget={kpi5FyTarget.toFixed(1)}
-          ytdTarget={kpi5.ytdTarget !== null ? kpi5.ytdTarget.toFixed(1) : "—"}
-          ytdActual={kpi5.ytdActual !== null ? kpi5.ytdActual.toFixed(1) : "—"}
-          achievement={kpi5.weighted !== null ? `${(kpi5.weighted * 100).toFixed(1)}%` : "—"}
-          status={kpi5.status}
-        />
-        {kpi5.ytdActual === null && (
-          <p className="text-2xs text-[hsl(var(--pk-ink-faint))]">{kpi5.note ?? "Not yet reported for this year."}</p>
-        )}
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-4 items-start">
-        <div className="lg:col-span-1 rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Historical trend (by year)</div>
-          <StackedBarTrend data={satisfactionYearlyTrend} />
-        </div>
-
-        <div className="lg:col-span-4">
-          {serviceBreakdown.hasData ? (
-            <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
-              <table className="w-full text-sm min-w-[760px]">
-                <thead>
-                  <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))] divide-x divide-white/15">
-                    <th rowSpan={2} className={cn(TH_CLASS, "align-bottom")}>Services</th>
-                    <th rowSpan={2} className={cn(TH_RIGHT_CLASS, "align-bottom")}>Prior Rating</th>
-                    <th colSpan={4} className="text-center font-bold px-3 py-1.5 border-b border-white/15">Current Analysis</th>
-                  </tr>
-                  <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))] divide-x divide-white/15">
-                    <th className={TH_RIGHT_CLASS}>Avg Service Rating</th>
-                    <th className={TH_RIGHT_CLASS}>Surveys Sent</th>
-                    <th className={TH_RIGHT_CLASS}>Responses Received</th>
-                    <th className={TH_RIGHT_CLASS}>% of Responses</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(() => {
-                    let lastCategory = "";
-                    return serviceBreakdown.services.map((s) => {
-                      const showCategory = s.category !== lastCategory;
-                      lastCategory = s.category;
-                      return (
-                        <Fragment key={s.service}>
-                          {showCategory && (
-                            <tr>
-                              <td colSpan={6} className="pt-2.5 pb-1 px-3 text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-medium bg-[hsl(var(--pk-surface-2))]">
-                                {s.category}
-                              </td>
-                            </tr>
-                          )}
-                          <tr className="border-t border-[hsl(var(--pk-border))] divide-x divide-[hsl(var(--pk-border))]">
-                            <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">{s.service}</td>
-                            <td className="px-3 py-2 text-right tnum text-[hsl(var(--pk-ink-faint))]">{s.priorRating !== null ? s.priorRating.toFixed(1) : "—"}</td>
-                            <td className="px-3 py-2 text-right tnum font-medium">
-                              {s.rating !== null ? (
-                                <span className="inline-flex items-center gap-1.5 justify-end">
-                                  {s.rating.toFixed(1)}
-                                  <span className="text-[hsl(var(--pk-accent))] font-normal">{s.band}</span>
-                                </span>
-                              ) : "—"}
-                            </td>
-                            <td className="px-3 py-2 text-right tnum">{s.sent ?? "—"}</td>
-                            <td className="px-3 py-2 text-right tnum">{s.received ?? "—"}</td>
-                            <td className="px-3 py-2 text-right tnum">{s.responseRate !== null ? `${s.responseRate}%` : "—"}</td>
-                          </tr>
-                        </Fragment>
-                      );
-                    });
-                  })()}
-                  {serviceBreakdown.total && (
-                    <tr className="border-t-2 border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] font-semibold divide-x divide-[hsl(var(--pk-border))]">
-                      <td className="px-3 py-2.5">Corp. Average Rating</td>
-                      <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.priorRating !== null ? serviceBreakdown.total.priorRating.toFixed(1) : "—"}</td>
-                      <td className="px-3 py-2.5 text-right tnum">
-                        <span className="inline-flex items-center gap-1.5 justify-end">
-                          {serviceBreakdown.total.rating !== null ? serviceBreakdown.total.rating.toFixed(1) : "—"}
-                          <span className="text-[hsl(var(--pk-accent))] font-normal">{serviceBreakdown.total.band}</span>
-                        </span>
-                      </td>
-                      <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.sent ?? "—"}</td>
-                      <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.received ?? "—"}</td>
-                      <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.responseRate !== null ? `${serviceBreakdown.total.responseRate}%` : "—"}</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => toggle("kpi6")}
+          onKeyDown={onToggleKeyDown("kpi6")}
+          className={cn(
+            "text-left rounded-lg border bg-[hsl(var(--pk-surface))] shadow-card p-4 cursor-pointer transition-colors",
+            expanded === "kpi6" ? "border-[hsl(var(--pk-accent))]" : "border-[hsl(var(--pk-border))] hover:bg-[hsl(var(--pk-surface-2))]"
+          )}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 6 · Weight 7.5% · quarterly</div>
+            <StatusChip status={kpi6.status} />
+          </div>
+          <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">Time Charter Compliance</div>
+          <div className="flex items-baseline gap-2 mb-2">
+            <span className="tnum font-head text-2xl font-semibold text-[hsl(var(--pk-ink))]">{kpi6.ytdActual !== null ? `${kpi6.ytdActual.toFixed(1)}%` : "—"}</span>
+            <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi6.ytdTarget !== null ? `${kpi6.ytdTarget.toFixed(1)}%` : "—"}</span>
+          </div>
+          <KpiMetricStrip
+            fy={fy}
+            periodLabel={periodLabel}
+            fyTarget={`${kpi6FyTarget.toFixed(1)}%`}
+            ytdTarget={kpi6.ytdTarget !== null ? `${kpi6.ytdTarget.toFixed(1)}%` : "—"}
+            ytdActual={kpi6.ytdActual !== null ? `${kpi6.ytdActual.toFixed(1)}%` : "—"}
+            achievement={kpi6.weighted !== null ? `${(kpi6.weighted * 100).toFixed(1)}%` : "—"}
+            status={kpi6.status}
+          />
+          <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-2">Group average across {timeCharterByDept.departments.length || "—"} departments, scored quarterly.</p>
+          {timeCharterByDept.periods.length > 0 && (
+            <div className="flex items-center justify-end">
+              <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
+                {expanded === "kpi6" ? "Hide details" : "View details"}
+                <ChevronDown className={cn("h-3 w-3 transition-transform", expanded === "kpi6" && "rotate-180")} />
+              </span>
             </div>
-          ) : (
-            <NoDataState title="No service ratings recorded" body="The External Client Satisfaction survey is bi-annual — service-level ratings for this year haven't been published yet." />
           )}
         </div>
       </div>
 
-      {/* KPI 6 — a single, full-width card since it no longer shares a row with KPI 5; its own
-          per-department detail stays behind a "View details" toggle. */}
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={toggleKpi6Detail}
-        onKeyDown={onKpi6DetailKeyDown}
-        className={cn(
-          "text-left rounded-lg border bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4 cursor-pointer transition-colors",
-          kpi6DetailOpen ? "border-[hsl(var(--pk-accent))]" : "border-[hsl(var(--pk-border))] hover:bg-[hsl(var(--pk-surface-2))]"
-        )}
-      >
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 6 · Weight 7.5% · quarterly</div>
-          <StatusChip status={kpi6.status} />
-        </div>
-        <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2">Time Charter Compliance</div>
-        <div className="flex items-baseline gap-2 mb-2">
-          <span className="tnum font-head text-2xl font-semibold text-[hsl(var(--pk-ink))]">{kpi6.ytdActual !== null ? `${kpi6.ytdActual.toFixed(1)}%` : "—"}</span>
-          <span className="text-sm text-[hsl(var(--pk-ink-faint))]">/ target {kpi6.ytdTarget !== null ? `${kpi6.ytdTarget.toFixed(1)}%` : "—"}</span>
-        </div>
-        <KpiMetricStrip
-          fy={fy}
-          periodLabel={periodLabel}
-          fyTarget={`${kpi6FyTarget.toFixed(1)}%`}
-          ytdTarget={kpi6.ytdTarget !== null ? `${kpi6.ytdTarget.toFixed(1)}%` : "—"}
-          ytdActual={kpi6.ytdActual !== null ? `${kpi6.ytdActual.toFixed(1)}%` : "—"}
-          achievement={kpi6.weighted !== null ? `${(kpi6.weighted * 100).toFixed(1)}%` : "—"}
-          status={kpi6.status}
-        />
-        <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-2">Group average across {timeCharterByDept.departments.length || "—"} departments, scored quarterly.</p>
-        {timeCharterByDept.periods.length > 0 && (
-          <div className="flex items-center justify-end">
-            <span className="flex items-center gap-1 text-2xs text-[hsl(var(--pk-accent))] shrink-0">
-              {kpi6DetailOpen ? "Hide details" : "View details"}
-              <ChevronDown className={cn("h-3 w-3 transition-transform", kpi6DetailOpen && "rotate-180")} />
-            </span>
+      {expanded === "kpi5" && (
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 mb-4 items-start">
+          <div className="lg:col-span-3 rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+            <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Historical trend (by year)</div>
+            <StackedBarTrend data={satisfactionYearlyTrend} />
           </div>
-        )}
-      </div>
 
-      {kpi6DetailOpen && timeCharterByDept.periods.length > 0 && (
+          <div className="lg:col-span-7">
+            {serviceBreakdown.hasData ? (
+              <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto">
+                <table className="w-full text-sm min-w-[760px]">
+                  <thead>
+                    <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))] divide-x divide-white/15">
+                      <th rowSpan={2} className={cn(TH_CLASS, "align-bottom")}>Services</th>
+                      <th rowSpan={2} className={cn(TH_RIGHT_CLASS, "align-bottom")}>Prior Rating</th>
+                      <th colSpan={4} className="text-center font-bold px-3 py-1.5 border-b border-white/15">Current Analysis</th>
+                    </tr>
+                    <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))] divide-x divide-white/15">
+                      <th className={TH_RIGHT_CLASS}>Avg Service Rating</th>
+                      <th className={TH_RIGHT_CLASS}>Surveys Sent</th>
+                      <th className={TH_RIGHT_CLASS}>Responses Received</th>
+                      <th className={TH_RIGHT_CLASS}>% of Responses</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      let lastCategory = "";
+                      return serviceBreakdown.services.map((s) => {
+                        const showCategory = s.category !== lastCategory;
+                        lastCategory = s.category;
+                        return (
+                          <Fragment key={s.service}>
+                            {showCategory && (
+                              <tr>
+                                <td colSpan={6} className="pt-2.5 pb-1 px-3 text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-medium bg-[hsl(var(--pk-surface-2))]">
+                                  {s.category}
+                                </td>
+                              </tr>
+                            )}
+                            <tr className="border-t border-[hsl(var(--pk-border))] divide-x divide-[hsl(var(--pk-border))]">
+                              <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">{s.service}</td>
+                              <td className="px-3 py-2 text-right tnum text-[hsl(var(--pk-ink-faint))]">{s.priorRating !== null ? s.priorRating.toFixed(1) : "—"}</td>
+                              <td className="px-3 py-2 text-right tnum font-medium">
+                                {s.rating !== null ? (
+                                  <span className="inline-flex items-center gap-1.5 justify-end">
+                                    {s.rating.toFixed(1)}
+                                    <span className="text-[hsl(var(--pk-accent))] font-normal">{s.band}</span>
+                                  </span>
+                                ) : "—"}
+                              </td>
+                              <td className="px-3 py-2 text-right tnum">{s.sent ?? "—"}</td>
+                              <td className="px-3 py-2 text-right tnum">{s.received ?? "—"}</td>
+                              <td className="px-3 py-2 text-right tnum">{s.responseRate !== null ? `${s.responseRate}%` : "—"}</td>
+                            </tr>
+                          </Fragment>
+                        );
+                      });
+                    })()}
+                    {serviceBreakdown.total && (
+                      <tr className="border-t-2 border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] font-semibold divide-x divide-[hsl(var(--pk-border))]">
+                        <td className="px-3 py-2.5">Corp. Average Rating</td>
+                        <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.priorRating !== null ? serviceBreakdown.total.priorRating.toFixed(1) : "—"}</td>
+                        <td className="px-3 py-2.5 text-right tnum">
+                          <span className="inline-flex items-center gap-1.5 justify-end">
+                            {serviceBreakdown.total.rating !== null ? serviceBreakdown.total.rating.toFixed(1) : "—"}
+                            <span className="text-[hsl(var(--pk-accent))] font-normal">{serviceBreakdown.total.band}</span>
+                          </span>
+                        </td>
+                        <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.sent ?? "—"}</td>
+                        <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.received ?? "—"}</td>
+                        <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.responseRate !== null ? `${serviceBreakdown.total.responseRate}%` : "—"}</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <NoDataState title="No service ratings recorded" body="The External Client Satisfaction survey is bi-annual — service-level ratings for this year haven't been published yet." />
+            )}
+          </div>
+        </div>
+      )}
+
+      {expanded === "kpi6" && timeCharterByDept.periods.length > 0 && (
         <>
           <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Summary of Results</div>
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
