@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
-import { Download, Share, SquarePlus } from "lucide-react";
+import { Grid2x2Plus, Share, SquarePlus } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+/** Matches the manifest's own `short_name` — see vite.config.ts. */
+const APP_NAME = "Prokhas";
 
 /** Minimal shape of the `beforeinstallprompt` event — not yet in the standard DOM lib types. */
 interface BeforeInstallPromptEvent extends Event {
@@ -71,7 +75,7 @@ export function InstallAppButton() {
             title="Add to Home Screen"
             className="shrink-0 h-8 w-8 flex items-center justify-center rounded-md text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
           >
-            <Download className="h-4 w-4" />
+            <Grid2x2Plus className="h-4 w-4" />
           </button>
         </PopoverTrigger>
         <PopoverContent align="end" className="w-64 text-xs">
@@ -86,12 +90,22 @@ export function InstallAppButton() {
   }
 
   return (
-    <button
-      onClick={runInstall}
-      title="Install app"
-      className="shrink-0 h-8 w-8 flex items-center justify-center rounded-md text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
-    >
-      <Download className="h-4 w-4" />
-    </button>
+    <TooltipProvider delayDuration={200}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={runInstall}
+            aria-label="Install app"
+            className="shrink-0 h-8 w-8 flex items-center justify-center rounded-md text-[hsl(var(--pk-ink-soft))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
+          >
+            <Grid2x2Plus className="h-4 w-4" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" align="end" className="text-center">
+          <div>App available.</div>
+          <div className="font-semibold">Install {APP_NAME}</div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
