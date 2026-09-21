@@ -5,6 +5,8 @@ import { StatusChip } from "@/components/pk/StatusChip";
 import { InfoTip } from "@/components/pk/InfoTip";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
+import { ManagedEntityKpiEditor } from "@/components/pk/ManagedEntityKpiEditor";
+import { GovernanceKpiEditor } from "@/components/pk/GovernanceKpiEditor";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import { cn } from "@/lib/utils";
 import { anonymizedEntityLabel } from "@/lib/anonymize";
@@ -164,6 +166,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               </span>
             )}
           </div>
+          <ManagedEntityKpiEditor periodId={periodId} />
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
             <table className="w-full text-sm">
               <thead>
@@ -281,6 +284,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               Not fully measured this quarter — progress only for components not yet due.
             </div>
           )}
+          <GovernanceKpiEditor periodId={periodId} />
           <DownloadableFrame filename="cp004-governance-index-breakdown" className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-4">
             <table className="w-full text-sm">
               <thead>

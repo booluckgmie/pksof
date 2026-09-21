@@ -6,6 +6,7 @@ import { StackedBarTrend } from "@/components/pk/Charts";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { NoDataState } from "@/components/pk/DataOrigin";
 import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
+import { ClientSatisfactionServiceEditor } from "@/components/pk/ClientSatisfactionServiceEditor";
 import { PeriodPickerCompact, ComparePeriodsPicker, PeriodComparisonTable } from "@/components/pk/PeriodPicker";
 import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
@@ -213,6 +214,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
 
           <div className="lg:col-span-7">
+            <ClientSatisfactionServiceEditor periodId={kpi5PeriodId} />
             {serviceBreakdown.hasData ? (
               <DownloadableFrame
                 filename="cp005-service-breakdown"

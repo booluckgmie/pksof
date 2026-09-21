@@ -14,6 +14,28 @@ interface DetailsContextValue {
 
 const DetailsContext = createContext<DetailsContextValue | null>(null);
 
+/** Fixed catalog behind External Client Satisfaction's per-service breakdown (KPI5, CP005) —
+ * shared between the read-side grouping below and ClientSatisfactionServiceEditor, which only
+ * ever fills in rows against this exact list (no add/remove — the service catalog itself isn't
+ * data entry). */
+export const CLIENT_SATISFACTION_SERVICE_CATALOG: { category: string; service: string }[] = [
+  { category: 'Managed Entities ("MEs") & Committee', service: "DINB" },
+  { category: 'Managed Entities ("MEs") & Committee', service: "GovCo" },
+  { category: 'Managed Entities ("MEs") & Committee', service: "SJPP" },
+  { category: 'Managed Entities ("MEs") & Committee', service: "SJKP" },
+  { category: 'Managed Entities ("MEs") & Committee', service: "CDRC" },
+  { category: "Advisory", service: "Corp. Advisory" },
+  { category: "Support Services", service: "Finance Outsourcing" },
+  { category: "Support Services", service: "Secretarial Services" },
+  { category: "Support Services", service: "IT Services" },
+  { category: "Support Services", service: "SAP Services" },
+];
+
+/** Managed Entities tracked under CP004's Managed Entities Performance Summary (KPI3) — the
+ * fixed set the Excel template's own SJPP/SJKP/DanaInfra/DanaHarta rows cover for Rating/Weighted;
+ * ManagedEntityKpiEditor uses the same set for its item catalog's wording fields. */
+export const MANAGED_ENTITY_NAMES = ["SJPP", "SJKP", "DanaInfra", "DanaHarta"] as const;
+
 export function DetailsProvider({ children }: { children: ReactNode }) {
   const [metrics, setMetrics] = useState<DetailMetricRow[]>([]);
   const [records, setRecords] = useState<DetailRecordRow[]>([]);
@@ -787,18 +809,7 @@ export function useDetails() {
    * service rating, and the survey's own sent/received counts (packed into textNote as
    * "sent|received" since detail_records only carries two numeric slots). The bi-annual survey
    * doesn't run every quarter — hasData is false whenever this period has no rows at all. */
-  const CLIENT_SATISFACTION_CATALOG: { category: string; service: string }[] = [
-    { category: 'Managed Entities ("MEs") & Committee', service: "DINB" },
-    { category: 'Managed Entities ("MEs") & Committee', service: "GovCo" },
-    { category: 'Managed Entities ("MEs") & Committee', service: "SJPP" },
-    { category: 'Managed Entities ("MEs") & Committee', service: "SJKP" },
-    { category: 'Managed Entities ("MEs") & Committee', service: "CDRC" },
-    { category: "Advisory", service: "Corp. Advisory" },
-    { category: "Support Services", service: "Finance Outsourcing" },
-    { category: "Support Services", service: "Secretarial Services" },
-    { category: "Support Services", service: "IT Services" },
-    { category: "Support Services", service: "SAP Services" },
-  ];
+  const CLIENT_SATISFACTION_CATALOG = CLIENT_SATISFACTION_SERVICE_CATALOG;
 
   function ratingBand(rating: number | null): string {
     if (rating === null) return "";
@@ -918,6 +929,90 @@ export function useDetails() {
   const processInitiatives = useMemo(() => initiativeListFor("process_initiative"), [records, entityId]);
   const techInitiatives = useMemo(() => initiativeListFor("tech_initiative"), [records, entityId]);
 
+  /** Id-carrying version of initiativeListFor, scoped to one exact period rather than "whichever
+   * period has the latest submission" — what InitiativeEditor (CP006) reads/writes when adding,
+   * editing or deleting a Process/Tech Initiative row for the quarter currently selected there. */
+  function initiativeRecordsFor(recordType: string, periodId: PeriodId): (Initiative & { id: string })[] {
+    return recordRows(recordType)
+      .filter((r) => r.periodId === periodId)
+      .map((r) => {
+        const [start, end] = (r.category ?? "-").split("-");
+        const [status, nextAction] = (r.textNote ?? " | ").split(" | ");
+        return { id: r.id, name: r.label, start: start ?? "", end: end ?? "", status: (status ?? "Planned") as InitiativeStatus, nextAction: nextAction ?? "" };
+      });
+  }
+
+  /** Id-carrying wording fields (No/Section/FY Target/YTD Target/YTD Actual) behind one managed
+   * entity's own KPI item catalog for one exact quarter — what ManagedEntityKpiEditor (CP004)
+   * reads/writes. Rating/Weighted (valueNum/valueNum2) stay whatever the Excel upload set; the
+   * editor only ever touches the wording fields packed into textNote. */
+  function managedEntityKpiItemsFor(entity: string, periodId: PeriodId) {
+    return recordRows("managed_entity_kpi")
+      .filter((r) => r.periodId === periodId && r.category === entity)
+      .map((r) => {
+        const [no = "", section = "", fyTarget = "", ytdTarget = "", ytdActual = ""] = (r.textNote ?? "").split("|");
+        return { id: r.id, no, section, label: r.label, fyTarget, ytdTarget, ytdActual, rating: r.valueNum ?? 0, weighted: r.valueNum2 ?? 0 };
+      });
+  }
+
+  /** Id-carrying wording fields behind the Governance Index component breakdown for one exact
+   * quarter — what GovernanceKpiEditor (CP004) reads/writes. Weighted (valueNum2) stays whatever
+   * the Excel upload set. */
+  function governanceKpiItemsFor(periodId: PeriodId) {
+    return recordRows("governance_kpi")
+      .filter((r) => r.periodId === periodId)
+      .map((r) => {
+        const [no = "0", fyTarget = "", ytdActual = "", achievement = ""] = (r.textNote ?? "").split("|");
+        return { id: r.id, no: Number(no), label: r.label, fyTarget, ytdActual, achievement, weighted: r.valueNum2 ?? 0 };
+      })
+      .sort((a, b) => a.no - b.no);
+  }
+
+  /** One row per catalog service (plus the "Corp. Average Rating" total row, itself entered the
+   * same way) for one exact quarter — what ClientSatisfactionServiceEditor (CP005) reads/writes.
+   * `id` is null for a service with no row yet this quarter (nothing to upsert onto, a fresh id is
+   * minted on save). Rating (valueNum) stays whatever the Excel upload set; the editor only ever
+   * touches priorRating (valueNum2) and the sent/received pair packed into textNote. */
+  function clientSatisfactionServiceItemsFor(periodId: PeriodId) {
+    const rows = recordRows("client_satisfaction_service").filter((r) => r.periodId === periodId);
+    const catalog = [...CLIENT_SATISFACTION_SERVICE_CATALOG, { category: "", service: "Corp. Average Rating" }];
+    return catalog.map(({ category, service }) => {
+      const r = rows.find((rr) => rr.label === service);
+      const [sentStr, receivedStr] = (r?.textNote ?? "").split("|");
+      return {
+        id: r?.id ?? null, category, service,
+        priorRating: r?.valueNum2 ?? null,
+        sent: sentStr ? Number(sentStr) : null,
+        received: receivedStr ? Number(receivedStr) : null,
+        rating: r?.valueNum ?? null,
+      };
+    });
+  }
+
+  /** Free-text budget-variance commentary (PFH003) for one exact quarter — five fixed dimensions,
+   * each a narrative sentence rather than a number, so it's stored on detail_metrics' own `note`
+   * column (value left null) instead of detail_records. Read by both the read-only display and
+   * VarianceCommentaryPanel's edit form; there's nothing to add/remove, only to fill in, so no id
+   * is needed — upsertDetailMetric's natural key (entity/period/metricKey/dimension) is enough. */
+  function varianceCommentaryFor(periodId: PeriodId) {
+    const rows = metricRows("variance_commentary").filter((r) => r.periodId === periodId);
+    const get = (key: string) => rows.find((r) => r.dimension === key)?.note ?? "";
+    return { revenue: get("revenue"), staffCost: get("staffCost"), adminCost: get("adminCost"), pbt: get("pbt"), outlook: get("outlook") };
+  }
+
+  /** Id-carrying deal schedule behind PFH004's "Other investments" drill-down for one exact
+   * quarter — what OtherInvestmentDealsEditor reads/writes. Unlike every other table here, this
+   * record type has no Excel coverage at all (not even a numeric column), so both the deal wording
+   * and its principal/interest figures are only ever entered here. */
+  function otherInvestmentDealItemsFor(periodId: PeriodId) {
+    return recordRows("fp_other_investment_deal")
+      .filter((r) => r.periodId === periodId)
+      .map((r) => {
+        const [dealDate = "", maturityDate = "", rating = "", tenureDays = ""] = (r.textNote ?? "").split("|");
+        return { id: r.id, bank: r.label, instrument: r.category ?? "", dealDate, maturityDate, rating, tenureDays, principal: r.valueNum ?? 0, interestPct: r.valueNum2 ?? 0 };
+      });
+  }
+
   /** Bumiputera Procurement (KPI11) by department for a given quarter, matching the client's own
    * "Appendix — Bumiputera Procurement" exhibit. YTD Target is never stored — it's always the
    * department's FY Target scaled by the quarter's own cumulative-YTD threshold (25%/50%/75%/100%,
@@ -965,10 +1060,10 @@ export function useDetails() {
     gradeBreakdownFor, ageBreakdownFor, ageGenderBreakdownFor, averageAgeByPeriod,
     gradeGenderCrossTabFor, departmentHeadcountFor, recruitmentIndexByPeriod,
     resignedByPeriod, turnoverTrend, bumiputeraTrainingByPeriod,
-    quarterlyTrend, monthlyTrendFor, actualVsBudget, financialResultsFor, varianceCommentary, relatedPartyTransactionsUpTo,
-    financialPositionFor, financialPositionBreakdownFor, agingOfReceivablesFor, otherInvestmentsDealsFor, cashEffectiveRateFor,
-    managedEntityRatingsFor, managedEntityKpiDetailFor, managedEntityKpiQuarterlyFor, clientSatisfaction, clientSatisfactionServicesFor, timeCharterByDept, governanceKpiFor,
-    processInitiatives, techInitiatives, bumiputeraProcurementFor, peopleDevRecordsFor,
+    quarterlyTrend, monthlyTrendFor, actualVsBudget, financialResultsFor, varianceCommentary, varianceCommentaryFor, relatedPartyTransactionsUpTo,
+    financialPositionFor, financialPositionBreakdownFor, agingOfReceivablesFor, otherInvestmentsDealsFor, otherInvestmentDealItemsFor, cashEffectiveRateFor,
+    managedEntityRatingsFor, managedEntityKpiDetailFor, managedEntityKpiQuarterlyFor, managedEntityKpiItemsFor, clientSatisfaction, clientSatisfactionServicesFor, clientSatisfactionServiceItemsFor, timeCharterByDept, governanceKpiFor, governanceKpiItemsFor,
+    processInitiatives, techInitiatives, initiativeRecordsFor, bumiputeraProcurementFor, peopleDevRecordsFor,
     pbtBreakdown, cirBreakdown,
   };
 }

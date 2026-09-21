@@ -2,6 +2,7 @@ import { QoQHorizontalBars } from "@/components/pk/Charts";
 import { InfoNote } from "@/components/pk/Misc";
 import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { FinancialResultsTable } from "@/components/pk/FinancialResultsTable";
+import { VarianceCommentaryPanel } from "@/components/pk/VarianceCommentaryPanel";
 import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
 import { useDetails } from "@/lib/details";
 import { periodById } from "@/data/periods";
@@ -205,6 +206,8 @@ export function FinancialResultsOverview({
           </div>
         )}
       </div>
+
+      {tableKind === "budget" && <VarianceCommentaryPanel periodId={periodId} />}
 
       <InfoNote>All Overview figures are in RM'000. Click "REVENUE" or "Expenses" in the table to drill into that quarter's own breakdown by source/category.</InfoNote>
     </div>

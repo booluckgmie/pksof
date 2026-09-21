@@ -4,6 +4,7 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { InitiativeStatusDot, StatusLegend } from "@/components/pk/Misc";
+import { InitiativeEditor } from "@/components/pk/InitiativeEditor";
 import { GanttChart } from "@/components/pk/GanttChart";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
@@ -157,7 +158,10 @@ export function CP006({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
             {view === "cards" ? (
-              <InitiativeTable rows={expanded === "process" ? processInitiatives : techInitiatives} />
+              <>
+                <InitiativeEditor recordType={expanded === "process" ? "process_initiative" : "tech_initiative"} periodId={periodId} />
+                <InitiativeTable rows={expanded === "process" ? processInitiatives : techInitiatives} />
+              </>
             ) : (
               <GanttChart rows={expanded === "process" ? processInitiatives : techInitiatives} />
             )}

@@ -5,6 +5,7 @@ import { FhTabs } from "@/components/pk/FhTabs";
 import { InfoNote } from "@/components/pk/Misc";
 import { PeriodPickerCompact, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
+import { OtherInvestmentDealsEditor } from "@/components/pk/OtherInvestmentDealsEditor";
 import { useDetails } from "@/lib/details";
 import { periodEndDateLabel, periodEndDateWords } from "@/data/periods";
 import { cn } from "@/lib/utils";
@@ -194,7 +195,10 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                           if (!deals) {
                             return (
                               <tr className="border-t border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-accent-soft))]">
-                                <td colSpan={5} className="px-2 py-2 pl-9 text-xs text-[hsl(var(--pk-ink-faint))] italic">No detailed deal schedule captured for {fp.currentLabel}.</td>
+                                <td colSpan={5} className="p-2 pl-9">
+                                  <p className="text-xs text-[hsl(var(--pk-ink-faint))] italic mb-2">No detailed deal schedule captured for {fp.currentLabel}.</p>
+                                  <OtherInvestmentDealsEditor periodId={periodId} />
+                                </td>
                               </tr>
                             );
                           }
@@ -202,6 +206,7 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                             <tr className="border-t border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-accent-soft))]">
                               <td colSpan={5} className="p-0">
                                 <div className="overflow-x-auto p-2">
+                                  <div className="mb-2"><OtherInvestmentDealsEditor periodId={periodId} /></div>
                                   <table className="w-full text-xs min-w-[640px]">
                                     <thead>
                                       <tr className="text-3xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
