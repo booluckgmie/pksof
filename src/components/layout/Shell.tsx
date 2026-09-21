@@ -16,6 +16,20 @@ import { entityById } from "@/data/entities";
 import { resolveCurrentPeriodId } from "@/data/periods";
 import prokhasLogo from "@/assets/prokhas-logo.png";
 
+/** Purely cosmetic: this internal deployment builds a staging bundle and a production bundle
+ * from the exact same source against the exact same Supabase project, so nothing in the data
+ * distinguishes them — without this, someone could easily mistake one tab for the other. Reads
+ * `VITE_APP_ENV` (set per build in `.env.staging` / `.env.production`, see DEPLOY.md), so it
+ * renders nothing unless the build was actually made for staging. */
+function StagingBanner() {
+  if (import.meta.env.VITE_APP_ENV !== "staging") return null;
+  return (
+    <div className="sticky top-0 z-40 shrink-0 bg-amber-400 text-amber-950 text-center text-2xs font-semibold uppercase tracking-wide py-1">
+      Staging environment — not for official reporting
+    </div>
+  );
+}
+
 const PILLAR_NAV: { id: ScreenId; label: string; group: string }[] = [
   { id: "MAIN", label: "Main", group: "main" },
   { id: "CP001", label: "Corporate Performance", group: "cp" },
@@ -150,7 +164,9 @@ export function Shell({
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-[hsl(var(--pk-paper))]">
+    <div className="flex flex-col min-h-screen bg-[hsl(var(--pk-paper))]">
+      <StagingBanner />
+      <div className="flex flex-1 min-h-0">
       {showSidebar && (
         <Sidebar current={current} onNavigate={onNavigate} mobileOpen onCloseMobile={() => setSidebarOpen(false)} />
       )}
@@ -215,6 +231,7 @@ export function Shell({
         <footer className="shrink-0 border-t border-[hsl(var(--pk-border))] px-3.5 sm:px-6 py-3 text-center text-2xs text-[hsl(var(--pk-ink-faint))]">
           Designed by Operational Excellence Department (OED) &middot; Prokhas Sdn Bhd
         </footer>
+      </div>
       </div>
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} onNavigate={onNavigate} />
     </div>
