@@ -52,10 +52,12 @@ export function PillarReportButton({
     <div className="flex items-center justify-end pt-1 -mb-1">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
+          {/* Styled as a real bordered button, not a faint caption link — UAT (TC-016/TC-017)
+           * found this easy to miss entirely when it was just small faint text. */}
           <button
             disabled={pending !== null}
             title={`Download full ${pillarLabel} report`}
-            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-2xs font-medium text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-accent))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] px-2.5 py-1.5 text-2xs font-medium text-[hsl(var(--pk-ink-soft))] hover:text-[hsl(var(--pk-accent))] hover:border-[hsl(var(--pk-accent))] hover:bg-[hsl(var(--pk-surface-2))] transition-colors disabled:opacity-60"
           >
             {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
             Full report

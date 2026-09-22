@@ -9,14 +9,6 @@ export interface DownloadableCsvData {
   rows: (string | number | null)[][];
 }
 
-function csvEscape(value: string): string {
-  return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
-}
-
-function rowsToCsv(rows: (string | number | null)[][]): string {
-  return rows.map((row) => row.map((cell) => csvEscape(cell === null || cell === undefined ? "" : String(cell))).join(",")).join("\n");
-}
-
 function triggerDownload(href: string, filename: string) {
   const a = document.createElement("a");
   a.href = href;
@@ -26,9 +18,9 @@ function triggerDownload(href: string, filename: string) {
   a.remove();
 }
 
-/** Extracts a plain-text CSV straight from a `<table>` DOM node — same approach as the screen-
- * level Excel export's table reader, just scoped to one table instead of a whole screen. */
-function tableToCsvRows(table: HTMLTableElement): (string | number | null)[][] {
+/** Extracts plain rows straight from a `<table>` DOM node — same approach as the screen-level
+ * Excel export's table reader, just scoped to one table instead of a whole screen. */
+function tableToRows(table: HTMLTableElement): (string | number | null)[][] {
   return Array.from(table.querySelectorAll("tr")).map((tr) =>
     Array.from(tr.querySelectorAll("th, td")).map((cell) => (cell.textContent ?? "").trim().replace(/\s+/g, " "))
   );
@@ -36,7 +28,8 @@ function tableToCsvRows(table: HTMLTableElement): (string | number | null)[][] {
 
 /**
  * Wraps a single table or chart with a hover-revealed "Download" affordance (upper right) offering
- * JPEG (a screenshot of just this element, via html2canvas) and CSV. CSV either comes from an
+ * JPEG (a screenshot of just this element, via html2canvas) and Excel (a real .xlsx, built via
+ * exceljs — see downloadExcel below for why not a plain .csv). The row data either comes from an
  * explicit `csvData` prop (needed for charts — there's no `<table>` DOM to read from) or, when
  * omitted, is read straight from the first `<table>` found inside — so wrapping an existing table
  * component needs no extra plumbing.
@@ -75,17 +68,43 @@ export function DownloadableFrame({
     }
   };
 
-  const downloadCsv = () => {
+  // A plain .csv has no way to record its own text encoding, so Excel — which opens a .csv by
+  // double-click far more often than any other app — falls back to guessing (usually Windows-1252),
+  // turning any non-ASCII character (the "—" this app uses throughout) into "â€”" mojibake. A .csv
+  // also carries no column-width metadata, so Excel's default ~8-character columns leave longer
+  // figures visually spilling out of their cell. A real .xlsx sidesteps both: native UTF-8 and
+  // columns sized to their content — see UAT TC-020/TC-021.
+  const downloadExcel = async () => {
+    if (busy) return;
     const table = csvData ? null : ref.current?.querySelector("table");
-    const rows = csvData ? [csvData.headers, ...csvData.rows] : table ? tableToCsvRows(table) : null;
+    const rows = csvData ? [csvData.headers, ...csvData.rows] : table ? tableToRows(table) : null;
     if (!rows || rows.length === 0) {
       toast.error("No table data to export here.");
       return;
     }
-    const blob = new Blob([rowsToCsv(rows)], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    triggerDownload(url, `${filename}.csv`);
-    URL.revokeObjectURL(url);
+    setBusy(true);
+    try {
+      const { default: ExcelJS } = await import("exceljs");
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet("Data");
+      ws.addRows(rows);
+      const headerRow = ws.getRow(1);
+      headerRow.font = { bold: true };
+      const colCount = Math.max(...rows.map((r) => r.length));
+      for (let c = 1; c <= colCount; c++) {
+        const widest = rows.reduce((max, r) => Math.max(max, String(r[c - 1] ?? "").length), 0);
+        ws.getColumn(c).width = Math.min(Math.max(widest + 2, 10), 60);
+      }
+      const buffer = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
+      triggerDownload(url, `${filename}.xlsx`);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error("Download failed", { description: err instanceof Error ? err.message : "Couldn't build the Excel file." });
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -109,7 +128,7 @@ export function DownloadableFrame({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
             <DropdownMenuItem onClick={downloadJpeg} className="cursor-pointer text-xs">Download as JPEG</DropdownMenuItem>
-            <DropdownMenuItem onClick={downloadCsv} className="cursor-pointer text-xs">Download as CSV</DropdownMenuItem>
+            <DropdownMenuItem onClick={downloadExcel} className="cursor-pointer text-xs">Download as Excel</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
