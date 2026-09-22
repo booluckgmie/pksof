@@ -17,6 +17,7 @@ never drift out of sync. Run from the repo root: `python3 scripts/generate_data_
 import os
 import re
 import random
+import zlib
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side, Protection
 from openpyxl.utils import get_column_letter
@@ -48,7 +49,13 @@ with open(SEED_SQL_PATH) as f:
             key, dim, dim2, val = m.groups()
             if val != "null":
                 anchors[(key, dim, dim2)] = float(val)
-        m2 = re.search(r"'(KPI\d+)', ?'HQ','Q1FY26', ([\-\d.]+|null), ([\-\d.]+|null)", line)
+        # `,\s*` (not a literal single space) -- seed.sql isn't perfectly consistent about
+        # single- vs double-space after a comma (e.g. KPI3's row lines up its columns with extra
+        # spaces), and a literal ", " silently fails to match those rows, falling through to the
+        # unanchored "fresh_series" fallback below with a base value nowhere near the KPI's real
+        # scale (this is exactly how a previous run produced a ~59 "Managed Entities Rating"
+        # sample value for a KPI that only ever ranges 1-5).
+        m2 = re.search(r"'(KPI\d+)',\s*'HQ',\s*'Q1FY26',\s*([\-\d.]+|null),\s*([\-\d.]+|null)", line)
         if m2:
             kid, tgt, act = m2.groups()
             kpi_anchors[kid] = (
@@ -178,6 +185,19 @@ KPI_NAMES = {
     "KPI11": "Bumiputera Procurement", "KPI12": "Bumiputera Composition",
     "KPI13": "Bumiputera Training",
 }
+# Starting point for a KPI whose Q1FY26 anchor is null (kpi_anchors has no real seed.sql figure
+# for it that quarter -- KPI4/5/7/10/13 all legitimately skip some quarters) and so falls through
+# to fresh_series() below with no real number to grow from. A flat "base=50" for every KPI
+# regardless of its own scale produced nonsense on any KPI that isn't a 0-100 percentage --
+# KPI5 (a /5 rating) came out around 54, and KPI7 (a small count of initiatives, FY target 3)
+# came out around 67. Each entry here is a plausible in-range starting point for that KPI's own
+# unit; a KPI not listed keeps the original 50 (true for every %-unit KPI on this list).
+KPI_FRESH_BASE = {
+    "KPI5": 4.3,   # rating /5, FY target 4.7
+    "KPI7": 1,     # initiatives, FY target 3
+    "KPI13": 100,  # staff, FY target 129
+}
+
 # KPI4/5/6/7/10/13 are legitimately not-measurable most quarters (annual/bi-annual/not-yet-due)
 KPI_SKIP_QUARTERS = {
     "KPI4": {0, 1, 3, 4},          # governance: annual, assessed Q4 only
@@ -189,9 +209,12 @@ KPI_SKIP_QUARTERS = {
 }
 
 
-def series(anchor, direction, spread=0.09, decimals=1, floor=None):
+def series(anchor, direction, spread=0.09, decimals=1, floor=None, ceiling=None):
     """5-point deterministic series around an anchor at ANCHOR_IDX, drifting per `direction`."""
-    rnd = random.Random(round(anchor * 1000) + hash(direction) % 97)
+    # Python's builtin hash() is randomized per-process (PYTHONHASHSEED) for anything but ints,
+    # which silently broke the "deterministic" promise above -- crc32 always returns the same
+    # value for the same string, run to run.
+    rnd = random.Random(round(anchor * 1000) + zlib.crc32(direction.encode()) % 97)
     drift = {"growth": 0.045, "cost": 0.02, "flat": 0.0, "decline": -0.03}[direction]
     vals = [None] * 5
     vals[ANCHOR_IDX] = anchor
@@ -205,12 +228,14 @@ def series(anchor, direction, spread=0.09, decimals=1, floor=None):
         vals[i] = cur
     if floor is not None:
         vals = [max(floor, v) for v in vals]
+    if ceiling is not None:
+        vals = [min(ceiling, v) for v in vals]
     return [round(v, decimals) for v in vals]
 
 
 def fresh_series(base, direction, spread=0.10, decimals=1, floor=0, seed_key=""):
     """5-point series with no real anchor at all -- used for the never-seeded metric keys."""
-    rnd = random.Random(hash(seed_key) % (2**31))
+    rnd = random.Random(zlib.crc32(seed_key.encode()) % (2**31))
     drift = {"growth": 0.05, "cost": 0.02, "flat": 0.0, "decline": -0.03}[direction]
     vals, cur = [], base
     for i in range(5):
@@ -233,9 +258,18 @@ def cp_rows():
         vals = [None] * 5
         skip = KPI_SKIP_QUARTERS.get(kid, set())
         if act is not None:
-            base_series = series(act, "growth" if kid not in ("KPI2",) else "decline", decimals=1)
+            # KPI2/4/6/9/10/12 are all "% of ..." ratios (Cost-to-Income, Governance Index, Time
+            # Charter Compliance, Recruitment Efficiency, People Dev completion, Bumiputera staff
+            # composition) that can't meaningfully exceed 100 -- an unclamped "growth" drift off a
+            # near-100 anchor (e.g. KPI12's 92.4) can otherwise walk past 100% on a lucky roll.
+            pct_bounded_kpi = kid in ("KPI2", "KPI4", "KPI6", "KPI9", "KPI10", "KPI12")
+            base_series = series(
+                act, "growth" if kid not in ("KPI2",) else "decline", decimals=1,
+                ceiling=100 if pct_bounded_kpi else None,
+            )
         else:
-            base_series = fresh_series(50 if kid != "KPI13" else 100, "growth", seed_key=kid)
+            fresh_decimals = 0 if kid in ("KPI7", "KPI13") else 1
+            base_series = fresh_series(KPI_FRESH_BASE.get(kid, 50), "growth", decimals=fresh_decimals, seed_key=kid)
         for qi in range(5):
             vals[qi] = None if qi in skip else base_series[qi]
         rows.append(("kpi", kid, KPI_NAMES[kid], vals))
