@@ -8,7 +8,7 @@ import { InstallAppButton } from "@/components/pk/InstallAppButton";
 import { PageNav } from "@/components/pk/PageNav";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/lib/session";
-import { useWorkflow } from "@/lib/workflow";
+import { useWorkflow, scopePendingFor } from "@/lib/workflow";
 import { useOrgSettings } from "@/lib/orgSettings";
 import { cn } from "@/lib/utils";
 import { screens, type ScreenId } from "@/lib/nav";
@@ -150,8 +150,9 @@ export function Shell({
   onOpenLogin: () => void;
   children: ReactNode;
 }) {
-  const { loggedIn, isRestrictedPillar } = useSession();
-  const { pending } = useWorkflow();
+  const { loggedIn, isRestrictedPillar, pillarLocked, entityId, assignedModule, canVerify } = useSession();
+  const { pending: allPending } = useWorkflow();
+  const pending = canVerify ? scopePendingFor(allPending, { pillarLocked, entityId, assignedModule }) : [];
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -212,7 +213,7 @@ export function Shell({
             {loggedIn ? (
               <>
                 <UserMenu />
-                <NotificationsBell count={pending.length} />
+                <NotificationsBell count={pending.length} onClick={() => onNavigate("VERIFY_PUBLISH")} />
               </>
             ) : (
               <button

@@ -1,69 +1,26 @@
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
-import { StatCard } from "@/components/pk/Misc";
 import { StatusChip } from "@/components/pk/StatusChip";
-import { InfoTip } from "@/components/pk/InfoTip";
-import { LineTrend, CategoryBar } from "@/components/pk/Charts";
+import { CategoryBar } from "@/components/pk/Charts";
 import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
-import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
-import { useDetails, industryBenchmark } from "@/lib/details";
-
-const INDUSTRY_BENCHMARK_SOURCE = "Placeholder reference figure for this prototype — not yet tied to a cited source. Replace with the actual published industry turnover benchmark (e.g. sector HR association or MOF benchmarking report) once confirmed.";
+import { useDetails } from "@/lib/details";
 
 export function RP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId } = useSession();
   const [periodId, setPeriodId] = useLocalPeriodId();
   const { latestValue } = useWorkflow();
-  const { headcountSummaryByPeriod, turnoverTrend: fullTurnoverTrend, resignedByPeriod } = useDetails();
+  const { headcountSummaryByPeriod } = useDetails();
   const kpi12 = latestValue("KPI12", entityId, periodId);
   const headcountSummary = headcountSummaryByPeriod[periodId];
-  const resigned = resignedByPeriod[periodId];
-  const turnoverRate = headcountSummary.totalEmployees > 0 ? (resigned / headcountSummary.totalEmployees) * 100 : 0;
-  const { duration, setDuration, filtered: turnoverTrend } = useDurationFilter(fullTurnoverTrend);
 
   return (
     <div>
-      <ScreenHeader id="RP003" subtitle="Resource & People · Turnover analysis and Bumiputera Composition." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
-        <StatCard label="Total Employee(s)" value={String(headcountSummary.totalEmployees)} />
-        <StatCard label="Employee(s) Resigned" value={String(resigned)} />
-        <StatCard label="Turnover Rate" value={`${turnoverRate.toFixed(1)}%`} tone="good" />
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card px-4 py-3">
-          <div className="flex items-center gap-1 text-3xs uppercase tracking-[0.1em] text-[hsl(var(--pk-ink-faint))] font-semibold">
-            Industry Benchmark
-            <InfoTip title="Industry Benchmark — source" side="bottom">{INDUSTRY_BENCHMARK_SOURCE}</InfoTip>
-          </div>
-          <div className="tnum text-xl font-semibold mt-0.5 text-[hsl(var(--pk-ink))]">{industryBenchmark.toFixed(1)}%</div>
-        </div>
-      </div>
+      <ScreenHeader id="RP003" subtitle="Resource & People · Bumiputera Composition (KPI 12)." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-        <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
-          <div className="flex items-center justify-between mb-2 flex-wrap gap-1.5">
-            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))] inline-flex items-center gap-1">
-              Turnover trend by quarter vs industry benchmark
-              <InfoTip title="Industry Benchmark — source" side="bottom">{INDUSTRY_BENCHMARK_SOURCE}</InfoTip>
-            </div>
-            <DurationFilterBar duration={duration} onChange={setDuration} total={fullTurnoverTrend.length} label="" />
-          </div>
-          <DownloadableFrame
-            filename="rp003-turnover-trend"
-            csvData={{
-              headers: ["Period", "Turnover Rate (%)", "Industry Benchmark (%)"],
-              rows: turnoverTrend.map((t) => [t.period, t.rate, industryBenchmark]),
-            }}
-          >
-            <LineTrend
-              data={turnoverTrend.map((t) => ({ label: t.period.replace(" FY", " '"), value: t.rate }))}
-              unit="%"
-              referenceLine={{ value: industryBenchmark, label: "Industry benchmark" }}
-            />
-          </DownloadableFrame>
-        </div>
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))]">KPI 12 — Bumiputera Composition</div>

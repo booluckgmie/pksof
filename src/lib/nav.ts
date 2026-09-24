@@ -37,8 +37,8 @@ export const screens: Record<ScreenId, ScreenDef> = {
   RP001: { id: "RP001", code: "RP001", label: "Demographics and Recruitment Efficiency Index", level: "L2", group: "rp", parent: "MAIN" },
   RP001A: { id: "RP001A", code: "RP001a", label: "Staff Demographics Breakdown", level: "L3", group: "rp", parent: "RP001" },
   RP002: { id: "RP002", code: "RP002", label: "Approved Headcount & KPI 10", level: "L3", group: "rp", parent: "RP001" },
-  RP003: { id: "RP003", code: "RP003", label: "Turnover Rate & KPI 12", level: "L3", group: "rp", parent: "RP001" },
-  RP004: { id: "RP004", code: "RP004", label: "Turnover Rate & KPI 13", level: "L3", group: "rp", parent: "RP001" },
+  RP003: { id: "RP003", code: "RP003", label: "Bumiputera Composition (KPI 12)", level: "L3", group: "rp", parent: "RP001" },
+  RP004: { id: "RP004", code: "RP004", label: "Bumiputera Training (KPI 13)", level: "L3", group: "rp", parent: "RP001" },
 
   DATA_ENTRY: { id: "DATA_ENTRY", code: "ENTRY", label: "Data Entry", level: "L2", group: "gov", parent: "MAIN" },
   VERIFY_PUBLISH: { id: "VERIFY_PUBLISH", code: "VERIFY", label: "Verify & Publish", level: "L2", group: "gov", parent: "MAIN" },

@@ -78,7 +78,12 @@ export function PFH005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                       <td className="px-3 pt-1.5 pb-0.5 text-[hsl(var(--pk-ink-soft))]" colSpan={rptPeriods.length + 1}>{sh.subheading}:</td>
                     </tr>
                     {sh.rows.map((it) => {
-                      const restricted = isRestrictedPillar && it.party !== homeEntityName;
+                      // A party code in the RPT data (e.g. "GOVCO") doesn't always match
+                      // entities.ts's own display-case name (e.g. "GovCo") exactly — a naive
+                      // `!==` compare then masks an entity's *own* row too, which is what UAT
+                      // (TC-033) saw as masking "not working". Case-insensitive fixes it without
+                      // touching the underlying party-code data.
+                      const restricted = isRestrictedPillar && it.party.toLowerCase() !== homeEntityName.toLowerCase();
                       return (
                         <tr key={it.party} className={cn("hover:bg-[hsl(var(--pk-surface-2))]", pillarRowClass(restricted))}>
                           <td className="px-3 py-1.5 pl-6 text-[hsl(var(--pk-ink-soft))]">

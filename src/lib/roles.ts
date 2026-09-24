@@ -29,7 +29,12 @@ export const roleDefs: RoleDef[] = [
     canVerify: true,
     readOnly: true,
     pillarLocked: true,
-    moduleLocked: false,
+    // Was false — but the description above (and UAT feedback: "HOD to be assigned by pillar",
+    // reviewers able to reach and act on other pillars' screens) both say a Department Head is
+    // scoped to one pillar per entity, same shape as Reporting Officer. Now asks for a Pillar at
+    // login (LoginDialog already renders that picker for any moduleLocked role) and every screen
+    // outside that pillar is blocked the same way a Reporting Officer's is (see App.tsx).
+    moduleLocked: true,
   },
   {
     id: "reporting_officer",

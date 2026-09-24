@@ -198,9 +198,15 @@ export async function downloadPillarTemplate(module: Module, periodId: PeriodId,
   ws.getColumn(4).width = 38;
   ws.getColumn(5).width = 26;
 
+  // selectLockedCells/selectUnlockedCells were both false, which doesn't just block *editing* —
+  // it blocks *selecting* a cell at all, locked or not, which reads in Excel as the entire sheet
+  // being frozen (can't click into even the yellow, genuinely-unlocked value column). That's the
+  // most likely explanation behind UAT TC-042's "Template unable to edit / File cannot be edited".
+  // Cell-level `.protection.locked` (set per-cell above) is what actually prevents editing a
+  // locked cell — these two just need to stay true so the sheet is at least navigable.
   await ws.protect("", {
-    selectLockedCells: false,
-    selectUnlockedCells: false,
+    selectLockedCells: true,
+    selectUnlockedCells: true,
     formatCells: false,
     formatColumns: false,
     formatRows: false,

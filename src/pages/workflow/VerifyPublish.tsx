@@ -9,7 +9,7 @@ import { AuditTrailPanel } from "@/components/pk/AuditTrailPanel";
 import { UploadsPanel } from "@/components/pk/UploadsPanel";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
-import { useWorkflow } from "@/lib/workflow";
+import { useWorkflow, scopePendingFor } from "@/lib/workflow";
 import { kpiById } from "@/data/kpis";
 import { entityById } from "@/data/entities";
 import { periodById } from "@/data/periods";
@@ -119,15 +119,25 @@ function SourceTag({ source }: { source: Submission["source"] }) {
 }
 
 export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { userName, entityId, pillarLocked, role } = useSession();
+  const { userName, entityId, pillarLocked, assignedModule, role } = useSession();
   const { pending: allPending, submissions: allSubmissions, approve, approveAll, reject, editSubmission } = useWorkflow();
   const canDeleteUploads = role === "admin" || role === "dept_head";
 
   /** A Department Head is entity-locked (pillarLocked) — scope every tab here to just their own
    * entity, the same way Data Entry already scopes for a Reporting Officer, rather than showing
-   * the whole org. System Administrator (not pillarLocked) still sees everything. */
-  const pending = useMemo(() => (pillarLocked ? allPending.filter((s) => s.entityId === entityId) : allPending), [allPending, pillarLocked, entityId]);
-  const submissions = useMemo(() => (pillarLocked ? allSubmissions.filter((s) => s.entityId === entityId) : allSubmissions), [allSubmissions, pillarLocked, entityId]);
+   * the whole org. System Administrator (not pillarLocked) still sees everything.
+   *
+   * Every submission here is a KPI Scorecard figure — the only sheet routed through this
+   * maker-checker queue at all (see DataEntry.tsx's own note: "everything else saves directly to
+   * the dashboards"), which only ever comes from the Corporate Performance pillar's own template
+   * sheet. A Department Head now assigned to Financial Health or Resource & People (see roles.ts)
+   * genuinely has nothing of theirs to verify here — that's not a bug, it's what "only CP goes
+   * through this queue" means once a Department Head is pillar-scoped the same way a Reporting
+   * Officer already was. Extending verification to FH/RP's own figures would be a separate,
+   * deliberate scope change to the workflow itself, not a filter tweak. */
+  const moduleExcluded = !!assignedModule && assignedModule !== "CP";
+  const pending = useMemo(() => scopePendingFor(allPending, { pillarLocked, entityId, assignedModule }), [allPending, pillarLocked, entityId, assignedModule]);
+  const submissions = useMemo(() => (moduleExcluded ? [] : pillarLocked ? allSubmissions.filter((s) => s.entityId === entityId) : allSubmissions), [allSubmissions, pillarLocked, entityId, moduleExcluded]);
   const [tab, setTab] = useState<"pending" | "audit" | "uploads" | "activity">("pending");
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
@@ -348,7 +358,7 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
       ) : tab === "audit" ? (
         <AuditTrailPanel submissions={submissions} showEntityColumn={!pillarLocked} />
       ) : tab === "uploads" ? (
-        <UploadsPanel entityId={pillarLocked ? entityId : undefined} canDelete={canDeleteUploads} />
+        <UploadsPanel entityId={pillarLocked ? entityId : undefined} assignedModule={assignedModule} canDelete={canDeleteUploads} />
       ) : loginsError || activityUploadsError ? (
         <p className="text-sm text-[hsl(var(--pk-bad))]">Couldn't load activity: {loginsError ?? activityUploadsError}</p>
       ) : activityFeed === null ? (

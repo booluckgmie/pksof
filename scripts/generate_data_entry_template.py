@@ -590,6 +590,27 @@ def rp_rows():
         vals = series(a, "flat", decimals=0, spread=0.04) if a is not None else fresh_series(50, "flat", decimals=0, seed_key=dim)
         rows.append(("metric", "age_breakdown", dim, "", dim, vals))
 
+    # grade_gender_crosstab (RP001A's grade x gender x average-age table) had a real anchor in
+    # seed.sql (Q1FY25 only, never carried into the Q1FY26 anchor set below) but was never in this
+    # manifest at all -- UAT (TC-042) flagged it directly: "Demographics for grade code and gender,
+    # not available for input, so data will not show." No `series()` here since Q1FY26 isn't
+    # among the anchored quarters for this key; fresh_series bases are loosely scaled off the
+    # Grade Breakdown section above (split roughly male/female) and a plausible seniority-linked
+    # average age.
+    rows.append(("section", "Grade × Gender Breakdown", None))
+    GRADE_GENDER_BASE = {
+        "Top Management": {"male": 5, "female": 2, "avgAge": 51},
+        "Senior Management": {"male": 11, "female": 9, "avgAge": 45},
+        "Management": {"male": 26, "female": 24, "avgAge": 39},
+        "Executive": {"male": 52, "female": 49, "avgAge": 33},
+        "Non-Executive": {"male": 8, "female": 6, "avgAge": 36},
+    }
+    for dim, subs in GRADE_GENDER_BASE.items():
+        for dim2, base in subs.items():
+            decimals = 1 if dim2 == "avgAge" else 0
+            vals = fresh_series(base, "flat", decimals=decimals, spread=0.03 if dim2 == "avgAge" else 0.05, seed_key=dim + dim2 + "gradegender")
+            rows.append(("metric", "grade_gender_crosstab", dim, dim2, f"{dim} — {dim2 if dim2 == 'avgAge' else dim2.title()}", vals))
+
     rows.append(("section", "Age × Gender Breakdown", None))
     for dim in ["≤30", "31–40", "41–50", "51+"]:
         for dim2 in ["male", "female"]:
@@ -667,6 +688,7 @@ SCREEN_FOR = {
     "Gender Breakdown": "RP001A Staff Demographics — Section A",
     "Grade Breakdown (5 approved bands)": "RP001A Staff Demographics — Section B",
     "Age Breakdown (4 bands)": "RP001A Staff Demographics — Section C age heatmap",
+    "Grade × Gender Breakdown": "RP001A Staff Demographics — Section D grade/gender cross-tab (male, female and average age per grade band)",
     "Age × Gender Breakdown": "RP001A Staff Demographics — Section C grouped bar chart",
     "Department Headcount": "RP002 Approved Headcount & KPI 10 — Section A",
     "Resignations": "RP003 / RP004 Turnover Rate trend",

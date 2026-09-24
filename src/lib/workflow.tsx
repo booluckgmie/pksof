@@ -209,3 +209,14 @@ export function useWorkflow() {
   if (!ctx) throw new Error("useWorkflow must be used within WorkflowProvider");
   return ctx;
 }
+
+/** Scopes the raw pending queue to what a given login actually has standing to verify — same
+ * rule VerifyPublish's own Pending tab applies, shared so the notification bell's count (Shell)
+ * can't drift out of sync with what clicking through to Verify & Publish actually shows. Every
+ * pending item is a KPI Scorecard figure (the only sheet routed through this queue at all), which
+ * only ever comes from the Corporate Performance pillar — so a login assigned to Financial Health
+ * or Resource & People has nothing here to act on. */
+export function scopePendingFor(pending: Submission[], opts: { pillarLocked: boolean; entityId: EntityId; assignedModule: string | null }): Submission[] {
+  if (opts.assignedModule && opts.assignedModule !== "CP") return [];
+  return opts.pillarLocked ? pending.filter((s) => s.entityId === opts.entityId) : pending;
+}

@@ -7,7 +7,7 @@ import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { kpiById } from "@/data/kpis";
-import { useDetails, industryBenchmark, priorYearTrained } from "@/lib/details";
+import { useDetails, priorYearTrained } from "@/lib/details";
 import { periodById } from "@/data/periods";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -18,31 +18,25 @@ export function RP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId } = useSession();
   const [periodId, setPeriodId] = useLocalPeriodId();
   const { latestValue } = useWorkflow();
-  const { headcountSummaryByPeriod, bumiputeraTrainingByPeriod, resignedByPeriod } = useDetails();
+  const { bumiputeraTrainingByPeriod } = useDetails();
   const kpi13 = latestValue("KPI13", entityId, periodId);
   const kpi13Def = kpiById("KPI13");
   const period = periodById(periodId);
-  const headcountSummary = headcountSummaryByPeriod[periodId];
   const bumiputeraTraining = bumiputeraTrainingByPeriod[periodId];
-  const resigned = resignedByPeriod[periodId];
-  const turnoverRate = headcountSummary.totalEmployees > 0 ? (resigned / headcountSummary.totalEmployees) * 100 : 0;
   const target = kpi13Def.fyTarget ?? 0;
   const notCommenced = bumiputeraTraining.attendedOne === 0;
 
   return (
     <div>
-      <ScreenHeader id="RP004" subtitle="Resource & People · Turnover analysis and Bumiputera Training." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
-
-      <SectionLabel>Section A — Demographics: Turnover Rate</SectionLabel>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
-        <StatCard label="Total Employee(s)" value={String(headcountSummary.totalEmployees)} sub="HRMS active employee(s)" />
-        <StatCard label={`Employee(s) Resigned (${period.label.split(" ")[0]})`} value={String(resigned)} sub="Resigned during quarter" />
-        <StatCard label="Turnover Rate" value={`${turnoverRate.toFixed(1)}%`} tone="good" sub="Resigned ÷ Total × 100" />
-        <StatCard label="Industry Benchmark" value={`${industryBenchmark.toFixed(1)}%`} sub="Financial services" />
-      </div>
+      {/* Turnover (formerly "Section A") removed — UAT (TC-038/TC-039) flagged it repeatedly as
+       * not belonging on a KPI13 screen ("KPI13 is only Bumi training. Turnover no required
+       * here."), and it isn't part of KPI13's own formula (kpis.ts: "Staff completing ≥2
+       * registered programmes"). This screen is now KPI13's detail alone, matching KPI12's own
+       * RP003 (which had the same turnover content stripped for the same reason). */}
+      <ScreenHeader id="RP004" subtitle="Resource & People · Bumiputera Training (KPI 13)." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <div className="flex items-center gap-1.5 mb-2">
-        <SectionLabel>Section B — KPI 13: Bumiputera Training &amp; Development</SectionLabel>
+        <SectionLabel>KPI 13: Bumiputera Training &amp; Development</SectionLabel>
         <InfoTip title="KPI 13 formula">Staff completing at least 2 registered competency-development programmes, against the annual target of {target} staff.</InfoTip>
       </div>
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">

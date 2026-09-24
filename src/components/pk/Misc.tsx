@@ -78,10 +78,17 @@ export function RefreshButton({ onClick, dark = false }: { onClick?: () => void;
   );
 }
 
-export function NotificationsBell({ count = 0 }: { count?: number }) {
+export function NotificationsBell({ count = 0, onClick }: { count?: number; onClick?: () => void }) {
   return (
     <button
-      onClick={() => toast("Notifications", { description: count ? `${count} item(s) awaiting your action.` : "You're all caught up." })}
+      onClick={() => {
+        // Previously just a toast with no way to act on it — UAT (TC-044) flagged not being able
+        // to click through to the actual pending queue. Now takes you straight there; the toast
+        // still fires as instant feedback while the screen swaps in.
+        toast("Notifications", { description: count ? `${count} item(s) awaiting your action.` : "You're all caught up." });
+        onClick?.();
+      }}
+      title={count ? `${count} item(s) awaiting verification — click to review` : "Notifications"}
       className="relative inline-flex items-center justify-center rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] h-8 w-8 hover:bg-[hsl(var(--pk-surface-2))] transition-colors"
     >
       <Bell className="h-4 w-4 text-[hsl(var(--pk-ink-soft))]" />

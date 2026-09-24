@@ -80,7 +80,7 @@ function readEntityFromUrl(): EntityId {
 }
 
 function AuthedApp() {
-  const { loggedIn, isRestrictedPillar, homeEntityName, role, entityId, entityName, setEntityId } = useSession();
+  const { loggedIn, isRestrictedPillar, homeEntityName, role, entityId, entityName, setEntityId, assignedModule, assignedModuleLabel } = useSession();
   const [screen, setScreen] = useState<ScreenId>(() => readScreenFromUrl());
   const [loginOpen, setLoginOpen] = useState(false);
   const prevLoggedIn = useRef(loggedIn);
@@ -98,6 +98,16 @@ function AuthedApp() {
     if (opts?.replace) window.history.replaceState({ screen: id }, "", url);
     else window.history.pushState({ screen: id }, "", url);
   };
+
+  // A screen change never reset scroll position — landing on a new screen kept whatever scroll
+  // depth the previous one was at, which read as "every page opens in the middle" (UAT TC-036/037).
+  // Skips the very first render (no real navigation happened yet) so a deep link's own scroll
+  // position — e.g. the browser restoring it on refresh — isn't fought on load.
+  const didMountScroll = useRef(false);
+  useEffect(() => {
+    if (!didMountScroll.current) { didMountScroll.current = true; return; }
+    window.scrollTo(0, 0);
+  }, [screen]);
 
   // Back/Forward doesn't re-run navigate() — it moves the URL directly, so read it back into state.
   useEffect(() => {
@@ -165,7 +175,14 @@ function AuthedApp() {
   // currently being viewed, independent of login/role, so it also covers CP004's own
   // "drill into a Managed Entity" flow.
   const entityBlocksGroup = !!groupModule && !entityById(entityId).modules.includes(groupModule);
-  const blocked = (isRestrictedPillar && HQ_ONLY_GROUPS.has(group)) || entityBlocksGroup || settingsBlocked || loginRequired;
+  // A moduleLocked login (Reporting Officer, and now Department Head — see roles.ts) is scoped to
+  // one CP/FH/RP pillar. Until now nothing actually enforced that outside Data Entry's own upload
+  // filter: the screens themselves were fully browsable (and, worse, editable — this session's own
+  // in-app editors only ever checked canEnterData, never the assigned pillar) regardless of which
+  // pillar a login was assigned to. UAT found this repeatedly (TC-026/027/028: "RP RO can also go
+  // into the [CP] module. No pop-up appear").
+  const moduleBlocksGroup = !!assignedModule && !!groupModule && groupModule !== assignedModule;
+  const blocked = (isRestrictedPillar && HQ_ONLY_GROUPS.has(group)) || entityBlocksGroup || moduleBlocksGroup || settingsBlocked || loginRequired;
   const Screen = SCREEN_MAP[screen];
 
   return (
@@ -180,18 +197,22 @@ function AuthedApp() {
               ? "Sign in required"
               : settingsBlocked
                 ? "System Administrator only"
-                : entityBlocksGroup && !isRestrictedPillar
-                  ? `Not part of ${entityName}'s dashboards`
-                  : `Not part of ${homeEntityName}'s pillar`}
+                : moduleBlocksGroup
+                  ? `Not part of your assigned pillar`
+                  : entityBlocksGroup && !isRestrictedPillar
+                    ? `Not part of ${entityName}'s dashboards`
+                    : `Not part of ${homeEntityName}'s pillar`}
           </div>
           <p className="text-sm text-[hsl(var(--pk-ink-faint))] max-w-[46ch]">
             {loginRequired
               ? "Uploading data and verifying/publishing submissions needs a real sign-in — browsing the dashboards doesn't."
               : settingsBlocked
                 ? "Organisation-wide settings are restricted to the System Administrator role."
-                : entityBlocksGroup && !isRestrictedPillar
-                  ? `Corporate Performance is Prokhas Sdn Bhd's own scorecard for managing the Group — ${entityName} doesn't have one of its own, only its Financial Health and Resource & People dashboards.`
-                  : `This dashboard belongs to Prokhas Sdn Bhd's own scorecard. Your login is scoped to ${homeEntityName} and can't view it.`}
+                : moduleBlocksGroup
+                  ? `Your login is assigned to ${assignedModuleLabel} only — this screen belongs to a different pillar.`
+                  : entityBlocksGroup && !isRestrictedPillar
+                    ? `Corporate Performance is Prokhas Sdn Bhd's own scorecard for managing the Group — ${entityName} doesn't have one of its own, only its Financial Health and Resource & People dashboards.`
+                    : `This dashboard belongs to Prokhas Sdn Bhd's own scorecard. Your login is scoped to ${homeEntityName} and can't view it.`}
           </p>
           <button
             onClick={() => {

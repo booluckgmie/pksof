@@ -79,7 +79,16 @@ export function AuditTrailPanel({ submissions, showEntityColumn = true }: { subm
                       <td className="px-3 py-2 text-right tnum">{s.value}</td>
                       <td className="px-3 py-2 text-2xs text-[hsl(var(--pk-ink-faint))]">{s.submittedBy}<br />{new Date(s.submittedAt).toLocaleString()}</td>
                       <td className="px-3 py-2 text-2xs text-[hsl(var(--pk-ink-faint))]">{s.reviewedBy ? <>{s.reviewedBy}<br />{s.reviewedAt && new Date(s.reviewedAt).toLocaleString()}</> : "—"}</td>
-                      <td className="px-3 py-2"><WorkflowChip status={s.status} /></td>
+                      <td className="px-3 py-2">
+                        <WorkflowChip status={s.status} />
+                        {/* UAT (TC-045): a rejection showed up as a status chip here, but nothing
+                         * said *why* — the checker's note was only ever visible back on the
+                         * submitter's own Data Entry screen. Surfacing it right on the row it
+                         * belongs to means the reason travels with the record, not just the result. */}
+                        {s.status === "rejected" && s.reviewNote && (
+                          <div className="text-2xs text-[hsl(var(--pk-bad))] mt-1 max-w-[220px]">{s.reviewNote}</div>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}

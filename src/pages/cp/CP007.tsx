@@ -4,8 +4,8 @@ import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatusChip } from "@/components/pk/StatusChip";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
 import { RecruitmentIndexCardHeader, RecruitmentIndexTable } from "@/components/pk/RecruitmentIndexScorecard";
-import { PeopleDevPlanTable } from "@/components/pk/PeopleDevPlanTable";
 import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
+import { ArrowRight } from "lucide-react";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
@@ -116,8 +116,22 @@ export function CP007({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       )}
 
       {expanded === "kpi10" && (
-        <div className="mb-4">
-          <PeopleDevPlanTable periodId={periodId} kpi10YtdActual={kpi10.ytdActual} />
+        // The full editable table lives on CP009 (its own dedicated screen, open by default) —
+        // showing it again here too meant Next/Next through the bottom pager landed a tester on
+        // the exact same content they'd just seen expanded, which 3 separate UAT reviewers read
+        // as a navigation bug ("duplication of KPI10"). This card now only previews the summary
+        // (already shown above) and points at CP009 for the real thing, so there's one place to
+        // add/edit/remove a programme, not two.
+        <div className="mb-4 rounded-lg border border-dashed border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-4 flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-xs text-[hsl(var(--pk-ink-faint))] max-w-[46ch]">
+            The full People Development Programme detail — grouped by sub-area, with add/edit/remove — lives on its own screen.
+          </p>
+          <button
+            onClick={() => onNavigate("CP009")}
+            className="inline-flex items-center gap-1.5 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] text-xs font-medium px-3 py-1.5 hover:opacity-90 transition-opacity shrink-0"
+          >
+            View full detail on CP009<ArrowRight className="h-3.5 w-3.5" />
+          </button>
         </div>
       )}
     </div>
