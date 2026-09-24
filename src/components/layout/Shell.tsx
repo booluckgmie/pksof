@@ -1,19 +1,15 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Menu, Search, LogIn, LogOut, User, BookOpen } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CommandPalette } from "@/components/layout/CommandPalette";
-import { UPLOADER_ROLES } from "@/components/layout/LoginDialog";
 import { NotificationsBell } from "@/components/pk/Misc";
 import { InstallAppButton } from "@/components/pk/InstallAppButton";
 import { PageNav } from "@/components/pk/PageNav";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/lib/session";
 import { useWorkflow, scopePendingFor } from "@/lib/workflow";
-import { useOrgSettings } from "@/lib/orgSettings";
 import { cn } from "@/lib/utils";
 import { screens, type ScreenId } from "@/lib/nav";
-import { entityById } from "@/data/entities";
-import { resolveCurrentPeriodId } from "@/data/periods";
 import prokhasLogo from "@/assets/prokhas-logo.png";
 
 /** Purely cosmetic: this internal deployment builds a staging bundle and a production bundle
@@ -93,24 +89,14 @@ function BrandHome({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   );
 }
 
-/** The top bar's account button — a dropdown to quickly switch role (demo convenience, since
- * this prototype has no real identity provider) or sign out, rather than a bare logout button. */
+/** The top bar's account button — sign-out only. A one-click "Switch role" shortcut used to sit
+ * here, re-logging in as a different role without going through the Login dialog at all (no
+ * Entity/Pillar re-selection, always defaulting to HQ) — post-UAT feedback flagged this twice
+ * ("Switching roles between Dept Heads and Reporting Officer should not be allowed") since it let
+ * anyone hop into a different role's access on a whim. Changing role now means Logout, then Login
+ * again through the real dialog. */
 function UserMenu() {
-  const { role, roleLabel, userName, login, logout } = useSession();
-  const { fiscalYearEndMonth } = useOrgSettings();
-  const latestPeriodId = useMemo(() => resolveCurrentPeriodId(new Date(), fiscalYearEndMonth), [fiscalYearEndMonth]);
-
-  const switchRole = (nextRole: typeof UPLOADER_ROLES[number]) => {
-    if (nextRole.id === role) return;
-    const homeEntity = "HQ" as const;
-    login({
-      role: nextRole.id,
-      userName: userName || "reporting.officer",
-      homeEntity,
-      periodId: latestPeriodId,
-      assignedModule: nextRole.moduleLocked ? entityById(homeEntity).modules[0] : null,
-    });
-  };
+  const { roleLabel, userName, logout } = useSession();
 
   return (
     <DropdownMenu>
@@ -123,12 +109,7 @@ function UserMenu() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="text-2xs text-[hsl(var(--pk-ink-faint))] font-normal">Switch role</DropdownMenuLabel>
-        {UPLOADER_ROLES.map((r) => (
-          <DropdownMenuItem key={r.id} disabled={r.id === role} onClick={() => switchRole(r)} className="cursor-pointer">
-            {r.label}
-          </DropdownMenuItem>
-        ))}
+        <DropdownMenuLabel className="text-2xs text-[hsl(var(--pk-ink-faint))] font-normal">{userName} · {roleLabel}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={logout} className="cursor-pointer text-[hsl(var(--pk-bad))]">
           <LogOut className="h-3.5 w-3.5 mr-2" />

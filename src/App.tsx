@@ -80,7 +80,7 @@ function readEntityFromUrl(): EntityId {
 }
 
 function AuthedApp() {
-  const { loggedIn, isRestrictedPillar, homeEntityName, role, entityId, entityName, setEntityId, assignedModule, assignedModuleLabel } = useSession();
+  const { loggedIn, isRestrictedPillar, homeEntityName, role, entityId, entityName, setEntityId, assignedModule, assignedModuleLabel, canEnterData, canVerify } = useSession();
   const [screen, setScreen] = useState<ScreenId>(() => readScreenFromUrl());
   const [loginOpen, setLoginOpen] = useState(false);
   const prevLoggedIn = useRef(loggedIn);
@@ -168,6 +168,13 @@ function AuthedApp() {
 
   const loginRequired = LOGIN_REQUIRED_SCREENS.has(screen) && !loggedIn;
   const settingsBlocked = screen === "SETTINGS" && loggedIn && role !== "admin";
+  // DATA_ENTRY/VERIFY_PUBLISH were only ever gated on being logged in at all, not on the signed-in
+  // role actually having that capability — role simulation (post-UAT) found a Department Head
+  // (canEnterData: false) could still reach Data Entry, and worse, a Reporting Officer
+  // (canVerify: false) could reach Verify & Publish and approve/publish their own submissions,
+  // defeating the maker-checker separation the whole screen exists for.
+  const dataEntryBlocked = screen === "DATA_ENTRY" && loggedIn && !canEnterData;
+  const verifyBlocked = screen === "VERIFY_PUBLISH" && loggedIn && !canVerify;
   const group = screens[screen].group;
   const groupModule = GROUP_MODULE[group];
   // Corporate Performance is Prokhas' own scorecard — a Managed Entity has no CP dashboards of
@@ -181,8 +188,16 @@ function AuthedApp() {
   // in-app editors only ever checked canEnterData, never the assigned pillar) regardless of which
   // pillar a login was assigned to. UAT found this repeatedly (TC-026/027/028: "RP RO can also go
   // into the [CP] module. No pop-up appear").
-  const moduleBlocksGroup = !!assignedModule && !!groupModule && groupModule !== assignedModule;
-  const blocked = (isRestrictedPillar && HQ_ONLY_GROUPS.has(group)) || entityBlocksGroup || moduleBlocksGroup || settingsBlocked || loginRequired;
+  //
+  // Post-UAT client direction refined the matrix further: a Corporate Performance-assigned
+  // Reporting Officer can view every pillar (CP's own role is Group-wide oversight of the
+  // scorecard), an FH/RP-assigned Reporting Officer stays restricted to their own pillar only, and
+  // a Department Head can always view everything regardless of assigned pillar — their sign-off
+  // scope (Verify & Publish's own pending queue, see scopePendingFor) is what actually stays
+  // pillar-scoped for them, not what they can look at.
+  const viewsAllPillars = role === "dept_head" || (role === "reporting_officer" && assignedModule === "CP");
+  const moduleBlocksGroup = !viewsAllPillars && !!assignedModule && !!groupModule && groupModule !== assignedModule;
+  const blocked = (isRestrictedPillar && HQ_ONLY_GROUPS.has(group)) || entityBlocksGroup || moduleBlocksGroup || settingsBlocked || dataEntryBlocked || verifyBlocked || loginRequired;
   const Screen = SCREEN_MAP[screen];
 
   return (
@@ -197,22 +212,30 @@ function AuthedApp() {
               ? "Sign in required"
               : settingsBlocked
                 ? "System Administrator only"
-                : moduleBlocksGroup
-                  ? `Not part of your assigned pillar`
-                  : entityBlocksGroup && !isRestrictedPillar
-                    ? `Not part of ${entityName}'s dashboards`
-                    : `Not part of ${homeEntityName}'s pillar`}
+                : dataEntryBlocked
+                  ? "Data Entry isn't part of your role"
+                  : verifyBlocked
+                    ? "Verify & Publish isn't part of your role"
+                    : moduleBlocksGroup
+                      ? `Not part of your assigned pillar`
+                      : entityBlocksGroup && !isRestrictedPillar
+                        ? `Not part of ${entityName}'s dashboards`
+                        : `Not part of ${homeEntityName}'s pillar`}
           </div>
           <p className="text-sm text-[hsl(var(--pk-ink-faint))] max-w-[46ch]">
             {loginRequired
               ? "Uploading data and verifying/publishing submissions needs a real sign-in — browsing the dashboards doesn't."
               : settingsBlocked
                 ? "Organisation-wide settings are restricted to the System Administrator role."
-                : moduleBlocksGroup
-                  ? `Your login is assigned to ${assignedModuleLabel} only — this screen belongs to a different pillar.`
-                  : entityBlocksGroup && !isRestrictedPillar
-                    ? `Corporate Performance is Prokhas Sdn Bhd's own scorecard for managing the Group — ${entityName} doesn't have one of its own, only its Financial Health and Resource & People dashboards.`
-                    : `This dashboard belongs to Prokhas Sdn Bhd's own scorecard. Your login is scoped to ${homeEntityName} and can't view it.`}
+                : dataEntryBlocked
+                  ? "Your role doesn't upload data — only Reporting Officers and the System Administrator do."
+                  : verifyBlocked
+                    ? "Your role doesn't verify and publish submissions — only Department Heads and the System Administrator do."
+                    : moduleBlocksGroup
+                      ? `Your login is assigned to ${assignedModuleLabel} only — this screen belongs to a different pillar.`
+                      : entityBlocksGroup && !isRestrictedPillar
+                        ? `Corporate Performance is Prokhas Sdn Bhd's own scorecard for managing the Group — ${entityName} doesn't have one of its own, only its Financial Health and Resource & People dashboards.`
+                        : `This dashboard belongs to Prokhas Sdn Bhd's own scorecard. Your login is scoped to ${homeEntityName} and can't view it.`}
           </p>
           <button
             onClick={() => {

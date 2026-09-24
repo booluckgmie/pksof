@@ -78,10 +78,11 @@ export const fhNav: ScreenId[] = ["PFH001", "PFH002", "PFH003", "PFH004", "PFH00
 export const rpNav: ScreenId[] = ["RP001", "RP001A"];
 
 // Corporate Performance's own pager order: CP002 (a KPI-status table that duplicates CP001's
-// own drill-downs) is skipped entirely, and CP009 — which is really just KPI10's own detail
-// view, not a distinct perspective — is placed by KPI number (after CP007, which covers KPI9-10
-// at the perspective level) rather than by its screen-id suffix.
-const cpPageOrder: ScreenId[] = ["CP001", "CP003", "CP004", "CP005", "CP006", "CP007", "CP009", "CP008"];
+// own drill-downs) is skipped entirely, and so is CP009 — its full People Development Programme
+// detail is already embedded directly on CP007's own KPI10 card (by design, per the client), so
+// stepping Next from CP007 straight to CP009 would land on content just seen. CP009 stays fully
+// reachable on its own (sidebar/search/URL), just not as its own stop in this linear reading order.
+const cpPageOrder: ScreenId[] = ["CP001", "CP003", "CP004", "CP005", "CP006", "CP007", "CP008"];
 
 /** The full "reading order" through the dashboard's own content — MAIN, then each pillar's
  * screens end to end, used by the bottom-of-page Previous/Next pager (see PageNav). Financial

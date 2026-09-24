@@ -134,6 +134,11 @@ export function DownloadableFrame({
   return (
     <div ref={ref} className={cn("relative group/dlframe", className)}>
       {children}
+      {/* Post-UAT: JPEG/Excel download switched off app-wide until it's revisited — client asked
+       * for the button gone, not just disabled. The handlers above are left in place (and still
+       * correct, including the wide-table capture fix) so re-enabling is just deleting this one
+       * `false &&` guard, not re-threading every DownloadableFrame call site. */}
+      {false && (
       <div
         data-download-frame-control
         // Always visible below `sm` — touch devices only fake :hover on a first tap, which would
@@ -156,6 +161,7 @@ export function DownloadableFrame({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      )}
     </div>
   );
 }
