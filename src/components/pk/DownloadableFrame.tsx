@@ -52,6 +52,24 @@ export function DownloadableFrame({
   const downloadJpeg = async () => {
     if (!ref.current || busy) return;
     setBusy(true);
+    // A wide table (e.g. many quarters of columns) sits inside its own horizontally-scrollable
+    // wrapper (`.overflow-x-auto`) so it doesn't blow out the page layout. html2canvas faithfully
+    // screenshots what's on screen, which means it only captures whatever fits in that wrapper's
+    // visible width — anything the viewer would have had to scroll right to see gets silently cut
+    // off the exported JPEG (see UAT TC-031). Temporarily lifting the clip before capture, and
+    // restoring it after, gets the full table into the image without changing on-screen behaviour.
+    const scrollers = Array.from(ref.current.querySelectorAll<HTMLElement>(".overflow-x-auto, .overflow-auto"));
+    const restore = scrollers.map((el) => ({ el, overflow: el.style.overflow, width: el.style.width }));
+    const frameRestore = { overflow: ref.current.style.overflow, width: ref.current.style.width };
+    scrollers.forEach((el) => {
+      el.style.overflow = "visible";
+      el.style.width = `${el.scrollWidth}px`;
+    });
+    // Expanding the scrollers can make them wider than `ref.current` itself, which html2canvas
+    // measures and clips to independently of its now-wider children — so the wrapper also needs to
+    // grow to fit before capture, or the same clipping just happens one level up instead.
+    ref.current.style.overflow = "visible";
+    ref.current.style.width = `${ref.current.scrollWidth}px`;
     try {
       const html2canvas = (await import("html2canvas")).default;
       const canvas = await html2canvas(ref.current, {
@@ -64,6 +82,12 @@ export function DownloadableFrame({
     } catch (err) {
       toast.error("Download failed", { description: err instanceof Error ? err.message : "Couldn't capture this as an image." });
     } finally {
+      restore.forEach(({ el, overflow, width }) => {
+        el.style.overflow = overflow;
+        el.style.width = width;
+      });
+      ref.current.style.overflow = frameRestore.overflow;
+      ref.current.style.width = frameRestore.width;
       setBusy(false);
     }
   };
