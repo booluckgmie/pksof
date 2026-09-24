@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Check, X, FileSpreadsheet, PenLine, History, Inbox, CheckCheck, Pencil, Search, Loader2, Files, Activity as ActivityIcon, LogIn, UploadIcon, Send, CircleCheck, CircleX } from "lucide-react";
+import { Check, X, FileSpreadsheet, PenLine, History, Inbox, CheckCheck, Pencil, Search, Loader2, Files, Activity as ActivityIcon, LogIn, UploadIcon, Send, CircleCheck, CircleX, CheckCircle2 } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { WorkflowChip } from "@/components/pk/StatusChip";
 import { NoDataState } from "@/components/pk/DataOrigin";
 import { Pager } from "@/components/pk/Pager";
 import { AuditTrailPanel } from "@/components/pk/AuditTrailPanel";
 import { UploadsPanel } from "@/components/pk/UploadsPanel";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow, scopePendingFor } from "@/lib/workflow";
@@ -110,6 +111,55 @@ function matchesActivity(item: ActivityFeedItem, query: string): boolean {
   return haystack.includes(query.trim().toLowerCase());
 }
 
+interface ApprovalResult {
+  count: number;
+  lines: string[];
+}
+
+/** A checker's Approve action used to only show a corner toast — easy to miss, and gone before a
+ * checker working through a long pending list would notice it. This mirrors Data Entry's own
+ * post-upload dialog so "something I just did was published" always gets a same, deliberate
+ * confirmation the checker has to dismiss. */
+function ApprovalResultDialog({ result, onClose }: { result: ApprovalResult | null; onClose: () => void }) {
+  return (
+    <Dialog open={result !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-[480px]" onEscapeKeyDown={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
+        {result && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="font-head flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-[hsl(var(--pk-good))]" />
+                Published
+              </DialogTitle>
+              <DialogDescription>
+                {result.count} submission{result.count > 1 ? "s" : ""} now live on the dashboard{result.count > 1 ? "s" : ""}.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-1.5 text-sm max-h-60 overflow-y-auto">
+              {result.lines.map((line, i) => (
+                <div key={i} className="flex items-center gap-2 text-[hsl(var(--pk-ink))]">
+                  <CheckCircle2 className="h-4 w-4 text-[hsl(var(--pk-good))] shrink-0" />
+                  {line}
+                </div>
+              ))}
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <button
+                  onClick={onClose}
+                  className="rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] font-medium text-sm px-4 py-2 hover:opacity-90 transition-opacity"
+                >
+                  Close
+                </button>
+              </DialogClose>
+            </DialogFooter>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function SourceTag({ source }: { source: Submission["source"] }) {
   return source === "web-form" ? (
     <span className="inline-flex items-center gap-1 text-2xs text-[hsl(var(--pk-ink-faint))]"><PenLine className="h-3 w-3" />Web form</span>
@@ -150,6 +200,7 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
   const [activityUploadsError, setActivityUploadsError] = useState<string | null>(null);
   const [logins, setLogins] = useState<ActivityEvent[] | null>(null);
   const [loginsError, setLoginsError] = useState<string | null>(null);
+  const [approvalResult, setApprovalResult] = useState<ApprovalResult | null>(null);
 
   const changeTab = (t: "pending" | "audit" | "uploads" | "activity") => { setTab(t); setPage(1); };
   const changeSearch = (q: string) => { setSearch(q); setPage(1); };
@@ -180,13 +231,13 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
 
   const handleApprove = (id: string, name: string) => {
     approve(id, userName || "checker", "Verified against source documents.");
-    toast.success("Published", { description: `${name} is now live on the dashboard.` });
+    setApprovalResult({ count: 1, lines: [`${name} is now live on the dashboard.`] });
   };
 
   const handleApproveAll = () => {
-    const count = pending.length;
+    const lines = pending.map((s) => `${kpiById(s.kpiId).name} · ${periodById(s.periodId).label}`);
     approveAll(userName || "checker", "Bulk approved — verified against source documents.", pillarLocked ? pending.map((s) => s.id) : undefined);
-    toast.success(`Published ${count} submission${count > 1 ? "s" : ""}`, { description: "All pending items are now live on the dashboards." });
+    setApprovalResult({ count: lines.length, lines });
   };
 
   const confirmReject = (id: string) => {
@@ -416,6 +467,8 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
           )}
         </div>
       )}
+
+      <ApprovalResultDialog result={approvalResult} onClose={() => setApprovalResult(null)} />
     </div>
   );
 }
