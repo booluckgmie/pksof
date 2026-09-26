@@ -17,6 +17,7 @@ import { useDetails } from "@/lib/details";
 import { useKpiTargets } from "@/lib/kpiTargets";
 import { useCurrentPeriodId } from "@/lib/orgSettings";
 import { periodById, periodsUpTo } from "@/data/periods";
+import { kpiById } from "@/data/kpis";
 
 /** Bold, non-wrapping header cells so the header row's height never shifts with content —
  * shared by every table on this screen. */
@@ -91,7 +92,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2 inline-flex items-center gap-1.5">
             Managed Entities Rating
-            <InfoTip title="Weighted Achievement">YTD Actual ÷ FY Target × Weight, capped at 7.5%. Rolled up from each Managed Entity's own quarterly rating.</InfoTip>
+            <InfoTip title="Managed Entities Rating">{kpiById("KPI3").generalDescription} Rolled up from each Managed Entity's own quarterly rating.</InfoTip>
           </div>
           <div className="flex items-baseline gap-2 mb-2">
             <span className="tnum font-head text-2xl font-semibold">{kpi3.ytdActual !== null ? kpi3.ytdActual.toFixed(1) : "—"}</span>
@@ -129,7 +130,7 @@ export function CP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           </div>
           <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2 inline-flex items-center gap-1.5">
             Governance Index
-            <InfoTip title="Not Measurable KPIs">Do not reduce achievement — progress updates run until the annual assessment. Full assessment scheduled Q4 FY2026.</InfoTip>
+            <InfoTip title="Governance Index">{kpiById("KPI4").generalDescription} Progress updates run until the annual assessment (scheduled Q4 FY2026) and don't reduce achievement in the meantime.</InfoTip>
           </div>
           <div className="flex items-baseline gap-2 mb-2">
             <span className="tnum font-head text-2xl font-semibold">{kpi4.ytdActual !== null ? `${kpi4.ytdActual.toFixed(1)}%` : "—"}</span>

@@ -36,7 +36,7 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="flex items-center gap-1.5 mb-2">
         <SectionLabel>Section A — Demographics: Approved Headcount</SectionLabel>
         <InfoTip title="Vacancy Movement">
-          Approved establishment is sourced from the Organisation Structure; filled positions come from HRMS active employees. Vacancy = Approved Headcount − Filled Position.
+          Workforce Planning: Tracks the gap between approved staffing levels and actual filled positions across the organisation.
         </InfoTip>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-5">

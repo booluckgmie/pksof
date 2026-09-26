@@ -37,7 +37,7 @@ export function RP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <div className="flex items-center gap-1.5 mb-2">
         <SectionLabel>KPI 13: Bumiputera Training &amp; Development</SectionLabel>
-        <InfoTip title="KPI 13 formula">Staff completing at least 2 registered competency-development programmes, against the annual target of {target} staff.</InfoTip>
+        <InfoTip title="Bumiputera Training">{kpi13Def.generalDescription} Annual target: {target} staff.</InfoTip>
       </div>
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
         <div className="flex items-center justify-between mb-3">

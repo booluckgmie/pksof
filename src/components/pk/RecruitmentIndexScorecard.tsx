@@ -1,6 +1,7 @@
 import { StatusChip } from "@/components/pk/StatusChip";
 import { InfoTip } from "@/components/pk/InfoTip";
 import { KpiMetricStrip } from "@/components/pk/KpiMetricStrip";
+import { kpiById } from "@/data/kpis";
 import type { RecruitmentMetric } from "@/lib/details";
 import type { KpiResult } from "@/lib/workflow";
 
@@ -49,7 +50,7 @@ export function RecruitmentIndexCardHeader({
       <div className="font-head font-bold text-[hsl(var(--pk-ink))] mb-2 inline-flex items-center gap-1.5">
         Recruitment Efficiency Index
         <InfoTip title="Recruitment Efficiency Index">
-          Sum of four weighted components — Time to Hire, MRF Fulfilment, Quality of Hire, Offer Acceptance. Each component's score is out of 5 (or a ratio), multiplied by its own weight.
+          {kpiById("KPI9").generalDescription}
         </InfoTip>
       </div>
       {headline && (

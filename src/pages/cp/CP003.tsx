@@ -73,7 +73,7 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 1 · Weight {(kpiById("KPI1").weight * 100).toFixed(1)}%</div>
               <div className="font-head font-bold text-[hsl(var(--pk-ink))] inline-flex items-center gap-1.5">
                 Profit Before Tax (PBT)
-                <InfoTip title="Weighted Achievement">YTD Actual ÷ FY Target × Weight, capped at 12.5%.</InfoTip>
+                <InfoTip title="Profit Before Tax (PBT)">{kpiById("KPI1").generalDescription}</InfoTip>
               </div>
             </div>
             <StatusChip status={kpi1.status} />
@@ -121,7 +121,7 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">KPI 2 · Weight {(kpiById("KPI2").weight * 100).toFixed(1)}%</div>
               <div className="font-head font-bold text-[hsl(var(--pk-ink))] inline-flex items-center gap-1.5">
                 Cost-to-Income Ratio
-                <InfoTip title="Weighted Achievement">FY Target ÷ YTD Actual × Weight, capped at 12.5% — a lower actual than target scores full achievement.</InfoTip>
+                <InfoTip title="Cost-to-Income Ratio">{kpiById("KPI2").generalDescription}</InfoTip>
               </div>
             </div>
             <StatusChip status={kpi2.status} />

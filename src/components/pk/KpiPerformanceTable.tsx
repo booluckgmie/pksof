@@ -42,7 +42,7 @@ export function KpiPerformanceTable({
               <span className="inline-flex items-center gap-1">
                 Weighted
                 <InfoTip title="Weighted Achievement" side="bottom" className="text-white/70 hover:text-white hover:bg-white/15">
-                  KPI Weight × Achievement, capped at the KPI's own weighting — a lower-is-better KPI (like Cost-to-Income Ratio) uses FY Target ÷ Actual instead.
+                  Contribution to Score: Each KPI's actual performance converted into its share of the overall Group score, based on that KPI's assigned weight.
                 </InfoTip>
               </span>
             </th>
@@ -76,7 +76,7 @@ export function KpiPerformanceTable({
                     <span className="inline-flex items-center gap-1.5">
                       {k.name}
                       <InfoTip title={k.name}>
-                        <div className="mb-1">{k.formulaNote}</div>
+                        <div className="mb-1">{k.generalDescription}</div>
                         <div className="text-[hsl(var(--pk-ink-faint))]">Data owner: {k.dataOwner}</div>
                       </InfoTip>
                     </span>

@@ -31,7 +31,7 @@ export interface Kpi {
   weight: number; // fraction of 1.0
   unit: string; // "RM mil" | "%" | "rating" | "count" | "staff"
   fyTarget: number | null;
-  formulaNote: string;
+  generalDescription: string;
   dataOwner: string;
 }
 

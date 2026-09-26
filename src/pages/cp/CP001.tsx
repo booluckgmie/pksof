@@ -51,7 +51,7 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                   <span className="inline-flex items-center gap-1.5">
                     Result (Weighted Achievement)
                     <InfoTip title="Weighted Achievement">
-                      Capped at each KPI's own weighting — over-performance on one KPI never compensates a shortfall elsewhere. Sum of all 13 KPIs' weighted achievement, per MOF guidance.
+                      Overall Score: Total weighted contribution across all 13 KPIs, reflecting the Group's combined performance against its approved annual targets.
                     </InfoTip>
                   </span>
                 </td>
