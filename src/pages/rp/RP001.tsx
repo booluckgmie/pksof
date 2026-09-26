@@ -65,14 +65,18 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <span className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))]">Workforce composition — click for full breakdown</span>
             <ChevronRight className="h-4 w-4 text-[hsl(var(--pk-ink-faint))] group-hover:text-[hsl(var(--pk-accent))]" />
           </div>
-          <Donut
-            segments={[
-              { label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" },
-              { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" },
-            ]}
-            centerValue={String(headcountSummary.totalEmployees)}
-            centerLabel="Total"
-          />
+          <div className="flex justify-center">
+            <div className="w-40 shrink-0">
+              <Donut
+                segments={[
+                  { label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" },
+                  { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" },
+                ]}
+                centerValue={String(headcountSummary.totalEmployees)}
+                centerLabel="Total"
+              />
+            </div>
+          </div>
         </button>
       </div>
 
