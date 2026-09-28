@@ -80,6 +80,34 @@ export interface Submission {
   reviewNote?: string;
 }
 
+export type DetailSubmissionDest = "metric" | "record";
+
+export interface DetailSubmission {
+  id: string;
+  dest: DetailSubmissionDest;
+  module: Module;
+  entityId: EntityId;
+  periodId: string; // detail rows can carry a quarter or a MonthPeriodId — see data/periods.ts
+  metricKey?: string;
+  dimension?: string;
+  dimension2?: string;
+  recordId?: string;
+  recordType?: string;
+  label?: string;
+  category?: string;
+  valueNum: number | null;
+  valueNum2: number | null;
+  textNote: string | null;
+  note: string;
+  source: SubmissionSource | "backfill";
+  submittedBy: string;
+  submittedAt: string; // ISO
+  status: SubmissionStatus;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  reviewNote?: string;
+}
+
 export type Role =
   | "board"
   | "exec"

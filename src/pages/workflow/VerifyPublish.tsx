@@ -10,13 +10,15 @@ import { UploadsPanel } from "@/components/pk/UploadsPanel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
-import { useWorkflow, scopePendingFor } from "@/lib/workflow";
+import { useWorkflow, scopePendingFor, scopeDetailPendingFor } from "@/lib/workflow";
+import { useDetails } from "@/lib/details";
 import { kpiById } from "@/data/kpis";
 import { entityById } from "@/data/entities";
-import { periodById } from "@/data/periods";
+import { periods, periodById } from "@/data/periods";
 import { roleById } from "@/lib/roles";
+import { MODULE_LABEL } from "@/lib/modules";
 import { cn } from "@/lib/utils";
-import type { Submission } from "@/types";
+import type { DetailSubmission, Submission } from "@/types";
 import { fetchUploadEvents, type UploadEvent } from "@/lib/api/uploads";
 import { fetchActivityEvents, type ActivityEvent } from "@/lib/api/activity";
 
@@ -28,6 +30,36 @@ function matchesSearch(s: Submission, query: string): boolean {
   const e = entityById(s.entityId);
   const p = periodById(s.periodId);
   const haystack = `${k.name} ${e.fullName} ${e.name} ${p.label} ${s.id} ${s.submittedBy} ${s.reviewedBy ?? ""}`.toLowerCase();
+  return haystack.includes(query.trim().toLowerCase());
+}
+
+/** Best-effort period label for a detail submission's periodId — unlike KPI periods, a Financial
+ * Trend metric row can carry a month-level id that isn't in the quarter-only `periods` array
+ * periodById() searches; fall back to the raw id rather than periodById's non-null assertion
+ * throwing on a miss. */
+function detailPeriodLabel(periodId: string): string {
+  return periods.find((p) => p.id === periodId)?.label ?? periodId;
+}
+
+function detailLabel(s: DetailSubmission): string {
+  return s.dest === "metric"
+    ? `${s.metricKey}${s.dimension ? ` · ${s.dimension}` : ""}${s.dimension2 ? ` · ${s.dimension2}` : ""}`
+    : `${s.recordType} · ${s.label}${s.category ? ` (${s.category})` : ""}`;
+}
+
+function detailValueDisplay(s: DetailSubmission): string {
+  if (s.valueNum !== null && s.valueNum2 !== null) return `${s.valueNum} / ${s.valueNum2}`;
+  if (s.valueNum !== null) return String(s.valueNum);
+  if (s.valueNum2 !== null) return String(s.valueNum2);
+  if (s.textNote) return s.textNote;
+  return "—";
+}
+
+function matchesDetailSearch(s: DetailSubmission, query: string): boolean {
+  if (!query.trim()) return true;
+  const e = entityById(s.entityId);
+  const p = detailPeriodLabel(s.periodId);
+  const haystack = `${detailLabel(s)} ${MODULE_LABEL[s.module]} ${e.fullName} ${e.name} ${p} ${s.id} ${s.submittedBy} ${s.reviewedBy ?? ""}`.toLowerCase();
   return haystack.includes(query.trim().toLowerCase());
 }
 
@@ -160,9 +192,11 @@ function ApprovalResultDialog({ result, onClose }: { result: ApprovalResult | nu
   );
 }
 
-function SourceTag({ source }: { source: Submission["source"] }) {
+function SourceTag({ source }: { source: Submission["source"] | DetailSubmission["source"] }) {
   return source === "web-form" ? (
     <span className="inline-flex items-center gap-1 text-2xs text-[hsl(var(--pk-ink-faint))]"><PenLine className="h-3 w-3" />Web form</span>
+  ) : source === "backfill" ? (
+    <span className="inline-flex items-center gap-1 text-2xs text-[hsl(var(--pk-ink-faint))]"><History className="h-3 w-3" />Backfilled — already live</span>
   ) : (
     <span className="inline-flex items-center gap-1 text-2xs text-[hsl(var(--pk-ink-faint))]"><FileSpreadsheet className="h-3 w-3" />Excel upload</span>
   );
@@ -170,24 +204,26 @@ function SourceTag({ source }: { source: Submission["source"] }) {
 
 export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { userName, entityId, pillarLocked, assignedModule, role } = useSession();
-  const { pending: allPending, submissions: allSubmissions, approve, approveAll, reject, editSubmission } = useWorkflow();
+  const {
+    pending: allPending, submissions: allSubmissions, approve, approveAll, reject, editSubmission,
+    detailPending: allDetailPending, approveDetail, approveAllDetail, rejectDetail,
+  } = useWorkflow();
+  const { refresh: refreshDetails } = useDetails();
   const canDeleteUploads = role === "admin" || role === "dept_head";
 
   /** A Department Head is entity-locked (pillarLocked) — scope every tab here to just their own
    * entity, the same way Data Entry already scopes for a Reporting Officer, rather than showing
    * the whole org. System Administrator (not pillarLocked) still sees everything.
    *
-   * Every submission here is a KPI Scorecard figure — the only sheet routed through this
-   * maker-checker queue at all (see DataEntry.tsx's own note: "everything else saves directly to
-   * the dashboards"), which only ever comes from the Corporate Performance pillar's own template
-   * sheet. A Department Head now assigned to Financial Health or Resource & People (see roles.ts)
-   * genuinely has nothing of theirs to verify here — that's not a bug, it's what "only CP goes
-   * through this queue" means once a Department Head is pillar-scoped the same way a Reporting
-   * Officer already was. Extending verification to FH/RP's own figures would be a separate,
-   * deliberate scope change to the workflow itself, not a filter tweak. */
+   * The KPI Scorecard queue (`submissions`) only ever comes from the Corporate Performance
+   * pillar's own template sheet, so a Department Head assigned to Financial Health or Resource &
+   * People genuinely has nothing of theirs in *that* queue — that's expected, not a bug. Their
+   * own pillar's metric/record figures (Financial Trend, Bumiputera Training, etc.) go through
+   * the separate detail_submissions queue below instead, scoped by module rather than excluded. */
   const moduleExcluded = !!assignedModule && assignedModule !== "CP";
   const pending = useMemo(() => scopePendingFor(allPending, { pillarLocked, entityId, assignedModule }), [allPending, pillarLocked, entityId, assignedModule]);
   const submissions = useMemo(() => (moduleExcluded ? [] : pillarLocked ? allSubmissions.filter((s) => s.entityId === entityId) : allSubmissions), [allSubmissions, pillarLocked, entityId, moduleExcluded]);
+  const detailPending = useMemo(() => scopeDetailPendingFor(allDetailPending, { pillarLocked, entityId, assignedModule }), [allDetailPending, pillarLocked, entityId, assignedModule]);
   const [tab, setTab] = useState<"pending" | "audit" | "uploads" | "activity">("pending");
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
@@ -196,14 +232,17 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
   const [editNote, setEditNote] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [detailPage, setDetailPage] = useState(1);
+  const [rejectingDetailId, setRejectingDetailId] = useState<string | null>(null);
+  const [detailReason, setDetailReason] = useState("");
   const [activityUploads, setActivityUploads] = useState<UploadEvent[] | null>(null);
   const [activityUploadsError, setActivityUploadsError] = useState<string | null>(null);
   const [logins, setLogins] = useState<ActivityEvent[] | null>(null);
   const [loginsError, setLoginsError] = useState<string | null>(null);
   const [approvalResult, setApprovalResult] = useState<ApprovalResult | null>(null);
 
-  const changeTab = (t: "pending" | "audit" | "uploads" | "activity") => { setTab(t); setPage(1); };
-  const changeSearch = (q: string) => { setSearch(q); setPage(1); };
+  const changeTab = (t: "pending" | "audit" | "uploads" | "activity") => { setTab(t); setPage(1); setDetailPage(1); };
+  const changeSearch = (q: string) => { setSearch(q); setPage(1); setDetailPage(1); };
 
   useEffect(() => {
     if (tab !== "activity" || activityUploads !== null) return;
@@ -251,6 +290,28 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
     setReason("");
   };
 
+  const handleApproveDetail = (id: string, name: string) => {
+    approveDetail(id, userName || "checker", "Verified against source documents.").then(() => refreshDetails());
+    setApprovalResult({ count: 1, lines: [`${name} is now live on the dashboard.`] });
+  };
+
+  const handleApproveAllDetail = () => {
+    const lines = detailPending.map((s) => `${detailLabel(s)} · ${detailPeriodLabel(s.periodId)}`);
+    approveAllDetail(userName || "checker", "Bulk approved — verified against source documents.", detailPending.map((s) => s.id)).then(() => refreshDetails());
+    setApprovalResult({ count: lines.length, lines });
+  };
+
+  const confirmRejectDetail = (id: string) => {
+    if (!detailReason.trim()) {
+      toast.error("Give the submitter a reason before rejecting.");
+      return;
+    }
+    rejectDetail(id, userName || "checker", detailReason.trim());
+    toast("Rejected", { description: "Sent back to the submitter with your note." });
+    setRejectingDetailId(null);
+    setDetailReason("");
+  };
+
   const startEdit = (s: Submission) => {
     setEditingId(s.id);
     setEditValue(String(s.value));
@@ -272,6 +333,10 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
   const pendingPageCount = Math.max(1, Math.ceil(filteredPending.length / PAGE_SIZE));
   const pendingPage = filteredPending.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  const filteredDetailPending = detailPending.filter((s) => matchesDetailSearch(s, search));
+  const detailPendingPageCount = Math.max(1, Math.ceil(filteredDetailPending.length / PAGE_SIZE));
+  const detailPendingPage = filteredDetailPending.slice((detailPage - 1) * PAGE_SIZE, detailPage * PAGE_SIZE);
+
   return (
     <div>
       <ScreenHeader id="VERIFY_PUBLISH" subtitle="The data-integrity control before anything reaches a dashboard — approve to publish, or reject back to the submitter." onNavigate={onNavigate} />
@@ -279,7 +344,7 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
       <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-1 border border-[hsl(var(--pk-border))] rounded-lg p-1 w-fit bg-[hsl(var(--pk-surface))]">
           <button onClick={() => changeTab("pending")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors", tab === "pending" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
-            <Inbox className="h-3.5 w-3.5" />Pending verification {pending.length > 0 && <span className="ml-0.5 tnum">({pending.length})</span>}
+            <Inbox className="h-3.5 w-3.5" />Pending verification {pending.length + detailPending.length > 0 && <span className="ml-0.5 tnum">({pending.length + detailPending.length})</span>}
           </button>
           <button onClick={() => changeTab("audit")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors", tab === "audit" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
             <History className="h-3.5 w-3.5" />Audit trail
@@ -296,7 +361,7 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
             onClick={handleApproveAll}
             className="inline-flex items-center gap-1.5 rounded-md bg-[hsl(var(--pk-good))] text-white text-xs font-medium px-3 py-1.5 hover:opacity-90 transition-opacity"
           >
-            <CheckCheck className="h-3.5 w-3.5" />Approve All ({pending.length})
+            <CheckCheck className="h-3.5 w-3.5" />Approve All KPI ({pending.length})
           </button>
         )}
       </div>
@@ -307,20 +372,27 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
           <input
             value={search}
             onChange={(e) => changeSearch(e.target.value)}
-            placeholder="Search by KPI, entity, period, submitter…"
+            placeholder="Search by KPI/figure, entity, period, submitter…"
             className="w-full rounded-md border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] pl-8 pr-3 py-1.5 text-sm outline-none focus:border-[hsl(var(--pk-accent))] transition-colors"
           />
         </div>
       )}
 
       {tab === "pending" ? (
-        filteredPending.length === 0 ? (
+        pending.length === 0 && detailPending.length === 0 ? (
           <NoDataState
-            title={pending.length === 0 ? "Nothing awaiting verification" : "No matches"}
-            body={pending.length === 0 ? "Submissions made via Data Entry — web form or Excel template upload — will appear here for Approve or Reject." : "No pending submissions match your search."}
+            title="Nothing awaiting verification"
+            body="Submissions made via Data Entry — web form or Excel template upload — will appear here for Approve or Reject."
           />
         ) : (
+          <div className="flex flex-col gap-6">
+          {pending.length > 0 && (
           <div className="flex flex-col gap-3">
+            <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold">KPI Scorecard</div>
+            {filteredPending.length === 0 ? (
+              <NoDataState title="No matches" body="No pending submissions match your search." />
+            ) : (
+            <div className="flex flex-col gap-3">
             {pendingPage.map((s) => {
               const k = kpiById(s.kpiId);
               const e = entityById(s.entityId);
@@ -404,6 +476,77 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
               );
             })}
             <Pager page={page} pageCount={pendingPageCount} onChange={setPage} />
+            </div>
+            )}
+          </div>
+          )}
+
+          {detailPending.length > 0 && (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold">Financial Health · Resource &amp; People — other detail figures</div>
+              {detailPending.length > 1 && (
+                <button onClick={handleApproveAllDetail} className="inline-flex items-center gap-1.5 rounded-md bg-[hsl(var(--pk-good))] text-white text-xs font-medium px-3 py-1.5 hover:opacity-90 transition-opacity">
+                  <CheckCheck className="h-3.5 w-3.5" />Approve All ({detailPending.length})
+                </button>
+              )}
+            </div>
+            {filteredDetailPending.length === 0 ? (
+              <NoDataState title="No matches" body="No pending detail submissions match your search." />
+            ) : (
+            <div className="flex flex-col gap-3">
+              {detailPendingPage.map((s) => {
+                const e = entityById(s.entityId);
+                const p = detailPeriodLabel(s.periodId);
+                return (
+                  <div key={s.id} className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-head font-bold text-[hsl(var(--pk-ink))]">{detailLabel(s)}</span>
+                          <WorkflowChip status={s.status} />
+                          <SourceTag source={s.source} />
+                          <span className="text-2xs font-medium rounded-full px-2 py-0.5 bg-[hsl(var(--pk-navy-soft))] text-[hsl(var(--pk-navy))]">{MODULE_LABEL[s.module]}</span>
+                        </div>
+                        <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-1">
+                          {e.fullName} · {p} · submitted by {s.submittedBy} · {new Date(s.submittedAt).toLocaleString()}
+                        </div>
+                      </div>
+                      <div className="tnum font-head text-xl font-semibold text-[hsl(var(--pk-ink))]">{detailValueDisplay(s)}</div>
+                    </div>
+                    {rejectingDetailId === s.id ? (
+                      <div className="mt-3 flex flex-col gap-2">
+                        <textarea
+                          value={detailReason}
+                          onChange={(e) => setDetailReason(e.target.value)}
+                          rows={2}
+                          autoFocus
+                          placeholder="Reason for rejection — sent back to the submitter."
+                          className="rounded-md border border-[hsl(var(--pk-bad))] px-2.5 py-2 text-sm bg-transparent outline-none"
+                        />
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => confirmRejectDetail(s.id)} className="rounded-md bg-[hsl(var(--pk-bad))] text-white text-xs font-medium px-3 py-1.5">Confirm rejection</button>
+                          <button onClick={() => { setRejectingDetailId(null); setDetailReason(""); }} className="text-xs text-[hsl(var(--pk-ink-faint))] px-2">Cancel</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 mt-3">
+                        <button onClick={() => handleApproveDetail(s.id, detailLabel(s))} className="inline-flex items-center gap-1.5 rounded-md bg-[hsl(var(--pk-good))] text-white text-xs font-medium px-3 py-1.5 hover:opacity-90 transition-opacity">
+                          <Check className="h-3.5 w-3.5" />Approve &amp; Publish
+                        </button>
+                        <button onClick={() => setRejectingDetailId(s.id)} className="inline-flex items-center gap-1.5 rounded-md border border-[hsl(var(--pk-bad))] text-[hsl(var(--pk-bad))] text-xs font-medium px-3 py-1.5 hover:bg-[hsl(var(--pk-bad-soft))] transition-colors">
+                          <X className="h-3.5 w-3.5" />Reject
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              <Pager page={detailPage} pageCount={detailPendingPageCount} onChange={setDetailPage} />
+            </div>
+            )}
+          </div>
+          )}
           </div>
         )
       ) : tab === "audit" ? (

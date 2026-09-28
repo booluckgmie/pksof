@@ -15,24 +15,16 @@ import { useDetails } from "@/lib/details";
 import { kpiById } from "@/data/kpis";
 import { periods, periodById } from "@/data/periods";
 import { parseWorkbook, type ParsedWorkbook } from "@/lib/excelTemplate";
-import { fetchDetailRecords, upsertDetailMetric, upsertDetailRecord, type DetailRecordRow } from "@/lib/api/details";
+import { fetchDetailRecords, type DetailRecordRow } from "@/lib/api/details";
 import { insertUploadEvent, insertUploadEventRows } from "@/lib/api/uploads";
 import { downloadPillarTemplate, type TemplateValueLookup } from "@/lib/downloadTemplate";
-import { MODULE_LABEL, MODULE_ORDER } from "@/lib/modules";
+import { MODULE_LABEL, MODULE_ORDER, MODULE_BY_LABEL } from "@/lib/modules";
 import { cn } from "@/lib/utils";
 import type { Module, PeriodId } from "@/types";
 
 const EMPTY_PARSED: ParsedWorkbook = { kpiRows: [], metricRows: [], recordRows: [], periodsFound: [], sheetsFound: [] };
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-
-function errMessage(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  if (err && typeof err === "object" && "message" in err && typeof (err as { message: unknown }).message === "string") {
-    return (err as { message: string }).message;
-  }
-  return String(err);
-}
 
 /** Download-this-quarter's-template button — generated in the browser from the same
  * TEMPLATE_FIELDS manifest the upload parser reads, pre-filled with each row's current live
@@ -85,7 +77,7 @@ interface UploadResultSummary {
   fileName: string;
   periodLabels: string;
   kpiCount: number;
-  detailSaved: number;
+  detailQueued: number;
   failed: { label: string; error: string }[];
 }
 
@@ -121,13 +113,13 @@ function UploadResultDialog({ result, onClose }: { result: UploadResultSummary |
                   {result.kpiCount} KPI update{result.kpiCount > 1 ? "s" : ""} routed to the checker queue
                 </div>
               )}
-              {result.detailSaved > 0 && (
+              {result.detailQueued > 0 && (
                 <div className="flex items-center gap-2 text-[hsl(var(--pk-ink))]">
                   <CheckCircle2 className="h-4 w-4 text-[hsl(var(--pk-good))] shrink-0" />
-                  {result.detailSaved} detail figure{result.detailSaved > 1 ? "s" : ""} saved directly to the dashboards
+                  {result.detailQueued} detail figure{result.detailQueued > 1 ? "s" : ""} routed to the checker queue
                 </div>
               )}
-              {result.kpiCount === 0 && result.detailSaved === 0 && result.failed.length === 0 && (
+              {result.kpiCount === 0 && result.detailQueued === 0 && result.failed.length === 0 && (
                 <div className="text-[hsl(var(--pk-ink-faint))]">Nothing was saved from this file.</div>
               )}
             </div>
@@ -167,8 +159,8 @@ function UploadResultDialog({ result, onClose }: { result: UploadResultSummary |
 
 export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, userName, assignedModule, assignedModuleLabel, periodId } = useSession();
-  const { submit, submissions, editSubmission, latestValue } = useWorkflow();
-  const { refresh, getMetricValue, records } = useDetails();
+  const { submit, submissions, editSubmission, latestValue, submitDetail } = useWorkflow();
+  const { getMetricValue, records } = useDetails();
   const templateLookup: TemplateValueLookup = { entityId, getMetricValue, records, latestValue };
 
   const [fileName, setFileName] = useState<string | null>(null);
@@ -246,17 +238,19 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
       setSubmitProgress((p) => ({ ...p, done: p.done + 1 }));
     }
 
-    let detailSaved = 0;
+    // Everything below used to write straight to detail_metrics/detail_records — nothing gated
+    // it, so an upload appeared on every dashboard immediately with no review step (unlike the
+    // KPI Scorecard rows above, which have always gone through submit()'s checker queue). It now
+    // queues a detail_submissions row instead (migration 0016) and defers the actual
+    // upsertDetailMetric/upsertDetailRecord write to approval time — see workflow.tsx's
+    // approveDetail. submitDetail is fire-and-forget the same way submit() is above: a failure
+    // rolls back local state and toasts on its own, so this loop doesn't need to await/catch it.
+    let detailQueued = 0;
     for (const row of parsed.metricRows) {
-      try {
-        await upsertDetailMetric({ entityId, periodId: row.periodId, metricKey: row.metricKey, dimension: row.dimension, dimension2: row.dimension2, value: row.value });
-        detailSaved++;
-        auditRows.push({ id: nextAuditId(), uploadId, dest: "metric", sheet: row.sheet, label: `${row.metricKey}/${row.dimension}`, periodId: row.periodId, value: row.value, status: "saved" });
-      } catch (err) {
-        const description = errMessage(err);
-        toast.error(`Couldn't save ${row.metricKey}/${row.dimension}`, { description });
-        auditRows.push({ id: nextAuditId(), uploadId, dest: "metric", sheet: row.sheet, label: `${row.metricKey}/${row.dimension}`, periodId: row.periodId, value: row.value, status: "failed", errorMessage: description });
-      }
+      const module = MODULE_BY_LABEL[row.sheet];
+      submitDetail({ dest: "metric", module, entityId, periodId: row.periodId, metricKey: row.metricKey, dimension: row.dimension, dimension2: row.dimension2, valueNum: row.value, source: "excel-upload", submittedBy: userName || "reporting.officer" });
+      detailQueued++;
+      auditRows.push({ id: nextAuditId(), uploadId, dest: "metric", sheet: row.sheet, label: `${row.metricKey}/${row.dimension}`, periodId: row.periodId, value: row.value, status: "saved" });
       setSubmitProgress((p) => ({ ...p, done: p.done + 1 }));
     }
     // A record can carry more than one uploadable number (e.g. managed_entity_kpi's Rating +
@@ -299,18 +293,12 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
       const valueNum2 = g.fields.valueNum2 ?? existing?.valueNum2 ?? null;
       const textNote = g.fields.textNote !== undefined ? String(g.fields.textNote) : (existing?.textNote ?? null);
       const displayValue = g.fields.valueNum ?? g.fields.valueNum2 ?? g.fields.textNote ?? null;
-      try {
-        await upsertDetailRecord({ id, entityId, periodId: g.periodId, recordType: g.recordType, label: g.label, category: g.category || null, valueNum, valueNum2, textNote });
-        detailSaved++;
-        auditRows.push({ id: nextAuditId(), uploadId, dest: "record", sheet: g.sheet, label: `${g.recordType}/${g.label}`, periodId: g.periodId, value: displayValue, status: "saved" });
-      } catch (err) {
-        const description = errMessage(err);
-        toast.error(`Couldn't save ${g.recordType}/${g.label}`, { description });
-        auditRows.push({ id: nextAuditId(), uploadId, dest: "record", sheet: g.sheet, label: `${g.recordType}/${g.label}`, periodId: g.periodId, value: displayValue, status: "failed", errorMessage: description });
-      }
+      const module = MODULE_BY_LABEL[g.sheet];
+      submitDetail({ dest: "record", module, entityId, periodId: g.periodId, recordId: id, recordType: g.recordType, label: g.label, category: g.category || undefined, valueNum, valueNum2, textNote, source: "excel-upload", submittedBy: userName || "reporting.officer" });
+      detailQueued++;
+      auditRows.push({ id: nextAuditId(), uploadId, dest: "record", sheet: g.sheet, label: `${g.recordType}/${g.label}`, periodId: g.periodId, value: displayValue, status: "saved" });
       setSubmitProgress((p) => ({ ...p, done: p.done + Object.keys(g.fields).length }));
     }
-    if (detailSaved > 0) await refresh();
 
     const failedCount = auditRows.filter((r) => r.status === "failed").length;
     try {
@@ -332,7 +320,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
       fileName: fileName ?? "unknown.xlsx",
       periodLabels,
       kpiCount: parsed.kpiRows.length,
-      detailSaved,
+      detailQueued,
       failed: auditRows.filter((r) => r.status === "failed").map((r) => ({ label: r.label, error: r.errorMessage ?? "Unknown error" })),
     });
     setFileName(null);

@@ -11,3 +11,11 @@ export const MODULE_LABEL: Record<Module, string> = {
 };
 
 export const MODULE_ORDER: Module[] = ["CP", "FH", "RP"];
+
+/** Reverse of MODULE_LABEL — recovers the module code from a parsed workbook row's own `sheet`
+ * name (which is always one of the labels above). */
+export const MODULE_BY_LABEL: Record<string, Module> = {
+  "Corporate Performance": "CP",
+  "Financial Health": "FH",
+  "Resource & People": "RP",
+};

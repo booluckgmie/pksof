@@ -7,7 +7,7 @@ import { InstallAppButton } from "@/components/pk/InstallAppButton";
 import { PageNav } from "@/components/pk/PageNav";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSession } from "@/lib/session";
-import { useWorkflow, scopePendingFor } from "@/lib/workflow";
+import { useWorkflow, scopePendingFor, scopeDetailPendingFor } from "@/lib/workflow";
 import { cn } from "@/lib/utils";
 import { screens, type ScreenId } from "@/lib/nav";
 import prokhasLogo from "@/assets/prokhas-logo.png";
@@ -132,8 +132,10 @@ export function Shell({
   children: ReactNode;
 }) {
   const { loggedIn, isRestrictedPillar, pillarLocked, entityId, assignedModule, canVerify } = useSession();
-  const { pending: allPending } = useWorkflow();
+  const { pending: allPending, detailPending: allDetailPending } = useWorkflow();
   const pending = canVerify ? scopePendingFor(allPending, { pillarLocked, entityId, assignedModule }) : [];
+  const detailPending = canVerify ? scopeDetailPendingFor(allDetailPending, { pillarLocked, entityId, assignedModule }) : [];
+  const pendingCount = pending.length + detailPending.length;
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -194,7 +196,7 @@ export function Shell({
             {loggedIn ? (
               <>
                 <UserMenu />
-                <NotificationsBell count={pending.length} onClick={() => onNavigate("VERIFY_PUBLISH")} />
+                <NotificationsBell count={pendingCount} onClick={() => onNavigate("VERIFY_PUBLISH")} />
               </>
             ) : (
               <button

@@ -1,11 +1,18 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import type { EntityId, FactKpiResultSeed, KpiStatus, PeriodId, Submission, SubmissionSource } from "@/types";
+import type { DetailSubmission, EntityId, FactKpiResultSeed, KpiStatus, Module, PeriodId, Submission, SubmissionSource } from "@/types";
 import { kpiById, kpiStatus, weightedAchievement } from "@/data/kpis";
 import { periodById } from "@/data/periods";
 import { useKpiTargets } from "@/lib/kpiTargets";
 import { fetchFactResults, upsertFactResult } from "@/lib/api/facts";
 import { fetchSubmissions, insertSubmission, updateSubmissionStatus, updateSubmissionValue } from "@/lib/api/submissions";
+import {
+  fetchDetailSubmissions,
+  insertDetailSubmission,
+  updateDetailSubmissionStatus,
+  type InsertDetailSubmissionInput,
+} from "@/lib/api/detailSubmissions";
+import { upsertDetailMetric, upsertDetailRecord } from "@/lib/api/details";
 
 interface WorkflowContextValue {
   submissions: Submission[];
@@ -25,6 +32,15 @@ interface WorkflowContextValue {
   reject: (id: string, reviewedBy: string, reviewNote: string) => void;
   pending: Submission[];
   latestValue: (kpiId: string, entityId: EntityId, periodId: PeriodId) => KpiResult;
+
+  detailSubmissions: DetailSubmission[];
+  detailPending: DetailSubmission[];
+  submitDetail: (input: Omit<InsertDetailSubmissionInput, "id" | "status">) => void;
+  /** Resolves once the approved figure has actually been written to detail_metrics/detail_records
+   * — callers that also read from useDetails() should await this before refreshing that cache. */
+  approveDetail: (id: string, reviewedBy: string, reviewNote?: string) => Promise<void>;
+  approveAllDetail: (reviewedBy: string, reviewNote?: string, ids?: string[]) => Promise<void>;
+  rejectDetail: (id: string, reviewedBy: string, reviewNote: string) => void;
 }
 
 export interface KpiResult {
@@ -43,6 +59,9 @@ const WorkflowContext = createContext<WorkflowContextValue | null>(null);
 let seq = 1;
 const newSubmissionId = () => `SUB-${Date.now().toString(36)}-${String(seq++).padStart(3, "0")}`;
 
+let detailSeq = 1;
+const newDetailSubmissionId = () => `DSB-${Date.now().toString(36)}-${String(detailSeq++).padStart(3, "0")}`;
+
 /**
  * Backed by Supabase (fact_kpi_results + submissions tables) instead of an in-memory array —
  * see supabase/migrations/0001_init.sql for schema. Facts and submissions are fetched once on
@@ -54,6 +73,7 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
   const { getFyTarget } = useKpiTargets();
   const [facts, setFacts] = useState<FactKpiResultSeed[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [detailSubmissions, setDetailSubmissions] = useState<DetailSubmission[]>([]);
   const [loading, setLoading] = useState(true);
 
   /** KpiExt with fyTarget swapped for the live, admin-editable per-FY value (falls back to the
@@ -65,11 +85,12 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([fetchFactResults(), fetchSubmissions()])
-      .then(([factRows, submissionRows]) => {
+    Promise.all([fetchFactResults(), fetchSubmissions(), fetchDetailSubmissions()])
+      .then(([factRows, submissionRows, detailSubmissionRows]) => {
         if (cancelled) return;
         setFacts(factRows);
         setSubmissions(submissionRows);
+        setDetailSubmissions(detailSubmissionRows);
       })
       .catch((err: Error) => {
         console.error("Failed to load dashboard data from Supabase", err);
@@ -160,6 +181,101 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
 
   const pending = submissions.filter((s) => s.status === "submitted");
 
+  const submitDetail: WorkflowContextValue["submitDetail"] = (input) => {
+    const id = newDetailSubmissionId();
+    const submittedAt = new Date().toISOString();
+    const s: DetailSubmission = {
+      id,
+      dest: input.dest,
+      module: input.module,
+      entityId: input.entityId,
+      periodId: input.periodId,
+      metricKey: input.metricKey,
+      dimension: input.dimension,
+      dimension2: input.dimension2,
+      recordId: input.recordId,
+      recordType: input.recordType,
+      label: input.label,
+      category: input.category,
+      valueNum: input.valueNum ?? null,
+      valueNum2: input.valueNum2 ?? null,
+      textNote: input.textNote ?? null,
+      note: input.note ?? "",
+      source: input.source,
+      submittedBy: input.submittedBy,
+      submittedAt,
+      status: "submitted",
+    };
+    setDetailSubmissions((prev) => [s, ...prev]);
+    insertDetailSubmission({ ...input, id }).catch((err: Error) => {
+      console.error("Failed to save detail submission", err);
+      toast.error("Submission wasn't saved", { description: err.message });
+      setDetailSubmissions((prev) => prev.filter((x) => x.id !== id));
+    });
+  };
+
+  /** Writes a published detail submission's payload into detail_metrics/detail_records — the
+   * write is deferred to this point (approval), not upload time, so an uploaded figure can't
+   * reach a dashboard before a checker has signed off on it. */
+  const writeApprovedDetail = (target: DetailSubmission): Promise<void> => {
+    if (target.dest === "metric") {
+      return upsertDetailMetric({
+        entityId: target.entityId,
+        periodId: target.periodId as PeriodId,
+        metricKey: target.metricKey!,
+        dimension: target.dimension!,
+        dimension2: target.dimension2,
+        value: target.valueNum,
+      });
+    }
+    return upsertDetailRecord({
+      id: target.recordId!,
+      entityId: target.entityId,
+      periodId: target.periodId as PeriodId,
+      recordType: target.recordType!,
+      label: target.label!,
+      category: target.category ?? null,
+      valueNum: target.valueNum,
+      valueNum2: target.valueNum2,
+      textNote: target.textNote,
+    });
+  };
+
+  const approveDetailOne = (id: string, reviewedBy: string, reviewNote?: string): Promise<void> => {
+    const target = detailSubmissions.find((s) => s.id === id);
+    const reviewedAt = new Date().toISOString();
+    setDetailSubmissions((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, status: "published", reviewedBy, reviewedAt, reviewNote } : s))
+    );
+
+    return updateDetailSubmissionStatus({ id, status: "published", reviewedBy, reviewNote })
+      .then(() => (target ? writeApprovedDetail(target) : undefined))
+      .catch((err: Error) => {
+        console.error("Failed to publish detail submission", err);
+        toast.error("Publish didn't save to the database", { description: err.message });
+      });
+  };
+
+  const approveDetail: WorkflowContextValue["approveDetail"] = (id, reviewedBy, reviewNote) => approveDetailOne(id, reviewedBy, reviewNote);
+
+  const approveAllDetail: WorkflowContextValue["approveAllDetail"] = (reviewedBy, reviewNote, ids) => {
+    const targets = ids ?? detailSubmissions.filter((s) => s.status === "submitted").map((s) => s.id);
+    return Promise.all(targets.map((id) => approveDetailOne(id, reviewedBy, reviewNote))).then(() => undefined);
+  };
+
+  const rejectDetail: WorkflowContextValue["rejectDetail"] = (id, reviewedBy, reviewNote) => {
+    const reviewedAt = new Date().toISOString();
+    setDetailSubmissions((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, status: "rejected", reviewedBy, reviewedAt, reviewNote } : s))
+    );
+    updateDetailSubmissionStatus({ id, status: "rejected", reviewedBy, reviewNote }).catch((err: Error) => {
+      console.error("Failed to reject detail submission", err);
+      toast.error("Rejection didn't save to the database", { description: err.message });
+    });
+  };
+
+  const detailPending = detailSubmissions.filter((s) => s.status === "submitted");
+
   const latestValue = (kpiId: string, entityId: EntityId, periodId: PeriodId): KpiResult => {
     const published = submissions
       .filter((s) => s.kpiId === kpiId && s.entityId === entityId && s.periodId === periodId && s.status === "published")
@@ -198,7 +314,12 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <WorkflowContext.Provider value={{ submissions, loading, submit, editSubmission, approve, approveAll, reject, pending, latestValue }}>
+    <WorkflowContext.Provider
+      value={{
+        submissions, loading, submit, editSubmission, approve, approveAll, reject, pending, latestValue,
+        detailSubmissions, detailPending, submitDetail, approveDetail, approveAllDetail, rejectDetail,
+      }}
+    >
       {children}
     </WorkflowContext.Provider>
   );
@@ -219,4 +340,14 @@ export function useWorkflow() {
 export function scopePendingFor(pending: Submission[], opts: { pillarLocked: boolean; entityId: EntityId; assignedModule: string | null }): Submission[] {
   if (opts.assignedModule && opts.assignedModule !== "CP") return [];
   return opts.pillarLocked ? pending.filter((s) => s.entityId === opts.entityId) : pending;
+}
+
+/** Same idea as scopePendingFor, for the detail_submissions queue (Financial Health / Resource &
+ * People / CP's own metric-and-record data — see migration 0016). Unlike the KPI queue, this one
+ * isn't CP-only: every pillar's uploads land here, each tagged with its own `module`, so a login
+ * assigned to a single pillar sees only that pillar's own pending items rather than nothing at
+ * all. A System Administrator (assignedModule null) sees every pillar's queue. */
+export function scopeDetailPendingFor(pending: DetailSubmission[], opts: { pillarLocked: boolean; entityId: EntityId; assignedModule: Module | null }): DetailSubmission[] {
+  const scoped = opts.assignedModule ? pending.filter((s) => s.module === opts.assignedModule) : pending;
+  return opts.pillarLocked ? scoped.filter((s) => s.entityId === opts.entityId) : scoped;
 }
