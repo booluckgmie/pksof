@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "@/lib/session";
 import { useDetails } from "@/lib/details";
-import { upsertDetailRecord, deleteDetailRecord } from "@/lib/api/details";
+import { upsertDetailRecord, deleteDetailRecord, upsertDetailMetric } from "@/lib/api/details";
 import type { PeriodId } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -33,10 +33,34 @@ const newRecordId = () => `OID-${Date.now().toString(36)}-${String(seq++).padSta
  */
 export function OtherInvestmentDealsEditor({ periodId }: { periodId: PeriodId }) {
   const { entityId, canEnterData } = useSession();
-  const { otherInvestmentDealItemsFor, refresh } = useDetails();
+  const { otherInvestmentDealItemsFor, otherInvestmentsDealsFor, refresh } = useDetails();
   const deals = otherInvestmentDealItemsFor(periodId);
   const [form, setForm] = useState<FormState | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // Effective-rate note (fp_note/other_investments_rate) — free text, so it can't ride the Excel
+  // template's numeric-only metric rows; this is the only place anyone can set it.
+  const savedNoteRate = otherInvestmentsDealsFor(periodId)?.noteRate ?? "";
+  const [noteRate, setNoteRate] = useState(savedNoteRate);
+  const [editingNote, setEditingNote] = useState(false);
+  const [savingNote, setSavingNote] = useState(false);
+  useEffect(() => {
+    if (!editingNote) setNoteRate(savedNoteRate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedNoteRate, editingNote]);
+
+  const saveNoteRate = async () => {
+    setSavingNote(true);
+    try {
+      await upsertDetailMetric({ entityId, periodId, metricKey: "fp_note", dimension: "other_investments_rate", value: null, note: noteRate });
+      await refresh();
+      setEditingNote(false);
+    } catch {
+      toast.error("Couldn't save the note — check your connection and try again.");
+    } finally {
+      setSavingNote(false);
+    }
+  };
 
   if (!canEnterData) return null;
 
@@ -79,7 +103,38 @@ export function OtherInvestmentDealsEditor({ periodId }: { periodId: PeriodId })
 
   return (
     <div className="rounded-md border border-dashed border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-2 flex flex-col gap-2">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold shrink-0">Effective rate note</span>
+        {!editingNote && (
+          <button onClick={() => setEditingNote(true)} className="text-2xs font-medium text-[hsl(var(--pk-accent))] hover:opacity-75 transition-opacity shrink-0">
+            {savedNoteRate ? "Edit" : "Add note"}
+          </button>
+        )}
+      </div>
+      {editingNote ? (
+        <div className="flex flex-col gap-1.5">
+          <input
+            value={noteRate}
+            onChange={(e) => setNoteRate(e.target.value)}
+            className="rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-sm bg-[hsl(var(--pk-surface))] outline-none"
+            placeholder="e.g. Weighted average effective profit rate of 3.35% p.a."
+          />
+          <div className="flex items-center gap-2 justify-end">
+            <button onClick={() => setEditingNote(false)} className="text-2xs text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] px-2.5 py-1.5">Cancel</button>
+            <button
+              onClick={saveNoteRate}
+              disabled={savingNote}
+              className={cn("rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] text-2xs font-medium px-3 py-1.5 hover:opacity-90 transition-opacity", savingNote && "opacity-40 pointer-events-none")}
+            >
+              {savingNote ? "Saving…" : "Save"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p className="text-2xs text-[hsl(var(--pk-ink-faint))] px-1">{savedNoteRate || "No note entered for this quarter yet."}</p>
+      )}
+
+      <div className="flex items-center justify-between mt-1">
         <span className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-semibold">Manage deals — {"this quarter's snapshot"}</span>
         {!form && (
           <button onClick={startAdd} className="flex items-center gap-1 text-2xs font-medium text-[hsl(var(--pk-accent))] hover:opacity-75 transition-opacity">

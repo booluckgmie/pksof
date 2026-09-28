@@ -27,9 +27,18 @@ export function FinancialResultsOverview({
   setPeriodId: (id: PeriodId) => void;
   tableKind: "qoq" | "budget";
 }) {
-  const { financialResultsFor } = useDetails();
+  const { financialResultsFor, varianceCommentaryFor } = useDetails();
   const period = periodById(periodId);
   const results = financialResultsFor(periodId);
+  const commentary = varianceCommentaryFor(periodId);
+  const commentaryFields: { key: keyof typeof commentary; label: string }[] = [
+    { key: "revenue", label: "Revenue" },
+    { key: "staffCost", label: "Staff Cost" },
+    { key: "adminCost", label: "Admin & Operating Cost" },
+    { key: "pbt", label: "Profit Before Tax" },
+    { key: "outlook", label: "Outlook" },
+  ];
+  const hasCommentary = commentaryFields.some((f) => commentary[f.key].trim() !== "");
 
   return (
     <div>
@@ -46,7 +55,6 @@ export function FinancialResultsOverview({
         const incomePct = pctOf(incomeDelta, b.totalIncome);
         const expenseDelta = c.expenses !== null && b.expenses !== null ? Math.abs(c.expenses) - Math.abs(b.expenses) : null;
         const expensePct = pctOf(expenseDelta, b.expenses !== null ? Math.abs(b.expenses) : null);
-        const isRealQuarter = periodId === "Q1FY26";
         return (
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
             <div className="font-head font-bold text-[hsl(var(--pk-ink))] text-center mb-1">Overview of Quarterly Financial Results</div>
@@ -80,25 +88,10 @@ export function FinancialResultsOverview({
               </DownloadableFrame>
               <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
                 <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlight(s) (current quarter against preceding quarter)</div>
-                {isRealQuarter ? (
-                  <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
-                    <li>Lower income by <span className="font-semibold">RM9.8 million</span> mainly due to lower income from acquired loans by RM7.5 million and fee from advisory services by RM1.0 million.</li>
-                    <li>
-                      Lower expenses by <span className="font-semibold">RM415,000</span> attributed to the following:
-                      <ul className="flex flex-col gap-1 mt-1 ml-3">
-                        <li className="list-disc">lower administrative expenses by RM1.2 million due to lower computer system expenses and corporate communication expenses; and</li>
-                        <li className="list-disc">lower professional fees by RM439,000;</li>
-                        <li className="list-disc">however, offset by higher personnel expenses by RM1.0 million.</li>
-                      </ul>
-                    </li>
-                  </ul>
-                ) : (
-                  <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
-                    <li>Income was {incomeDelta !== null && incomePct !== null ? `${fmtM(incomeDelta)} (${Math.abs(incomePct).toFixed(0)}%) ${incomeDelta >= 0 ? "higher" : "lower"}` : "—"} than the preceding quarter.</li>
-                    <li>Expenses were {expenseDelta !== null && expensePct !== null ? `${fmtM(expenseDelta)} (${Math.abs(expensePct).toFixed(0)}%) ${expenseDelta >= 0 ? "higher" : "lower"}` : "—"} than the preceding quarter.</li>
-                    <li className="text-2xs text-[hsl(var(--pk-ink-faint))] italic">Illustrative projection — driver commentary is only available for the reported quarter.</li>
-                  </ul>
-                )}
+                <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
+                  <li>Income was {incomeDelta !== null && incomePct !== null ? `${fmtM(incomeDelta)} (${Math.abs(incomePct).toFixed(0)}%) ${incomeDelta >= 0 ? "higher" : "lower"}` : "—"} than the preceding quarter.</li>
+                  <li>Expenses were {expenseDelta !== null && expensePct !== null ? `${fmtM(expenseDelta)} (${Math.abs(expensePct).toFixed(0)}%) ${expenseDelta >= 0 ? "higher" : "lower"}` : "—"} than the preceding quarter.</li>
+                </ul>
               </div>
             </div>
           </div>
@@ -114,7 +107,6 @@ export function FinancialResultsOverview({
         const incomePct = pctOf(incomeDelta, b.totalIncome);
         const expenseDelta = c.expenses !== null && b.expenses !== null ? c.expenses - b.expenses : null;
         const expensePct = pctOf(expenseDelta, b.expenses);
-        const isRealQuarter = periodId === "Q1FY26";
         return (
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
             <div className="font-head font-bold text-[hsl(var(--pk-ink))] text-center mb-1">YTD Budget vs YTD Actual ({period.label})</div>
@@ -147,16 +139,17 @@ export function FinancialResultsOverview({
               </DownloadableFrame>
               <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
                 <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlight(s)</div>
-                {isRealQuarter ? (
+                {hasCommentary ? (
                   <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
-                    <li>Higher income by <span className="font-semibold">RM5.5 million (12%)</span> mainly attributable to higher income from acquired loans by RM3.9 million and fee from managing SJPP by RM2.0 million, offset by lower fee from advisory services by RM426,000.</li>
-                    <li>Lower YTD expenses by <span className="font-semibold">RM1.3 million</span> mainly attributed to lower personnel cost incurred by RM768,000 — mainly lower salary and salary related expenses (headcount: 226, budget: 232); and lower administrative expenses by RM434,000 — mainly due to lower actual cost incurred for IT and Corporate Communication projects and activities.</li>
+                    {commentaryFields.filter((f) => commentary[f.key].trim() !== "").map((f) => (
+                      <li key={f.key}><span className="font-semibold text-[hsl(var(--pk-ink))]">{f.label}: </span>{commentary[f.key]}</li>
+                    ))}
                   </ul>
                 ) : (
                   <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
                     <li>Income was {incomeDelta !== null && incomePct !== null ? `${fmtM(incomeDelta)} (${Math.abs(incomePct).toFixed(0)}%) ${incomeDelta >= 0 ? "higher" : "lower"}` : "—"} than budget.</li>
                     <li>Expenses were {expenseDelta !== null && expensePct !== null ? `${fmtM(expenseDelta)} (${Math.abs(expensePct).toFixed(0)}%) ${expenseDelta >= 0 ? "higher" : "lower"}` : "—"} than budget.</li>
-                    <li className="text-2xs text-[hsl(var(--pk-ink-faint))] italic">Illustrative projection — driver commentary is only available for the reported quarter.</li>
+                    <li className="text-2xs text-[hsl(var(--pk-ink-faint))] italic">No driver commentary entered for this quarter yet — see Variance Commentary below to add it.</li>
                   </ul>
                 )}
               </div>

@@ -50,7 +50,6 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     setOpenMain((prev) => (prev === key ? null : key));
   };
 
-  const isRealQuarter = periodId === "Q1FY26";
   const priorId = fp.priorId;
 
   return (
@@ -118,29 +117,20 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               </DownloadableFrame>
               <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
                 <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlights</div>
-                {isRealQuarter ? (
-                  <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
-                    <li className="list-disc ml-3">Higher other investment and cash and cash equivalents by <span className="font-semibold">RM16.3 million</span>.</li>
-                    <li className="list-disc ml-3">Increase in other assets by <span className="font-semibold">RM8.3 million</span> mainly attributed to the increase in placement profit receivable and reimbursable personnel cost incurred on behalf of MoF by RM6.1 million and RM1.3 million respectively.</li>
-                    <li className="list-disc ml-3">Decrease in liabilities by <span className="font-semibold">RM2.6 million</span> mainly attributed to lower provision for tax by RM2.3 million being lower monthly instalment compared to {priorId ? periodEndDateWords(priorId).split(" ").slice(1).join(" ") : ""}.</li>
-                  </ul>
-                ) : (
-                  <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
-                    {(() => {
-                      const ci = variance(fp.cashAndInvestments.current, fp.cashAndInvestments.prior);
-                      const oa = variance(fp.otherAssets.current, fp.otherAssets.prior);
-                      const tl = variance(fp.totalLiabilities.current, fp.totalLiabilities.prior);
-                      return (
-                        <>
-                          <li className="list-disc ml-3">Cash and other investments {ci.abs !== null && ci.abs >= 0 ? "higher" : "lower"} by {fmtM(ci.abs)} against the preceding quarter.</li>
-                          <li className="list-disc ml-3">Other assets {oa.abs !== null && oa.abs >= 0 ? "higher" : "lower"} by {fmtM(oa.abs)} against the preceding quarter.</li>
-                          <li className="list-disc ml-3">Total liabilities {tl.abs !== null && tl.abs >= 0 ? "higher" : "lower"} by {fmtM(tl.abs)} against the preceding quarter.</li>
-                        </>
-                      );
-                    })()}
-                    <li className="text-2xs text-[hsl(var(--pk-ink-faint))] italic">Illustrative projection — driver commentary is only available for the reported quarter.</li>
-                  </ul>
-                )}
+                <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
+                  {(() => {
+                    const ci = variance(fp.cashAndInvestments.current, fp.cashAndInvestments.prior);
+                    const oa = variance(fp.otherAssets.current, fp.otherAssets.prior);
+                    const tl = variance(fp.totalLiabilities.current, fp.totalLiabilities.prior);
+                    return (
+                      <>
+                        <li className="list-disc ml-3">Cash and other investments {ci.abs !== null && ci.abs >= 0 ? "higher" : "lower"} by {fmtM(ci.abs)} against the preceding quarter.</li>
+                        <li className="list-disc ml-3">Other assets {oa.abs !== null && oa.abs >= 0 ? "higher" : "lower"} by {fmtM(oa.abs)} against the preceding quarter.</li>
+                        <li className="list-disc ml-3">Total liabilities {tl.abs !== null && tl.abs >= 0 ? "higher" : "lower"} by {fmtM(tl.abs)} against the preceding quarter.</li>
+                      </>
+                    );
+                  })()}
+                </ul>
               </div>
             </div>
           </div>
