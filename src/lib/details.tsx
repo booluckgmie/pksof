@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { fetchDetailMetrics, fetchDetailRecords, type DetailMetricRow, type DetailRecordRow } from "@/lib/api/details";
 import { useSession } from "@/lib/session";
-import { periods, visiblePeriods, periodById, monthsForQuarter, type MonthPeriodId } from "@/data/periods";
+import { periods, visiblePeriods, periodById, type MonthPeriodId } from "@/data/periods";
 import type { EntityId, PeriodId } from "@/types";
 import type { InitiativeStatus } from "@/data/initiatives";
 
@@ -299,31 +299,6 @@ export function useDetails() {
     return out;
   }, [metrics, entityId]);
 
-  const resignedByPeriod = useMemo(() => {
-    const rows = metricRows("resigned");
-    const available = periodsWithData(rows, entityId, () => true);
-    const out = {} as Record<PeriodId, number>;
-    for (const p of visiblePeriods) {
-      const eff = resolvePeriod(p.id, available);
-      const forPeriod = eff ? rows.filter((r) => r.periodId === eff) : [];
-      out[p.id] = forPeriod.find((r) => r.dimension === "count")?.value ?? 0;
-    }
-    return out;
-  }, [metrics, entityId]);
-
-  const turnoverTrend = useMemo(() => {
-    const resignedRows = metricRows("resigned");
-    const available = [...periodsWithData(resignedRows, entityId, () => true)];
-    return visiblePeriods
-      .filter((p) => available.includes(p.id))
-      .map((p) => {
-        const resigned = resignedRows.find((r) => r.periodId === p.id && r.dimension === "count")?.value ?? 0;
-        const summaryRows = metricRows("headcount_summary").filter((r) => r.periodId === p.id);
-        const total = summaryRows.find((r) => r.dimension === "total_employees")?.value ?? 0;
-        return { period: p.label.replace("FY20", "FY"), rate: total > 0 ? Math.round((resigned / total) * 1000) / 10 : 0 };
-      });
-  }, [metrics, entityId]);
-
   const bumiputeraTrainingByPeriod = useMemo(() => {
     const rows = metricRows("bumiputera_training");
     const available = periodsWithData(rows, entityId, () => true);
@@ -354,18 +329,6 @@ export function useDetails() {
         return { period: p.label.replace("FY20", "FY"), revenue: get("revenue"), pbt: get("pbt"), cir: get("cir"), netMargin: get("net_margin") };
       });
   }, [metrics, entityId]);
-
-  /** Monthly resolution for the same "financial_trend" metric quarterlyTrend reads — see
-   * src/data/periods.ts's monthPeriods. Returns null (not 0) for a month with no row yet, so the
-   * UI can show "not entered" distinctly from an actual zero. */
-  function monthlyTrendFor(quarterId: PeriodId) {
-    const rows = metricRows("financial_trend");
-    return monthsForQuarter(quarterId).map((m) => {
-      const forMonth = rows.filter((r) => r.periodId === m.id);
-      const get = (dim: string) => forMonth.find((r) => r.dimension === dim)?.value ?? null;
-      return { period: m.label, revenue: get("revenue"), pbt: get("pbt"), cir: get("cir"), netMargin: get("net_margin") };
-    });
-  }
 
   const REVENUE_SOURCE_LABELS: Record<string, string> = {
     danaharta_mgmt_fee: "Management fee from Danaharta — investment activities",
@@ -443,32 +406,6 @@ export function useDetails() {
       budget: budget ? { compare: budget, revenue: readBreakdown(periodId, "actual", "revenue_by_source", REVENUE_SOURCE_LABELS), revenueCompare: readBreakdown(periodId, "budget", "revenue_by_source", REVENUE_SOURCE_LABELS), expenses: readBreakdown(periodId, "actual", "expense_by_category", EXPENSE_CATEGORY_LABELS), expensesCompare: readBreakdown(periodId, "budget", "expense_by_category", EXPENSE_CATEGORY_LABELS) } : null,
     };
   }
-
-  const actualVsBudget = useMemo(() => {
-    const rows = metricRows("actual_vs_budget");
-    const eff = latestPeriodWithData(periodsWithData(rows, entityId, () => true));
-    if (!eff) return [];
-    const items = [...new Set(rows.filter((r) => r.periodId === eff).map((r) => r.dimension))];
-    return items.map((item) => {
-      const forItem = rows.filter((r) => r.periodId === eff && r.dimension === item);
-      return {
-        item,
-        actual: forItem.find((r) => r.dimension2 === "actual")?.value ?? 0,
-        budget: forItem.find((r) => r.dimension2 === "budget")?.value ?? 0,
-        py: forItem.find((r) => r.dimension2 === "py")?.value ?? 0,
-      };
-    });
-  }, [metrics, entityId]);
-
-  const varianceCommentary = useMemo(() => {
-    const rows = metricRows("variance_commentary");
-    const eff = latestPeriodWithData(periodsWithData(rows, entityId, () => true));
-    const forPeriod = eff ? rows.filter((r) => r.periodId === eff) : [];
-    const get = (key: string) => forPeriod.find((r) => r.dimension === key)?.note ?? "";
-    return {
-      revenue: get("revenue"), staffCost: get("staffCost"), adminCost: get("adminCost"), pbt: get("pbt"), outlook: get("outlook"),
-    };
-  }, [metrics, entityId]);
 
   // ── Financial Position (PFH004) ─────────────────────────────────────────
   // "fp_main" carries the leaf line items that have no further drill-down (dimension = item key,
@@ -716,20 +653,11 @@ export function useDetails() {
     return eff ? rows.filter((r) => r.periodId === eff) : [];
   }
 
-  function managedEntityKpiDetailFor(entity: string, periodId: PeriodId) {
-    return managedEntityKpiRows(periodId)
-      .filter((r) => r.category === entity)
-      .map((r) => {
-        const [no = "", section = "", fyTarget = "", ytdTarget = "", ytdActual = ""] = (r.textNote ?? "").split("|");
-        return { no, section, label: r.label, fyTarget, ytdTarget, ytdActual, rating: r.valueNum ?? 0, weighted: r.valueNum2 ?? 0 };
-      });
-  }
-
-  /** Same per-KPI rows as managedEntityKpiDetailFor, but pivoted across every quarter of one FY
-   * (Q1-Q4) instead of a single period — for the "add Q1-Q4 to the table" view. Row identity
-   * across quarters is the "no" key from textNote (falls back to label if blank); order follows
-   * whichever quarter (most recent first) actually has rows, since the underlying table has no
-   * natural sort column of its own. */
+  /** Per-KPI rows for one Managed Entity, pivoted across every quarter of one FY (Q1-Q4) instead
+   * of a single period — for the "add Q1-Q4 to the table" view. Row identity across quarters is
+   * the "no" key from textNote (falls back to label if blank); order follows whichever quarter
+   * (most recent first) actually has rows, since the underlying table has no natural sort column
+   * of its own. */
   function managedEntityKpiQuarterlyFor(entity: string, fy: string) {
     const rows = recordRows("managed_entity_kpi").filter((r) => r.category === entity);
     const quartersInFy = periods.filter((p) => p.fy === fy);
@@ -774,13 +702,6 @@ export function useDetails() {
       return { entity, met, notMet, notMeasured: 0, total: ratings.length, achievement, status };
     });
   }
-
-  const clientSatisfaction = useMemo(() => {
-    const rows = recordRows("client_satisfaction");
-    const eff = latestPeriodWithData(periodsWithData(rows, entityId, () => true));
-    const row = rows.find((r) => r.periodId === eff);
-    return { fyTarget: row?.valueNum ?? 4.7, ytdActual: row?.valueNum2 ?? null, note: row?.textNote ?? "" };
-  }, [records, entityId]);
 
   /** External Client Satisfaction (KPI 5) per-service survey breakdown — matches the client's own
    * "Appendix — External Client Satisfaction Rating" report exactly: a fixed catalog of services
@@ -1038,10 +959,10 @@ export function useDetails() {
     headcountSummaryByPeriod, headcountTrend, genderBreakdownByPeriod,
     gradeBreakdownFor, ageBreakdownFor, ageGenderBreakdownFor, averageAgeByPeriod,
     gradeGenderCrossTabFor, departmentHeadcountFor, recruitmentIndexByPeriod,
-    resignedByPeriod, turnoverTrend, bumiputeraTrainingByPeriod,
-    quarterlyTrend, monthlyTrendFor, actualVsBudget, financialResultsFor, varianceCommentary, varianceCommentaryFor, relatedPartyTransactionsUpTo,
+    bumiputeraTrainingByPeriod,
+    quarterlyTrend, financialResultsFor, varianceCommentaryFor, relatedPartyTransactionsUpTo,
     financialPositionFor, financialPositionBreakdownFor, agingOfReceivablesFor, otherInvestmentsDealsFor, otherInvestmentDealItemsFor, cashEffectiveRateFor,
-    managedEntityRatingsFor, managedEntityKpiDetailFor, managedEntityKpiQuarterlyFor, managedEntityKpiItemsFor, clientSatisfaction, clientSatisfactionServicesFor, clientSatisfactionServiceItemsFor, timeCharterByDept, governanceKpiFor, governanceKpiItemsFor,
+    managedEntityRatingsFor, managedEntityKpiQuarterlyFor, managedEntityKpiItemsFor, clientSatisfactionServicesFor, clientSatisfactionServiceItemsFor, timeCharterByDept, governanceKpiFor, governanceKpiItemsFor,
     processInitiatives, techInitiatives, initiativeRecordsFor, bumiputeraProcurementFor, peopleDevRecordsFor,
     pbtBreakdown, cirBreakdown,
   };

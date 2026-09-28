@@ -17,11 +17,9 @@ const FIELDS: { key: "revenue" | "staffCost" | "adminCost" | "pbt" | "outlook"; 
 /**
  * Budget-variance commentary (PFH003, "YTD Actual vs YTD Budget") — a narrative sentence per
  * driver rather than a number, so the Excel template can't carry it at all (it's numeric-only by
- * construction). Nothing in the app read or wrote this before: details.tsx's own varianceCommentary
- * memo existed but had no consumer, and no in-app form ever offered to fill it in. Stored on
- * detail_metrics' own `note` column (dimension = revenue/staffCost/adminCost/pbt/outlook, value
- * left null) rather than detail_records, since it's a single free-text field per dimension with no
- * further structure.
+ * construction). Stored on detail_metrics' own `note` column (dimension =
+ * revenue/staffCost/adminCost/pbt/outlook, value left null) rather than detail_records, since
+ * it's a single free-text field per dimension with no further structure.
  */
 export function VarianceCommentaryPanel({ periodId }: { periodId: PeriodId }) {
   const { entityId, canEnterData } = useSession();
