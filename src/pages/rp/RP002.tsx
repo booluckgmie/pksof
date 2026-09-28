@@ -9,7 +9,7 @@ import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/Pe
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
-import { useDetails, peopleDevProgrammes } from "@/lib/details";
+import { useDetails } from "@/lib/details";
 import { periodById } from "@/data/periods";
 import { cn } from "@/lib/utils";
 
@@ -21,10 +21,14 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId } = useSession();
   const [periodId, setPeriodId] = useLocalPeriodId();
   const { latestValue } = useWorkflow();
-  const { headcountSummaryByPeriod, departmentHeadcountFor } = useDetails();
+  const { headcountSummaryByPeriod, departmentHeadcountFor, peopleDevRecordsFor } = useDetails();
   const kpi10 = latestValue("KPI10", entityId, periodId);
   const headcountSummary = headcountSummaryByPeriod[periodId];
   const departmentHeadcount = departmentHeadcountFor(periodId);
+  // Was a hardcoded, period-independent list of 5 programmes (peopleDevProgrammes) that never
+  // reflected what was actually entered for the selected quarter — CP007/CP009 already read the
+  // same underlying data live via peopleDevRecordsFor, this page just wasn't wired to it.
+  const peopleDevProgrammes = peopleDevRecordsFor(periodId);
   const vacant = headcountSummary.approvedHeadcount - headcountSummary.filledPosition;
   const period = periodById(periodId);
   const [view, setView] = useState<"cards" | "timeline">("cards");
@@ -88,7 +92,7 @@ export function RP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <p className="text-xs text-[hsl(var(--pk-ink-faint))] mb-3">
           {kpi10.ytdActual !== null
             ? `${period.label} completion ${kpi10.ytdActual.toFixed(1)}% against an annual target of ${kpi10.ytdTarget?.toFixed(1) ?? "—"}%.`
-            : `Not measured in ${period.label} — progress reporting only. Annual target 100.0%.`} Four programme streams under monitoring.
+            : `Not measured in ${period.label} — progress reporting only. Annual target 100.0%.`} {peopleDevProgrammes.length} programme stream{peopleDevProgrammes.length === 1 ? "" : "s"} under monitoring.
         </p>
         {view === "cards" ? (
           <div className="divide-y divide-[hsl(var(--pk-border))]">

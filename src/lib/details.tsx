@@ -147,33 +147,6 @@ export interface Initiative {
 
 /** Reference figures that don't come from data entry — fixed external benchmark / catalog data. */
 export const industryBenchmark = 4.2;
-export const peopleDevProgrammes = [
-  {
-    programme: "Leadership Development Programme (continuation)",
-    start: "Apr '26", end: "Dec '26", status: "In progress" as const,
-    detail: "Continuation of 2025 LDPs; 23 sessions planned across ELDP (3 modules × 3 sessions), MLDP (3 × 4) and ISLDP (2 × 1).",
-  },
-  {
-    programme: "Talent Pool Development Programme",
-    start: "Apr '26", end: "Jun '26", status: "In progress" as const,
-    detail: "Talent identification, career-aspiration conversations and external assessment to reaffirm the 4Q dimension review.",
-  },
-  {
-    programme: "Data Analytics Skill Development",
-    start: "May '26", end: "Sep '26", status: "Planned" as const,
-    detail: "Source a suitable provider, confirm modules with HODs, then roll out to identified champions.",
-  },
-  {
-    programme: "Job Evaluation completion",
-    start: "Jan '26", end: "Dec '26", status: "In progress" as const,
-    detail: "Vendor proposals received; evaluation against outlined criteria in progress ahead of first-round JE for anchoring roles.",
-  },
-  {
-    programme: "Succession Management — Critical Positions",
-    start: "Apr '26", end: "Dec '26", status: "Planned" as const,
-    detail: "Phase 2A (retiring within 5 years) to Individual Development Plan stage; Phase 2B (all other positions) to Successor Evaluation stage.",
-  },
-];
 
 /** The 4 sub-areas the client asked People Development Programme entries to be grouped under. */
 export const PEOPLE_DEV_SUB_AREAS = [

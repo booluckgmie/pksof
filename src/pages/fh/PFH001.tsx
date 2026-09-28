@@ -21,14 +21,6 @@ import { kpiById } from "@/data/kpis";
 import { periodById } from "@/data/periods";
 import type { PeriodId } from "@/types";
 
-/** The client's own historical "Overview of Financial Results" exhibit — Revenue/PBT by
- * quarter. Fixed historical figures, independent of the period-driven Supabase dataset (like
- * RP001A's Grade Code Detail listing). Go-live cutover: everything before FY2026 (FY2023-FY2025)
- * dropped per the same policy as the rest of the app — see data/periods.ts's `visiblePeriods`. */
-const FINANCIAL_RESULTS_HISTORY = [
-  { label: "1Q FY2026", revenue: 46.7, pbt: 31.6 },
-];
-
 export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId } = useSession();
   // Local to this screen only — see CP003's own Reporting period filter for why.
@@ -46,6 +38,10 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const kpi2FyTarget = getFyTarget("KPI2", fy);
   const { duration, setDuration, filtered: quarterlyTrend } = useDurationFilter(fullTrend);
   const [openBreakdown, setOpenBreakdown] = useState<{ pbt: boolean; cir: boolean }>({ pbt: false, cir: false });
+  // Was a hardcoded, single-quarter exhibit (FINANCIAL_RESULTS_HISTORY) that never reflected the
+  // period-driven Supabase dataset — fullTrend (the same live financial_trend data the PBT/CIR
+  // charts below already read) covers this exactly, it just wasn't wired in here.
+  const financialResultsHistory = fullTrend.map((q) => ({ label: q.period, revenue: q.revenue, pbt: q.pbt }));
 
   return (
     <div>
@@ -87,13 +83,13 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           filename="pfh001-overview-of-financial-results"
           csvData={{
             headers: ["Period", "Revenue (RM mil)", "PBT (RM mil)"],
-            rows: FINANCIAL_RESULTS_HISTORY.map((h) => [h.label, h.revenue, h.pbt]),
+            rows: financialResultsHistory.map((h) => [h.label, h.revenue, h.pbt]),
           }}
         >
           {/* dividerBeforeIndex/banner described the now-removed FY2023-2025 history (the old
               SJPP income-recognition structure and its later impact) -- nothing left to mark
               now that the chart starts at FY2026. */}
-          <FinancialResultsHistoryChart data={FINANCIAL_RESULTS_HISTORY} />
+          <FinancialResultsHistoryChart data={financialResultsHistory} />
         </DownloadableFrame>
       </div>
 
