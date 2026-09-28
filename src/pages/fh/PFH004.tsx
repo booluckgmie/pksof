@@ -68,15 +68,15 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       />
       <FhTabs current="PFH004" onNavigate={onNavigate} />
 
-      {!fp.hasData || !priorId ? (
+      {!fp.hasData ? (
         <div className="rounded-lg border border-dashed border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-6 text-center">
-          <p className="text-xs text-[hsl(var(--pk-ink-faint))]">No preceding-quarter figures to compare {fp.currentLabel} against yet.</p>
+          <p className="text-xs text-[hsl(var(--pk-ink-faint))]">No Financial Position figures entered for {fp.currentLabel} yet.</p>
         </div>
       ) : (
         <>
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
             <div className="text-center text-xs font-semibold text-[hsl(var(--pk-ink-soft))] mb-1">
-              {periodEndDateWords(periodId)} vs {periodEndDateWords(priorId)}
+              {periodEndDateWords(periodId)}{priorId && <> vs {periodEndDateWords(priorId)}</>}
             </div>
             <p className="text-center text-xs text-[hsl(var(--pk-ink-soft))] mb-3">
               The Group remains financially strong, with <span className="font-semibold text-[hsl(var(--pk-accent))]">shareholders' funds of {fmtM(fp.totalEquity.current)}</span> as of {periodEndDateWords(periodId)}.
@@ -88,7 +88,7 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                     <tr>
                       <th className="text-left font-medium px-2 py-2.5 text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">RM'000</th>
                       <th className={TH}>{periodEndDateLabel(periodId)}</th>
-                      <th className={TH}>{periodEndDateLabel(priorId)}</th>
+                      <th className={TH}>{priorId ? periodEndDateLabel(priorId) : "—"}</th>
                       <th className={TH}>Variance<br />RM'000</th>
                       <th className={TH}>%</th>
                     </tr>
@@ -118,7 +118,9 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
                 <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlights</div>
                 <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
-                  {(() => {
+                  {!priorId ? (
+                    <li className="text-2xs text-[hsl(var(--pk-ink-faint))] italic">No preceding-quarter figures to compare {fp.currentLabel} against yet.</li>
+                  ) : (() => {
                     const ci = variance(fp.cashAndInvestments.current, fp.cashAndInvestments.prior);
                     const oa = variance(fp.otherAssets.current, fp.otherAssets.prior);
                     const tl = variance(fp.totalLiabilities.current, fp.totalLiabilities.prior);
@@ -150,7 +152,7 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                   <tr>
                     <th className="text-left font-medium px-2 py-2.5 text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">RM'000</th>
                     <th className={TH}>{periodEndDateLabel(periodId)}</th>
-                    <th className={TH}>{periodEndDateLabel(priorId)}</th>
+                    <th className={TH}>{priorId ? periodEndDateLabel(priorId) : "—"}</th>
                     <th className={TH}>Variance<br />RM'000</th>
                     <th className={TH}>%</th>
                   </tr>
