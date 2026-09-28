@@ -89,6 +89,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const {
     genderBreakdownByPeriod, ageGenderBreakdownFor,
     ageBreakdownFor, headcountSummaryByPeriod, averageAgeByPeriod,
+    departmentHeadcountFor,
   } = useDetails();
   const genderBreakdown = genderBreakdownByPeriod[periodId];
   const ageBreakdown = ageBreakdownFor(periodId);
@@ -96,12 +97,15 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const headcountSummary = headcountSummaryByPeriod[periodId];
   const averageAge = averageAgeByPeriod[periodId];
   const totalEmployees = headcountSummary.totalEmployees || 1;
+  const departmentHeadcount = departmentHeadcountFor(periodId);
+  const deptApprovedTotal = departmentHeadcount.reduce((s, d) => s + d.approved, 0);
+  const deptFilledTotal = departmentHeadcount.reduce((s, d) => s + d.filled, 0);
 
   return (
     <div>
       <ScreenHeader
         id="RP001A"
-        subtitle="Resource & People · Headcount by Gender, Grade, Age Group and Job Band Level."
+        subtitle="Resource & People · Headcount by Gender, Grade, Age Group, Job Band Level and Department."
         onNavigate={onNavigate}
         periodId={periodId}
         right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />}
@@ -308,6 +312,47 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <span>As at Q2 FY2026 · Job Band Level derived from HRMS grade code (SM1–SM3, TS1–TS2, TS3–TS5, TS6–TS8, OS1–OS4). Total headcount shall reconcile with active employees.</span>
         <span>Source: HRMS</span>
       </p>
+
+      <SectionLabel>Section E — Department Headcount (Approved vs Filled)</SectionLabel>
+      <DownloadableFrame
+        filename="rp001a-department-headcount"
+        className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto mb-2"
+        csvData={{
+          headers: ["Department", "Approved", "Filled", "Vacancy"],
+          rows: [
+            ...departmentHeadcount.map((d) => [d.dept, d.approved, d.filled, d.approved - d.filled]),
+            ["Total", deptApprovedTotal, deptFilledTotal, deptApprovedTotal - deptFilledTotal],
+          ],
+        }}
+      >
+        <table className="w-full text-sm min-w-[480px]">
+          <thead>
+            <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
+              <th className="text-left font-medium px-3 py-2">Department</th>
+              <th className="text-right font-medium px-3 py-2">Approved</th>
+              <th className="text-right font-medium px-3 py-2">Filled</th>
+              <th className="text-right font-medium px-3 py-2">Vacancy</th>
+            </tr>
+          </thead>
+          <tbody>
+            {departmentHeadcount.map((d) => (
+              <tr key={d.dept} className="border-t border-[hsl(var(--pk-border))]">
+                <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">{d.dept}</td>
+                <td className="px-3 py-2 text-right tnum">{d.approved}</td>
+                <td className="px-3 py-2 text-right tnum">{d.filled}</td>
+                <td className="px-3 py-2 text-right tnum">{d.approved - d.filled}</td>
+              </tr>
+            ))}
+            <tr className="border-t-2 border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] font-semibold">
+              <td className="px-3 py-2">Total</td>
+              <td className="px-3 py-2 text-right tnum">{deptApprovedTotal}</td>
+              <td className="px-3 py-2 text-right tnum">{deptFilledTotal}</td>
+              <td className="px-3 py-2 text-right tnum">{deptApprovedTotal - deptFilledTotal}</td>
+            </tr>
+          </tbody>
+        </table>
+      </DownloadableFrame>
+      <p className="text-2xs text-[hsl(var(--pk-ink-faint))] text-right">Source: HRMS</p>
     </div>
   );
 }
