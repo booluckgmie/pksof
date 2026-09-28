@@ -1,7 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatCard } from "@/components/pk/Misc";
-import { Donut, BarTrend } from "@/components/pk/Charts";
+import { Donut, GroupedBarTrend } from "@/components/pk/Charts";
 import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { RecruitmentIndexScorecard } from "@/components/pk/RecruitmentIndexScorecard";
@@ -46,18 +46,22 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
         <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
           <div className="flex items-center justify-between flex-wrap gap-1.5">
-            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))]">Headcount Trend — minimum 4 quarters</div>
+            <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))]">Headcount Trend — past 4 quarters</div>
             <DurationFilterBar duration={duration} onChange={setDuration} total={fullHeadcountTrend.length} label="" />
           </div>
-          <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-2">Actual headcount (HRMS) vs approved establishment</div>
+          <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-2">Budgeted headcount vs Actual headcount</div>
           <DownloadableFrame
             filename="rp001-headcount-trend"
             csvData={{
-              headers: ["Period", "Actual Headcount"],
-              rows: headcountTrend.map((h) => [h.period, h.actual]),
+              headers: ["Period", "Budgeted Headcount", "Actual Headcount"],
+              rows: headcountTrend.map((h) => [h.period, h.approved, h.actual]),
             }}
           >
-            <BarTrend data={headcountTrend.map((h) => ({ label: h.period.replace(" FY", " '"), value: h.actual }))} />
+            <GroupedBarTrend
+              data={headcountTrend.map((h) => ({ label: h.period.replace(" FY", " '"), a: h.approved, b: h.actual }))}
+              aLabel="Budgeted"
+              bLabel="Actual"
+            />
           </DownloadableFrame>
         </div>
         <button onClick={() => onNavigate("RP001A")} className="group rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 text-left hover:border-[hsl(var(--pk-accent))] transition-colors">
@@ -70,7 +74,7 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               <Donut
                 segments={[
                   { label: "Bumiputera", value: headcountSummary.bumiputera, color: "hsl(var(--pk-accent))" },
-                  { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))" },
+                  { label: "Non-Bumiputera", value: headcountSummary.nonBumiputera, color: "hsl(var(--pk-surface-2))", labelColor: "hsl(var(--pk-ink))" },
                 ]}
                 centerValue={String(headcountSummary.totalEmployees)}
                 centerLabel="Total"

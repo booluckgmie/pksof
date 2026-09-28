@@ -117,7 +117,7 @@ export function FinancialResultsOverview({
         const isRealQuarter = periodId === "Q1FY26";
         return (
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
-            <div className="font-head font-bold text-[hsl(var(--pk-ink))] text-center mb-1">YTD Actual vs YTD Budget ({period.label})</div>
+            <div className="font-head font-bold text-[hsl(var(--pk-ink))] text-center mb-1">YTD Budget vs YTD Actual ({period.label})</div>
             {pbtDelta !== null && pbtPct !== null && (
               <p className="text-center text-xs text-[hsl(var(--pk-ink-soft))] mb-3">
                 Overall, the Group recorded <span className="font-semibold text-[hsl(var(--pk-accent))]">{pbtDelta >= 0 ? "higher" : "lower"} PBT by {fmtM(pbtDelta)} ({Math.abs(pbtPct).toFixed(0)}%)</span> compared to the budget for the quarter.
@@ -125,23 +125,23 @@ export function FinancialResultsOverview({
             )}
             <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
               <DownloadableFrame
-                filename="financial-results-actual-vs-budget"
+                filename="financial-results-budget-vs-actual"
                 csvData={{
-                  headers: ["Category", "Actual", "Budget"],
+                  headers: ["Category", "Budget", "Actual"],
                   rows: [
-                    ["Total Income", c.totalIncome ?? 0, b.totalIncome ?? 0],
-                    ["Total Expenses", Math.abs(c.expenses ?? 0), Math.abs(b.expenses ?? 0)],
-                    ["Profit Before Tax", c.pbt ?? 0, b.pbt ?? 0],
+                    ["Total Income", b.totalIncome ?? 0, c.totalIncome ?? 0],
+                    ["Total Expenses", Math.abs(b.expenses ?? 0), Math.abs(c.expenses ?? 0)],
+                    ["Profit Before Tax", b.pbt ?? 0, c.pbt ?? 0],
                   ],
                 }}
               >
                 <QoQHorizontalBars
-                  currentLabel="Actual"
-                  compareLabel="Budget"
+                  currentLabel="Budget"
+                  compareLabel="Actual"
                   categories={[
-                    { label: "Total Income", current: c.totalIncome ?? 0, compare: b.totalIncome ?? 0 },
-                    { label: "Total Expenses", current: Math.abs(c.expenses ?? 0), compare: Math.abs(b.expenses ?? 0) },
-                    { label: "Profit Before Tax", current: c.pbt ?? 0, compare: b.pbt ?? 0 },
+                    { label: "Total Income", current: b.totalIncome ?? 0, compare: c.totalIncome ?? 0 },
+                    { label: "Total Expenses", current: Math.abs(b.expenses ?? 0), compare: Math.abs(c.expenses ?? 0) },
+                    { label: "Profit Before Tax", current: b.pbt ?? 0, compare: c.pbt ?? 0 },
                   ]}
                 />
               </DownloadableFrame>

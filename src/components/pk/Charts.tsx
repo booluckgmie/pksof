@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 interface Point { label: string; value: number }
 
 const W = 320;
@@ -311,7 +313,10 @@ export function Donut({
   centerLabel,
   minLabelFraction = 0.07,
 }: {
-  segments: { label: string; value: number; color: string }[];
+  /** `labelColor` overrides the in-ring value/percentage text color (default white) — needed for
+   * a light-fill segment (e.g. a pale gray "Non-Bumiputera" slice), where white-on-light reads as
+   * illegible ("font color to change. unclear"). */
+  segments: { label: string; value: number; color: string; labelColor?: string }[];
   centerValue: string;
   centerLabel: string;
   minLabelFraction?: number;
@@ -355,13 +360,13 @@ export function Donut({
           strokeDashoffset={a.offset}
           transform={`rotate(-90 ${CX} ${CY})`}
         >
-          <title>{a.label}: {a.value} ({(a.frac * 100).toFixed(1)}%)</title>
+          <title>{a.label}: {a.value} ({Math.round(a.frac * 100)}%)</title>
         </circle>
       ))}
       {arcs.filter((a) => a.frac >= minLabelFraction).map((a) => (
         <g key={`${a.label}-label`}>
-          <text x={a.labelX} y={a.labelY - 4} textAnchor="middle" fontSize={13} fontWeight={700} className="fill-white tnum">{a.value}</text>
-          <text x={a.labelX} y={a.labelY + 10} textAnchor="middle" fontSize={9.5} fontWeight={500} className="fill-white/85 tnum">{(a.frac * 100).toFixed(1)}%</text>
+          <text x={a.labelX} y={a.labelY - 4} textAnchor="middle" fontSize={13} fontWeight={700} className={cn("tnum", !a.labelColor && "fill-white")} fill={a.labelColor} opacity={a.labelColor ? 0.9 : undefined}>{a.value}</text>
+          <text x={a.labelX} y={a.labelY + 10} textAnchor="middle" fontSize={9.5} fontWeight={500} className={cn("tnum", !a.labelColor && "fill-white/85")} fill={a.labelColor} opacity={a.labelColor ? 0.75 : undefined}>{Math.round(a.frac * 100)}%</text>
         </g>
       ))}
       <text x={CX} y={CY - 6} textAnchor="middle" fontSize={22} fontWeight={700} className="fill-[hsl(var(--pk-ink))] tnum">{centerValue}</text>

@@ -1,6 +1,6 @@
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatCard } from "@/components/pk/Misc";
-import { SplitBar, GroupedBarTrend, Donut } from "@/components/pk/Charts";
+import { GroupedBarTrend, Donut } from "@/components/pk/Charts";
 import { FinancialYearQuarterPicker, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import type { ScreenId } from "@/lib/nav";
@@ -109,15 +109,21 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <SectionLabel>Section A — Breakdown by Gender</SectionLabel>
       <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-5">
-        <div className="flex flex-col sm:flex-row items-stretch gap-4">
-          <div className="flex-1 flex flex-col justify-center">
-            <SplitBar segments={[{ label: "Male", value: genderBreakdown.male, color: "hsl(var(--pk-navy))" }, { label: "Female", value: genderBreakdown.female, color: "hsl(var(--pk-accent))" }]} />
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="w-40 shrink-0">
+            <Donut
+              segments={[
+                { label: "Male", value: genderBreakdown.male, color: "hsl(var(--pk-navy))" },
+                { label: "Female", value: genderBreakdown.female, color: "hsl(var(--pk-accent))" },
+              ]}
+              centerValue={String(headcountSummary.totalEmployees)}
+              centerLabel="Total Employee(s)"
+            />
           </div>
           <div className="sm:w-52 shrink-0">
             <StatCard label="Total Employee(s)" value={String(headcountSummary.totalEmployees)} />
           </div>
         </div>
-        <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">Gender is a mandatory HRMS field — no blanks permitted. Male + Female reconciles to Total Employees ({headcountSummary.totalEmployees}).</p>
       </div>
 
       <SectionLabel>Section B — Breakdown by Grade (5 approved bands)</SectionLabel>
@@ -130,7 +136,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             GRADE_INFO[cat]?.displayLabel ?? cat,
             GRADE_INFO[cat]?.code ?? "—",
             GRADE_CODE_CATEGORY_TOTALS[cat],
-            `${((GRADE_CODE_CATEGORY_TOTALS[cat] / GRADE_CODE_GRAND_TOTAL) * 100).toFixed(1)}%`,
+            `${Math.round((GRADE_CODE_CATEGORY_TOTALS[cat] / GRADE_CODE_GRAND_TOTAL) * 100)}%`,
           ]),
         }}
       >
@@ -155,13 +161,13 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 </div>
                 <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-1">({GRADE_INFO[cat]?.code})</div>
                 <div className="tnum font-head text-xl font-bold text-[hsl(var(--pk-ink))]">{GRADE_CODE_CATEGORY_TOTALS[cat]}</div>
-                <div className="text-2xs text-[hsl(var(--pk-ink-faint))] tnum">{((GRADE_CODE_CATEGORY_TOTALS[cat] / GRADE_CODE_GRAND_TOTAL) * 100).toFixed(1)}%</div>
+                <div className="text-2xs text-[hsl(var(--pk-ink-faint))] tnum">{Math.round((GRADE_CODE_CATEGORY_TOTALS[cat] / GRADE_CODE_GRAND_TOTAL) * 100)}%</div>
               </div>
             ))}
             <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-3 py-2.5">
               <div className="text-xs font-semibold text-[hsl(var(--pk-ink))]">Total Employee(s)</div>
               <div className="tnum font-head text-xl font-bold text-[hsl(var(--pk-ink))] mt-1">{GRADE_CODE_GRAND_TOTAL}</div>
-              <div className="text-2xs text-[hsl(var(--pk-ink-faint))] tnum">100.0%</div>
+              <div className="text-2xs text-[hsl(var(--pk-ink-faint))] tnum">100%</div>
             </div>
           </div>
         </div>
@@ -214,13 +220,13 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                       {a.band}
                     </td>
                     <td className="text-right px-2 py-1.5 tnum">{a.count}</td>
-                    <td className="text-right px-2 py-1.5 tnum font-semibold text-[hsl(var(--pk-accent))]">{totalEmployees > 0 ? `${((a.count / totalEmployees) * 100).toFixed(1)}%` : "—"}</td>
+                    <td className="text-right px-2 py-1.5 tnum font-semibold text-[hsl(var(--pk-accent))]">{totalEmployees > 0 ? `${Math.round((a.count / totalEmployees) * 100)}%` : "—"}</td>
                   </tr>
                 ))}
                 <tr className="font-semibold">
                   <td className="px-2 py-1.5 text-[hsl(var(--pk-ink))]">Total</td>
                   <td className="text-right px-2 py-1.5 tnum">{headcountSummary.totalEmployees}</td>
-                  <td className="text-right px-2 py-1.5 tnum">100.0%</td>
+                  <td className="text-right px-2 py-1.5 tnum">100%</td>
                 </tr>
               </tbody>
             </table>
@@ -243,11 +249,11 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               const rowTotal = row.male + row.female;
               return [
                 GRADE_INFO[row.category]?.displayLabel ?? row.category, row.code, row.male, row.female, rowTotal,
-                totalEmployees > 0 ? `${((rowTotal / totalEmployees) * 100).toFixed(1)}%` : "—",
+                totalEmployees > 0 ? `${Math.round((rowTotal / totalEmployees) * 100)}%` : "—",
                 GRADE_CATEGORY_AVG_AGE[row.category].toFixed(1),
               ];
             }),
-            ["Total", "", GRADE_CODE_MALE_TOTAL, GRADE_CODE_FEMALE_TOTAL, GRADE_CODE_GRAND_TOTAL, "100.0%", averageAge.toFixed(1)],
+            ["Total", "", GRADE_CODE_MALE_TOTAL, GRADE_CODE_FEMALE_TOTAL, GRADE_CODE_GRAND_TOTAL, "100%", averageAge.toFixed(1)],
           ],
         }}
       >
@@ -280,7 +286,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                   <td className="px-3 py-2 text-right tnum">{row.male}</td>
                   <td className="px-3 py-2 text-right tnum">{row.female}</td>
                   <td className="px-3 py-2 text-right tnum font-semibold">{rowTotal}</td>
-                  <td className="px-3 py-2 text-right tnum">{totalEmployees > 0 ? `${((rowTotal / totalEmployees) * 100).toFixed(1)}%` : "—"}</td>
+                  <td className="px-3 py-2 text-right tnum">{totalEmployees > 0 ? `${Math.round((rowTotal / totalEmployees) * 100)}%` : "—"}</td>
                   {isFirstOfCategory && (
                     <td className="px-3 py-2 text-right tnum align-top" rowSpan={span}>{GRADE_CATEGORY_AVG_AGE[row.category].toFixed(1)}</td>
                   )}
@@ -292,7 +298,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               <td className="px-3 py-2 text-right tnum">{GRADE_CODE_MALE_TOTAL}</td>
               <td className="px-3 py-2 text-right tnum">{GRADE_CODE_FEMALE_TOTAL}</td>
               <td className="px-3 py-2 text-right tnum">{GRADE_CODE_GRAND_TOTAL}</td>
-              <td className="px-3 py-2 text-right tnum">100.0%</td>
+              <td className="px-3 py-2 text-right tnum">100%</td>
               <td className="px-3 py-2 text-right tnum">{averageAge.toFixed(1)}</td>
             </tr>
           </tbody>
