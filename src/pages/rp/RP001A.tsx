@@ -28,32 +28,6 @@ const AGE_BAND_COLORS: Record<string, string> = {
   "51+": "hsl(var(--pk-navy))",
 };
 
-/** Grade-code-level establishment listing (client HRMS export) — the granular rows behind
- * Section B's 5 approved bands and Section D's cross-tab. Reuses the "Management" →
- * "Managerial" key/label convention from GRADE_INFO above. Male/female split per code is a
- * proportional dummy allocation (the client's own export only gave code-level headcount, not
- * gender) that reconciles exactly to each band's real male/female/avgAge and to the page's
- * Section A gender totals — see Section D below. Fixed as at Q2 FY2026, independent of the
- * period-driven Supabase dataset the rest of this screen reads. */
-const GRADE_CODE_ROWS: { code: string; qty: number; male: number; female: number; category: string }[] = [
-  { code: "CEO", qty: 1, male: 1, female: 0, category: "Top Management" },
-  { code: "SM1", qty: 0, male: 0, female: 0, category: "Top Management" },
-  { code: "SM2", qty: 1, male: 1, female: 0, category: "Top Management" },
-  { code: "SM3", qty: 5, male: 3, female: 2, category: "Top Management" },
-  { code: "TS1", qty: 8, male: 4, female: 4, category: "Senior Management" },
-  { code: "TS2", qty: 17, male: 10, female: 7, category: "Senior Management" },
-  { code: "TS3", qty: 33, male: 17, female: 16, category: "Management" },
-  { code: "TS4", qty: 42, male: 22, female: 20, category: "Management" },
-  { code: "TS5", qty: 32, male: 16, female: 16, category: "Management" },
-  { code: "TS6", qty: 36, male: 19, female: 17, category: "Executive" },
-  { code: "TS7", qty: 15, male: 8, female: 7, category: "Executive" },
-  { code: "TS8", qty: 28, male: 15, female: 13, category: "Executive" },
-  { code: "OS1", qty: 6, male: 3, female: 3, category: "Non-Executive" },
-  { code: "OS2", qty: 7, male: 4, female: 3, category: "Non-Executive" },
-  { code: "OS3", qty: 1, male: 1, female: 0, category: "Non-Executive" },
-  { code: "OS4", qty: 4, male: 2, female: 2, category: "Non-Executive" },
-];
-
 const GRADE_CATEGORY_ORDER = ["Top Management", "Senior Management", "Management", "Executive", "Non-Executive"];
 
 const GRADE_CATEGORY_COLORS: Record<string, string> = {
@@ -64,32 +38,12 @@ const GRADE_CATEGORY_COLORS: Record<string, string> = {
   "Non-Executive": "hsl(220 9% 62%)",
 };
 
-/** Dummy per-band average age (the client's export didn't include this at code level either) —
- * applied uniformly to every code within a band. */
-const GRADE_CATEGORY_AVG_AGE: Record<string, number> = {
-  "Top Management": 51.5,
-  "Senior Management": 46.0,
-  "Management": 40.5,
-  "Executive": 34.0,
-  "Non-Executive": 35.5,
-};
-
-const GRADE_CODE_CATEGORY_TOTALS: Record<string, number> = Object.fromEntries(
-  GRADE_CATEGORY_ORDER.map((cat) => [cat, GRADE_CODE_ROWS.filter((r) => r.category === cat).reduce((s, r) => s + r.qty, 0)])
-);
-const GRADE_CODE_CATEGORY_ROW_COUNTS: Record<string, number> = Object.fromEntries(
-  GRADE_CATEGORY_ORDER.map((cat) => [cat, GRADE_CODE_ROWS.filter((r) => r.category === cat).length])
-);
-const GRADE_CODE_GRAND_TOTAL = GRADE_CODE_ROWS.reduce((s, r) => s + r.qty, 0);
-const GRADE_CODE_MALE_TOTAL = GRADE_CODE_ROWS.reduce((s, r) => s + r.male, 0);
-const GRADE_CODE_FEMALE_TOTAL = GRADE_CODE_ROWS.reduce((s, r) => s + r.female, 0);
-
 export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const [periodId, setPeriodId] = useLocalPeriodId();
   const {
     genderBreakdownByPeriod, ageGenderBreakdownFor,
     ageBreakdownFor, headcountSummaryByPeriod, averageAgeByPeriod,
-    departmentHeadcountFor,
+    departmentHeadcountFor, gradeBreakdownFor, gradeGenderCrossTabFor,
   } = useDetails();
   const genderBreakdown = genderBreakdownByPeriod[periodId];
   const ageBreakdown = ageBreakdownFor(periodId);
@@ -100,6 +54,19 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const departmentHeadcount = departmentHeadcountFor(periodId);
   const deptApprovedTotal = departmentHeadcount.reduce((s, d) => s + d.approved, 0);
   const deptFilledTotal = departmentHeadcount.reduce((s, d) => s + d.filled, 0);
+
+  // Section B/D used to be a hardcoded, period-independent grade-code exhibit (SM1–SM3, TS1–TS8,
+  // etc.) that never changed no matter which quarter was selected — real per-quarter uploads only
+  // ever collect grade data at these 5 broader Job Band Levels, not per individual grade code, so
+  // that's the granularity now shown here too.
+  const gradeByCategory: Record<string, number> = Object.fromEntries(gradeBreakdownFor(periodId).map((g) => [g.grade, g.count]));
+  const gradeTotal = GRADE_CATEGORY_ORDER.reduce((s, cat) => s + (gradeByCategory[cat] ?? 0), 0) || 1;
+  const crossTabByCategory: Record<string, { male: number; female: number; avgAge: number }> = Object.fromEntries(
+    gradeGenderCrossTabFor(periodId).map((g) => [g.grade, g])
+  );
+  const crossTabMaleTotal = GRADE_CATEGORY_ORDER.reduce((s, cat) => s + (crossTabByCategory[cat]?.male ?? 0), 0);
+  const crossTabFemaleTotal = GRADE_CATEGORY_ORDER.reduce((s, cat) => s + (crossTabByCategory[cat]?.female ?? 0), 0);
+  const crossTabGrandTotal = crossTabMaleTotal + crossTabFemaleTotal || 1;
 
   return (
     <div>
@@ -139,8 +106,8 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           rows: GRADE_CATEGORY_ORDER.map((cat) => [
             GRADE_INFO[cat]?.displayLabel ?? cat,
             GRADE_INFO[cat]?.code ?? "—",
-            GRADE_CODE_CATEGORY_TOTALS[cat],
-            `${Math.round((GRADE_CODE_CATEGORY_TOTALS[cat] / GRADE_CODE_GRAND_TOTAL) * 100)}%`,
+            gradeByCategory[cat] ?? 0,
+            `${Math.round(((gradeByCategory[cat] ?? 0) / gradeTotal) * 100)}%`,
           ]),
         }}
       >
@@ -149,10 +116,10 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <Donut
               segments={GRADE_CATEGORY_ORDER.map((cat) => ({
                 label: GRADE_INFO[cat]?.displayLabel ?? cat,
-                value: GRADE_CODE_CATEGORY_TOTALS[cat],
+                value: gradeByCategory[cat] ?? 0,
                 color: GRADE_CATEGORY_COLORS[cat],
               }))}
-              centerValue={String(GRADE_CODE_GRAND_TOTAL)}
+              centerValue={String(gradeTotal)}
               centerLabel="Total Employee(s)"
             />
           </div>
@@ -164,18 +131,18 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                   {GRADE_INFO[cat]?.displayLabel ?? cat}
                 </div>
                 <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-1">({GRADE_INFO[cat]?.code})</div>
-                <div className="tnum font-head text-xl font-bold text-[hsl(var(--pk-ink))]">{GRADE_CODE_CATEGORY_TOTALS[cat]}</div>
-                <div className="text-2xs text-[hsl(var(--pk-ink-faint))] tnum">{Math.round((GRADE_CODE_CATEGORY_TOTALS[cat] / GRADE_CODE_GRAND_TOTAL) * 100)}%</div>
+                <div className="tnum font-head text-xl font-bold text-[hsl(var(--pk-ink))]">{gradeByCategory[cat] ?? 0}</div>
+                <div className="text-2xs text-[hsl(var(--pk-ink-faint))] tnum">{Math.round(((gradeByCategory[cat] ?? 0) / gradeTotal) * 100)}%</div>
               </div>
             ))}
             <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-3 py-2.5">
               <div className="text-xs font-semibold text-[hsl(var(--pk-ink))]">Total Employee(s)</div>
-              <div className="tnum font-head text-xl font-bold text-[hsl(var(--pk-ink))] mt-1">{GRADE_CODE_GRAND_TOTAL}</div>
+              <div className="tnum font-head text-xl font-bold text-[hsl(var(--pk-ink))] mt-1">{gradeTotal}</div>
               <div className="text-2xs text-[hsl(var(--pk-ink-faint))] tnum">100%</div>
             </div>
           </div>
         </div>
-        <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">As at Q2 FY2026 · HRMS establishment listing (16 grade codes across 5 job band levels). Source: HRMS.</p>
+        <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">Job Band Level derived from HRMS grade code (SM1–SM3, TS1–TS2, TS3–TS5, TS6–TS8, OS1–OS4). Source: HRMS.</p>
       </DownloadableFrame>
 
       <SectionLabel>Section C — Breakdown by Age Group (4 bands)</SectionLabel>
@@ -247,25 +214,25 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         filename="rp001a-job-band-gender-age-crosstab"
         className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto"
         csvData={{
-          headers: ["Job Band Level", "Grade Code", "Male", "Female", "Total", "% of Workforce", "Average Age"],
+          headers: ["Job Band Level", "Male", "Female", "Total", "% of Workforce", "Average Age"],
           rows: [
-            ...GRADE_CODE_ROWS.map((row) => {
-              const rowTotal = row.male + row.female;
+            ...GRADE_CATEGORY_ORDER.map((cat) => {
+              const c = crossTabByCategory[cat] ?? { male: 0, female: 0, avgAge: 0 };
+              const rowTotal = c.male + c.female;
               return [
-                GRADE_INFO[row.category]?.displayLabel ?? row.category, row.code, row.male, row.female, rowTotal,
-                totalEmployees > 0 ? `${Math.round((rowTotal / totalEmployees) * 100)}%` : "—",
-                GRADE_CATEGORY_AVG_AGE[row.category].toFixed(1),
+                GRADE_INFO[cat]?.displayLabel ?? cat, c.male, c.female, rowTotal,
+                `${Math.round((rowTotal / crossTabGrandTotal) * 100)}%`,
+                c.avgAge.toFixed(1),
               ];
             }),
-            ["Total", "", GRADE_CODE_MALE_TOTAL, GRADE_CODE_FEMALE_TOTAL, GRADE_CODE_GRAND_TOTAL, "100%", averageAge.toFixed(1)],
+            ["Total", crossTabMaleTotal, crossTabFemaleTotal, crossTabMaleTotal + crossTabFemaleTotal, "100%", averageAge.toFixed(1)],
           ],
         }}
       >
-        <table className="w-full text-sm min-w-[680px]">
+        <table className="w-full text-sm min-w-[560px]">
           <thead>
             <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
               <th className="text-left font-medium px-3 py-2">Job Band Level</th>
-              <th className="text-left font-medium px-3 py-2">Grade Code</th>
               <th className="text-right font-medium px-3 py-2">Male</th>
               <th className="text-right font-medium px-3 py-2">Female</th>
               <th className="text-right font-medium px-3 py-2">Total</th>
@@ -274,34 +241,25 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             </tr>
           </thead>
           <tbody>
-            {GRADE_CODE_ROWS.map((row, i) => {
-              const isFirstOfCategory = i === 0 || GRADE_CODE_ROWS[i - 1].category !== row.category;
-              const info = GRADE_INFO[row.category];
-              const rowTotal = row.male + row.female;
-              const span = GRADE_CODE_CATEGORY_ROW_COUNTS[row.category];
+            {GRADE_CATEGORY_ORDER.map((cat) => {
+              const c = crossTabByCategory[cat] ?? { male: 0, female: 0, avgAge: 0 };
+              const rowTotal = c.male + c.female;
               return (
-                <tr key={row.code} className="border-t border-[hsl(var(--pk-border))]">
-                  {isFirstOfCategory && (
-                    <td className="px-3 py-2 font-medium text-[hsl(var(--pk-ink))] align-top" rowSpan={span}>
-                      {info?.displayLabel ?? row.category}
-                    </td>
-                  )}
-                  <td className="px-3 py-2 text-[hsl(var(--pk-ink-faint))]">{row.code}</td>
-                  <td className="px-3 py-2 text-right tnum">{row.male}</td>
-                  <td className="px-3 py-2 text-right tnum">{row.female}</td>
+                <tr key={cat} className="border-t border-[hsl(var(--pk-border))]">
+                  <td className="px-3 py-2 font-medium text-[hsl(var(--pk-ink))]">{GRADE_INFO[cat]?.displayLabel ?? cat}</td>
+                  <td className="px-3 py-2 text-right tnum">{c.male}</td>
+                  <td className="px-3 py-2 text-right tnum">{c.female}</td>
                   <td className="px-3 py-2 text-right tnum font-semibold">{rowTotal}</td>
-                  <td className="px-3 py-2 text-right tnum">{totalEmployees > 0 ? `${Math.round((rowTotal / totalEmployees) * 100)}%` : "—"}</td>
-                  {isFirstOfCategory && (
-                    <td className="px-3 py-2 text-right tnum align-top" rowSpan={span}>{GRADE_CATEGORY_AVG_AGE[row.category].toFixed(1)}</td>
-                  )}
+                  <td className="px-3 py-2 text-right tnum">{Math.round((rowTotal / crossTabGrandTotal) * 100)}%</td>
+                  <td className="px-3 py-2 text-right tnum">{c.avgAge.toFixed(1)}</td>
                 </tr>
               );
             })}
             <tr className="border-t-2 border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] font-semibold">
-              <td className="px-3 py-2" colSpan={2}>Total</td>
-              <td className="px-3 py-2 text-right tnum">{GRADE_CODE_MALE_TOTAL}</td>
-              <td className="px-3 py-2 text-right tnum">{GRADE_CODE_FEMALE_TOTAL}</td>
-              <td className="px-3 py-2 text-right tnum">{GRADE_CODE_GRAND_TOTAL}</td>
+              <td className="px-3 py-2">Total</td>
+              <td className="px-3 py-2 text-right tnum">{crossTabMaleTotal}</td>
+              <td className="px-3 py-2 text-right tnum">{crossTabFemaleTotal}</td>
+              <td className="px-3 py-2 text-right tnum">{crossTabMaleTotal + crossTabFemaleTotal}</td>
               <td className="px-3 py-2 text-right tnum">100%</td>
               <td className="px-3 py-2 text-right tnum">{averageAge.toFixed(1)}</td>
             </tr>
@@ -309,7 +267,7 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         </table>
       </DownloadableFrame>
       <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-2 flex items-center justify-between flex-wrap gap-2">
-        <span>As at Q2 FY2026 · Job Band Level derived from HRMS grade code (SM1–SM3, TS1–TS2, TS3–TS5, TS6–TS8, OS1–OS4). Total headcount shall reconcile with active employees.</span>
+        <span>Job Band Level derived from HRMS grade code (SM1–SM3, TS1–TS2, TS3–TS5, TS6–TS8, OS1–OS4). Total headcount shall reconcile with active employees.</span>
         <span>Source: HRMS</span>
       </p>
 
