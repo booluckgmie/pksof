@@ -5,7 +5,7 @@ import { useSession } from "@/lib/session";
 import { useOrgSettings } from "@/lib/orgSettings";
 import { useKpiTargets } from "@/lib/kpiTargets";
 import { kpis } from "@/data/kpis";
-import { periods } from "@/data/periods";
+import { visiblePeriods } from "@/data/periods";
 import type { ScreenId } from "@/lib/nav";
 
 const MONTHS = [
@@ -13,7 +13,7 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-const FY_OPTIONS = [...new Set(periods.map((p) => p.fy))];
+const FY_OPTIONS = [...new Set(visiblePeriods.map((p) => p.fy))];
 
 export function Settings({ onNavigate: _onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { userName } = useSession();

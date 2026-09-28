@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { fetchDetailMetrics, fetchDetailRecords, type DetailMetricRow, type DetailRecordRow } from "@/lib/api/details";
 import { useSession } from "@/lib/session";
-import { periods, periodById, monthsForQuarter, type MonthPeriodId } from "@/data/periods";
+import { periods, visiblePeriods, periodById, monthsForQuarter, type MonthPeriodId } from "@/data/periods";
 import type { EntityId, PeriodId } from "@/types";
 import type { InitiativeStatus } from "@/data/initiatives";
 
@@ -89,20 +89,24 @@ function periodsWithData(rows: { entityId: EntityId; periodId: PeriodId | MonthP
 
 /** Nothing submitted yet for `periodId`? Fall back to the nearest earlier period that has data,
  * so browsing an unreported quarter shows the last known state instead of going blank/zero —
- * same continuity the static prototype data had, now driven by whatever's actually been entered. */
+ * same continuity the static prototype data had, now driven by whatever's actually been entered.
+ * Bounded to `visiblePeriods` (go-live cutover, see data/periods.ts) so this never silently walks
+ * back into FY2025's pre-launch demo data — an unreported FY2026 quarter shows blank/zero, not a
+ * stale FY2025 figure standing in for it. */
 function resolvePeriod(periodId: PeriodId, available: Set<PeriodId | MonthPeriodId>): PeriodId | null {
-  const idx = periods.findIndex((p) => p.id === periodId);
+  const idx = visiblePeriods.findIndex((p) => p.id === periodId);
   for (let i = idx; i >= 0; i--) {
-    if (available.has(periods[i].id)) return periods[i].id;
+    if (available.has(visiblePeriods[i].id)) return visiblePeriods[i].id;
   }
   return null;
 }
 
 /** For flat/snapshot datasets that aren't period-selector-reactive (financial statements,
- * initiative lists, compliance tables) — use whichever period has the most recent submission. */
+ * initiative lists, compliance tables) — use whichever period has the most recent submission.
+ * Bounded to `visiblePeriods` — see resolvePeriod above. */
 function latestPeriodWithData(available: Set<PeriodId | MonthPeriodId>): PeriodId | null {
-  for (let i = periods.length - 1; i >= 0; i--) {
-    if (available.has(periods[i].id)) return periods[i].id;
+  for (let i = visiblePeriods.length - 1; i >= 0; i--) {
+    if (available.has(visiblePeriods[i].id)) return visiblePeriods[i].id;
   }
   return null;
 }
@@ -143,7 +147,6 @@ export interface Initiative {
 
 /** Reference figures that don't come from data entry — fixed external benchmark / catalog data. */
 export const industryBenchmark = 4.2;
-export const priorYearTrained = 132;
 export const peopleDevProgrammes = [
   {
     programme: "Leadership Development Programme (continuation)",
@@ -210,7 +213,7 @@ export function useDetails() {
     const rows = metricRows("headcount_summary");
     const available = periodsWithData(rows, entityId, () => true);
     const out = {} as Record<PeriodId, HeadcountSummary>;
-    for (const p of periods) {
+    for (const p of visiblePeriods) {
       const eff = resolvePeriod(p.id, available);
       const forPeriod = eff ? rows.filter((r) => r.periodId === eff) : [];
       const get = (dim: string) => forPeriod.find((r) => r.dimension === dim)?.value ?? 0;
@@ -228,7 +231,7 @@ export function useDetails() {
   const headcountTrend = useMemo(() => {
     const rows = metricRows("headcount_summary");
     const available = [...periodsWithData(rows, entityId, () => true)];
-    return periods
+    return visiblePeriods
       .filter((p) => available.includes(p.id))
       .map((p) => {
         const forPeriod = rows.filter((r) => r.periodId === p.id);
@@ -241,7 +244,7 @@ export function useDetails() {
     const rows = metricRows("gender_breakdown");
     const available = periodsWithData(rows, entityId, () => true);
     const out = {} as Record<PeriodId, { male: number; female: number }>;
-    for (const p of periods) {
+    for (const p of visiblePeriods) {
       const eff = resolvePeriod(p.id, available);
       const forPeriod = eff ? rows.filter((r) => r.periodId === eff) : [];
       out[p.id] = {
@@ -289,7 +292,7 @@ export function useDetails() {
     const rows = metricRows("average_age");
     const available = periodsWithData(rows, entityId, () => true);
     const out = {} as Record<PeriodId, number>;
-    for (const p of periods) {
+    for (const p of visiblePeriods) {
       const eff = resolvePeriod(p.id, available);
       const forPeriod = eff ? rows.filter((r) => r.periodId === eff) : [];
       out[p.id] = forPeriod.find((r) => r.dimension === "avg")?.value ?? 0;
@@ -309,7 +312,7 @@ export function useDetails() {
     const rows = metricRows("recruitment_index");
     const metricNames = ["Time to Hire (TTH)", "MRF Fulfilment Rate", "Quality of Hire", "Offer Acceptance Rate"];
     const out: Partial<Record<PeriodId, RecruitmentMetric[]>> = {};
-    for (const p of periods) {
+    for (const p of visiblePeriods) {
       const forPeriod = rows.filter((r) => r.periodId === p.id);
       if (forPeriod.length === 0) continue;
       out[p.id] = metricNames.map((name) => {
@@ -327,7 +330,7 @@ export function useDetails() {
     const rows = metricRows("resigned");
     const available = periodsWithData(rows, entityId, () => true);
     const out = {} as Record<PeriodId, number>;
-    for (const p of periods) {
+    for (const p of visiblePeriods) {
       const eff = resolvePeriod(p.id, available);
       const forPeriod = eff ? rows.filter((r) => r.periodId === eff) : [];
       out[p.id] = forPeriod.find((r) => r.dimension === "count")?.value ?? 0;
@@ -338,7 +341,7 @@ export function useDetails() {
   const turnoverTrend = useMemo(() => {
     const resignedRows = metricRows("resigned");
     const available = [...periodsWithData(resignedRows, entityId, () => true)];
-    return periods
+    return visiblePeriods
       .filter((p) => available.includes(p.id))
       .map((p) => {
         const resigned = resignedRows.find((r) => r.periodId === p.id && r.dimension === "count")?.value ?? 0;
@@ -352,7 +355,7 @@ export function useDetails() {
     const rows = metricRows("bumiputera_training");
     const available = periodsWithData(rows, entityId, () => true);
     const out = {} as Record<PeriodId, BumiputeraTrainingSnapshot>;
-    for (const p of periods) {
+    for (const p of visiblePeriods) {
       const eff = resolvePeriod(p.id, available);
       const forPeriod = eff ? rows.filter((r) => r.periodId === eff) : [];
       out[p.id] = {
@@ -370,7 +373,7 @@ export function useDetails() {
   const quarterlyTrend = useMemo(() => {
     const rows = metricRows("financial_trend");
     const available = [...periodsWithData(rows, entityId, () => true)];
-    return periods
+    return visiblePeriods
       .filter((p) => available.includes(p.id))
       .map((p) => {
         const forPeriod = rows.filter((r) => r.periodId === p.id);
@@ -456,8 +459,8 @@ export function useDetails() {
    * the immediately preceding quarter, Budget compares it to its own budget dim2 (present only
    * where a budget figure has actually been entered — not every quarter has one). */
   function financialResultsFor(periodId: PeriodId) {
-    const idx = periods.findIndex((p) => p.id === periodId);
-    const priorId = idx > 0 ? periods[idx - 1].id : null;
+    const idx = visiblePeriods.findIndex((p) => p.id === periodId);
+    const priorId = idx > 0 ? visiblePeriods[idx - 1].id : null;
     const current = readQuarterPl(periodId, "actual");
     const prior = priorId ? readQuarterPl(priorId, "actual") : null;
     const budget = readQuarterPl(periodId, "budget");
@@ -554,8 +557,8 @@ export function useDetails() {
    * preceding one — powers each drill-down table under the Financial Position main table. */
   function financialPositionBreakdownFor(parentKey: keyof typeof FP_BREAKDOWN_LABELS, periodId: PeriodId) {
     const def = FP_BREAKDOWN_LABELS[parentKey];
-    const idx = periods.findIndex((p) => p.id === periodId);
-    const priorId = idx > 0 ? periods[idx - 1].id : null;
+    const idx = visiblePeriods.findIndex((p) => p.id === periodId);
+    const priorId = idx > 0 ? visiblePeriods[idx - 1].id : null;
     const rowsForP = metricRows("fp_breakdown").filter((r) => r.periodId === periodId && r.dimension === parentKey);
     const rowsForPrior = priorId ? metricRows("fp_breakdown").filter((r) => r.periodId === priorId && r.dimension === parentKey) : [];
     const rows = Object.entries(def.leaves).map(([key, label]) => ({
@@ -579,8 +582,8 @@ export function useDetails() {
    * Every total (Total Assets/Equity/Liabilities, and the summary "Cash and other investments" /
    * "Other assets" buckets) is derived from leaf figures so it can never drift out of reconciliation. */
   function financialPositionFor(periodId: PeriodId) {
-    const idx = periods.findIndex((p) => p.id === periodId);
-    const priorId = idx > 0 ? periods[idx - 1].id : null;
+    const idx = visiblePeriods.findIndex((p) => p.id === periodId);
+    const priorId = idx > 0 ? visiblePeriods[idx - 1].id : null;
     const val = (key: string, forPeriod: PeriodId) =>
       key in FP_BREAKDOWN_LABELS ? fpBreakdownTotal(forPeriod, key) : fpMainValue(forPeriod, key);
 
@@ -640,8 +643,8 @@ export function useDetails() {
    * quarters the client actually supplied an aging schedule for (not every dummy quarter has one). */
   function agingOfReceivablesFor(periodId: PeriodId) {
     const AGING_LABELS: Record<string, string> = { current: "Current", d1_30: "1-30 days", d31_60: "31-60 days", d61_90: "61-90 days", d91_120: "91-120 days", over_120: ">120 days (impaired)" };
-    const idx = periods.findIndex((p) => p.id === periodId);
-    const priorId = idx > 0 ? periods[idx - 1].id : null;
+    const idx = visiblePeriods.findIndex((p) => p.id === periodId);
+    const priorId = idx > 0 ? visiblePeriods[idx - 1].id : null;
     const rowsForP = metricRows("fp_aging_receivables").filter((r) => r.periodId === periodId);
     if (rowsForP.length === 0) return null;
     const rowsForPrior = priorId ? metricRows("fp_aging_receivables").filter((r) => r.periodId === priorId) : [];
@@ -706,8 +709,8 @@ export function useDetails() {
   function relatedPartyTransactionsUpTo(periodId: PeriodId) {
     const rows = metricRows("related_party_txn");
     const available = [...periodsWithData(rows, entityId, () => true)];
-    const cutoffIdx = periods.findIndex((p) => p.id === periodId);
-    const periodsUsed = periods.filter((p, i) => available.includes(p.id) && (cutoffIdx === -1 || i <= cutoffIdx)).slice().reverse();
+    const cutoffIdx = visiblePeriods.findIndex((p) => p.id === periodId);
+    const periodsUsed = visiblePeriods.filter((p, i) => available.includes(p.id) && (cutoffIdx === -1 || i <= cutoffIdx)).slice().reverse();
     const keys = [...new Set(rows.map((r) => `${r.dimension}::${r.dimension2}`))];
     const items = keys.map((key) => {
       const [category, rest] = key.split("::");
@@ -863,7 +866,7 @@ export function useDetails() {
   const timeCharterByDept = useMemo(() => {
     const rows = metricRows("time_charter_dept_score");
     const available = [...periodsWithData(rows, entityId, () => true)];
-    const periodsUsed = periods.filter((p) => available.includes(p.id));
+    const periodsUsed = visiblePeriods.filter((p) => available.includes(p.id));
     const departments = [...new Set(rows.map((r) => r.dimension))];
     const byDepartment = departments.map((department) => ({
       department,

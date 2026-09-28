@@ -7,7 +7,7 @@ import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { kpiById } from "@/data/kpis";
-import { useDetails, priorYearTrained } from "@/lib/details";
+import { useDetails } from "@/lib/details";
 import { periodById } from "@/data/periods";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -52,7 +52,7 @@ export function RP004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
           <div className="rounded-md bg-[hsl(var(--pk-surface-2))] p-3">
             <div className="text-3xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Programme Status Overview</div>
             <dl className="flex flex-col gap-1.5 text-xs">
-              <div className="flex justify-between"><dt className="text-[hsl(var(--pk-ink-faint))]">FY2025 actual</dt><dd className="tnum font-semibold text-[hsl(var(--pk-ink))]">{priorYearTrained} staff trained</dd></div>
+              <div className="flex justify-between"><dt className="text-[hsl(var(--pk-ink-faint))]">FY2025 actual</dt><dd className="tnum font-semibold text-[hsl(var(--pk-ink))]">-</dd></div>
               <div className="flex justify-between"><dt className="text-[hsl(var(--pk-ink-faint))]">Annual target</dt><dd className="tnum font-semibold text-[hsl(var(--pk-ink))]">{target} staff</dd></div>
               <div className="flex justify-between"><dt className="text-[hsl(var(--pk-ink-faint))]">Completed to date</dt><dd className="tnum font-semibold text-[hsl(var(--pk-ink))]">{bumiputeraTraining.attendedOne} of {target}</dd></div>
               <div className="flex justify-between"><dt className="text-[hsl(var(--pk-ink-faint))]">Stage</dt><dd className="font-semibold text-[hsl(var(--pk-warn))]">{bumiputeraTraining.stage}</dd></div>

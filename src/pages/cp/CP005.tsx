@@ -18,13 +18,6 @@ import { useCurrentPeriodId } from "@/lib/orgSettings";
 import { periodById } from "@/data/periods";
 import type { PeriodId } from "@/types";
 
-/** KPI 5's own survey years that predate this dashboard's data (only FY2025 onward is tracked
- * live) — illustrative history so the yearly trend doesn't open on a single bar. */
-const KPI5_DUMMY_HISTORY: { fy: string; target: number; actual: number }[] = [
-  { fy: "FY2023", target: 4.3, actual: 4.2 },
-  { fy: "FY2024", target: 4.4, actual: 4.5 },
-];
-
 const TH_CLASS = "text-left font-bold px-3 py-2.5 whitespace-nowrap";
 const TH_RIGHT_CLASS = "text-right font-bold px-3 py-2.5 whitespace-nowrap";
 
@@ -66,25 +59,19 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const kpi5FyTarget = getFyTarget("KPI5", fy);
   const kpi5PeriodLabel = fy.replace("FY", "");
 
-  const satisfactionYearlyTrend = [
-    ...KPI5_DUMMY_HISTORY.map((y) => ({
-      label: y.fy,
+  // Go-live cutover: FY2023/24 illustrative filler and the FY2025 pull are both gone — same
+  // FY2026-onward policy as the rest of the app (see data/periods.ts's `visiblePeriods`). KPI5 is
+  // Q4-only, so this stays empty until FY2026's year-end result is in.
+  const satisfactionYearlyTrend = ["FY2026"]
+    .map((yFy) => ({ yFy, r: latestValue("KPI5", entityId, `Q4FY${yFy.slice(-2)}` as PeriodId) }))
+    .filter((x) => x.r.ytdActual !== null)
+    .map(({ yFy, r }) => ({
+      label: yFy,
       segments: [
-        { label: "Actual", value: y.actual, color: y.actual >= y.target ? "hsl(var(--pk-good))" : "hsl(var(--pk-warn))" },
-        { label: "Gap to target", value: Math.max(y.target - y.actual, 0), color: "hsl(var(--pk-surface-2))" },
+        { label: "Actual", value: r.ytdActual as number, color: r.status === "met" ? "hsl(var(--pk-good))" : "hsl(var(--pk-warn))" },
+        { label: "Gap to target", value: Math.max((r.ytdTarget ?? 0) - (r.ytdActual as number), 0), color: "hsl(var(--pk-surface-2))" },
       ],
-    })),
-    ...["FY2025", "FY2026"]
-      .map((yFy) => ({ yFy, r: latestValue("KPI5", entityId, `Q4FY${yFy.slice(-2)}` as PeriodId) }))
-      .filter((x) => x.r.ytdActual !== null)
-      .map(({ yFy, r }) => ({
-        label: yFy,
-        segments: [
-          { label: "Actual", value: r.ytdActual as number, color: r.status === "met" ? "hsl(var(--pk-good))" : "hsl(var(--pk-warn))" },
-          { label: "Gap to target", value: Math.max((r.ytdTarget ?? 0) - (r.ytdActual as number), 0), color: "hsl(var(--pk-surface-2))" },
-        ],
-      })),
-  ];
+    }));
 
   const avgLabel = timeCharterByDept.periods.length === 2 ? `1H ${periodById(timeCharterByDept.periods[1].id).fy.replace("FY", "")}` : "Average";
   const overallAvg = meanOf(timeCharterByDept.overallByPeriod);
@@ -202,15 +189,19 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 mb-4 items-start">
           <div className="lg:col-span-3 rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4">
             <div className="text-2xs font-bold uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Historical trend (by year)</div>
-            <DownloadableFrame
-              filename="cp005-satisfaction-historical-trend"
-              csvData={{
-                headers: ["Year", "Actual", "Gap to target"],
-                rows: satisfactionYearlyTrend.map((y) => [y.label, y.segments[0].value.toFixed(1), y.segments[1].value.toFixed(1)]),
-              }}
-            >
-              <StackedBarTrend data={satisfactionYearlyTrend} />
-            </DownloadableFrame>
+            {satisfactionYearlyTrend.length > 0 ? (
+              <DownloadableFrame
+                filename="cp005-satisfaction-historical-trend"
+                csvData={{
+                  headers: ["Year", "Actual", "Gap to target"],
+                  rows: satisfactionYearlyTrend.map((y) => [y.label, y.segments[0].value.toFixed(1), y.segments[1].value.toFixed(1)]),
+                }}
+              >
+                <StackedBarTrend data={satisfactionYearlyTrend} />
+              </DownloadableFrame>
+            ) : (
+              <NoDataState title="No annual result yet" body="KPI 5 is a bi-annual survey reported once a year, at year-end — FY2026's result isn't in yet." />
+            )}
           </div>
 
           <div className="lg:col-span-7">

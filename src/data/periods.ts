@@ -34,13 +34,24 @@ export const periods: Period[] = [
 
 export const periodById = (id: string) => periods.find((p) => p.id === id)!;
 
+/**
+ * Go-live cutover: FY2025 was entirely pre-launch demo/seed data, never a real reporting period.
+ * `visiblePeriods` is what every picker, trend window, and "available data" fallback computes
+ * from from here on — FY2026 onward only. `periods` itself (and `periodById`) stay untouched so a
+ * historical record still tagged with an FY2025 id (an old audit-trail entry, say) still resolves
+ * a real label instead of crashing; it's just that nothing *offers* FY2025 as a choice, and no
+ * "nearest period with data" fallback ever walks back into it.
+ */
+export const visiblePeriods: Period[] = periods.filter((p) => p.fy !== "FY2025");
+
 /** Every period up to and including `currentPeriodId`, in the same chronological order as
- * `periods` — the boundary every viewer-facing period picker filters its options to, so nobody
- * can select a future quarter nothing's been reported for yet. Falls back to the full list if
+ * `visiblePeriods` — the boundary every viewer-facing period picker filters its options to, so
+ * nobody can select a future quarter nothing's been reported for yet (or, since the go-live
+ * cutover above, a pre-launch FY2025 quarter). Falls back to the full visible list if
  * `currentPeriodId` isn't found (shouldn't happen — defensive only). */
 export function periodsUpTo(currentPeriodId: PeriodId): Period[] {
-  const idx = periods.findIndex((p) => p.id === currentPeriodId);
-  return idx === -1 ? periods : periods.slice(0, idx + 1);
+  const idx = visiblePeriods.findIndex((p) => p.id === currentPeriodId);
+  return idx === -1 ? visiblePeriods : visiblePeriods.slice(0, idx + 1);
 }
 
 const MONTH_NAMES_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

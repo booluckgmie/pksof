@@ -22,21 +22,10 @@ import { periodById } from "@/data/periods";
 import type { PeriodId } from "@/types";
 
 /** The client's own historical "Overview of Financial Results" exhibit — Revenue/PBT by
- * quarter since 1Q FY2023. Fixed historical figures, independent of the period-driven
- * Supabase dataset (like RP001A's Grade Code Detail listing). */
+ * quarter. Fixed historical figures, independent of the period-driven Supabase dataset (like
+ * RP001A's Grade Code Detail listing). Go-live cutover: everything before FY2026 (FY2023-FY2025)
+ * dropped per the same policy as the rest of the app — see data/periods.ts's `visiblePeriods`. */
 const FINANCIAL_RESULTS_HISTORY = [
-  { label: "1Q FY2023", revenue: 55.6, pbt: 45.3, faded: true },
-  { label: "2Q FY2023", revenue: 67.7, pbt: 59.3, faded: true },
-  { label: "3Q FY2023", revenue: 52.4, pbt: 41.7, faded: true },
-  { label: "4Q FY2023", revenue: 23.6, pbt: 11.9 },
-  { label: "1Q FY2024", revenue: 34.5, pbt: 22.5 },
-  { label: "2Q FY2024", revenue: 36.1, pbt: 27.5 },
-  { label: "3Q FY2024", revenue: 40.1, pbt: 27.0 },
-  { label: "4Q FY2024", revenue: 42.7, pbt: 29.3 },
-  { label: "1Q FY2025", revenue: 40.4, pbt: 27.7 },
-  { label: "2Q FY2025", revenue: 44.0, pbt: 33.0 },
-  { label: "3Q FY2025", revenue: 44.1, pbt: 30.9 },
-  { label: "4Q FY2025", revenue: 56.4, pbt: 41.0 },
   { label: "1Q FY2026", revenue: 46.7, pbt: 31.6 },
 ];
 
@@ -101,14 +90,10 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             rows: FINANCIAL_RESULTS_HISTORY.map((h) => [h.label, h.revenue, h.pbt]),
           }}
         >
-          <FinancialResultsHistoryChart
-            data={FINANCIAL_RESULTS_HISTORY}
-            dividerBeforeIndex={FINANCIAL_RESULTS_HISTORY.length - 1}
-            banner={[
-              { label: "Old SJPP income recognition structure", from: 0, to: 2 },
-              { label: "Impact from changes in SJPP income recognition structure", from: 3, to: FINANCIAL_RESULTS_HISTORY.length - 1 },
-            ]}
-          />
+          {/* dividerBeforeIndex/banner described the now-removed FY2023-2025 history (the old
+              SJPP income-recognition structure and its later impact) -- nothing left to mark
+              now that the chart starts at FY2026. */}
+          <FinancialResultsHistoryChart data={FINANCIAL_RESULTS_HISTORY} />
         </DownloadableFrame>
       </div>
 
