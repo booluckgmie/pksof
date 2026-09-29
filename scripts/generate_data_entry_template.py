@@ -683,7 +683,7 @@ SCREEN_FOR = {
     "Governance KPI Detail (KPI 4 support)": "CP004 Mandate & Governance — Governance Index panel (Weighted score only; FY Target/YTD Actual/Achievement text stays in-app)",
     "External Client Satisfaction — Service Breakdown (KPI 5 support)": "CP005 Customer — External Client Satisfaction service breakdown (bi-annual survey; item catalog and prior-year/response-count columns stay in-app)",
     "Time Charter Compliance (KPI 6 support, % per department)": "CP005 Customer — Time Charter Compliance department scoring + drilldown",
-    "Recruitment Efficiency Index (KPI 9 support)": "CP007 Organisational Capacity · RP001 Section B — component scorecard. Weight/Weighted are decimal fractions (e.g. 0.20 for 20%) — a whole-number entry like 20 displays as 2000%.",
+    "Recruitment Efficiency Index (KPI 9 support)": "CP007 Organisational Capacity · RP001 Section B — component scorecard. Weight/Weighted are decimal fractions (e.g. 0.20 for 20%) — a whole-number entry like 20 displays as 2000%. Weight must be entered to 2 decimal places (e.g. 0.20, not 0.2 or 0.198).",
     "Bumiputera Procurement (KPI 11 support, RM)": "CP008 Bumiputera Empowerment — Procurement tab (per-department table)",
     "Bumiputera Training (KPI 13 support)": "CP008 Bumiputera Empowerment — Training tab",
     "Financial Trend (RM mil / %)": "CP003 Financial Perspective (PBT/CIR charts) · PFH002 Financial Results QoQ",
