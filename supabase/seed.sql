@@ -362,56 +362,16 @@ insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimensi
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'grade_gender_crosstab', 'Non-Executive', 'male', 20, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'grade_gender_crosstab', 'Non-Executive', 'female', 15, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'grade_gender_crosstab', 'Non-Executive', 'avgAge', 35.8, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'dept_headcount', 'Finance', 'approved', 22, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'dept_headcount', 'Finance', 'filled', 19, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'dept_headcount', 'Human Resource', 'approved', 16, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'dept_headcount', 'Human Resource', 'filled', 15, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'dept_headcount', 'Corporate Performance', 'approved', 14, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'dept_headcount', 'Corporate Performance', 'filled', 13, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'dept_headcount', 'IT & Digital', 'approved', 19, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'dept_headcount', 'IT & Digital', 'filled', 16, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'dept_headcount', 'Risk & Compliance', 'approved', 14, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'dept_headcount', 'Risk & Compliance', 'filled', 12, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q2FY25', 'dept_headcount', 'Finance', 'approved', 23, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q2FY25', 'dept_headcount', 'Finance', 'filled', 20, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q2FY25', 'dept_headcount', 'Human Resource', 'approved', 17, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q2FY25', 'dept_headcount', 'Human Resource', 'filled', 16, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q2FY25', 'dept_headcount', 'Corporate Performance', 'approved', 15, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q2FY25', 'dept_headcount', 'Corporate Performance', 'filled', 14, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q2FY25', 'dept_headcount', 'IT & Digital', 'approved', 20, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q2FY25', 'dept_headcount', 'IT & Digital', 'filled', 17, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q2FY25', 'dept_headcount', 'Risk & Compliance', 'approved', 15, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q2FY25', 'dept_headcount', 'Risk & Compliance', 'filled', 12, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q3FY25', 'dept_headcount', 'Finance', 'approved', 23, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q3FY25', 'dept_headcount', 'Finance', 'filled', 21, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q3FY25', 'dept_headcount', 'Human Resource', 'approved', 17, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q3FY25', 'dept_headcount', 'Human Resource', 'filled', 16, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q3FY25', 'dept_headcount', 'Corporate Performance', 'approved', 15, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q3FY25', 'dept_headcount', 'Corporate Performance', 'filled', 14, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q3FY25', 'dept_headcount', 'IT & Digital', 'approved', 20, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q3FY25', 'dept_headcount', 'IT & Digital', 'filled', 18, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q3FY25', 'dept_headcount', 'Risk & Compliance', 'approved', 15, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q3FY25', 'dept_headcount', 'Risk & Compliance', 'filled', 13, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'dept_headcount', 'Finance', 'approved', 24, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'dept_headcount', 'Finance', 'filled', 21, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'dept_headcount', 'Human Resource', 'approved', 18, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'dept_headcount', 'Human Resource', 'filled', 17, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'dept_headcount', 'Corporate Performance', 'approved', 15, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'dept_headcount', 'Corporate Performance', 'filled', 15, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'dept_headcount', 'IT & Digital', 'approved', 21, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'dept_headcount', 'IT & Digital', 'filled', 18, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'dept_headcount', 'Risk & Compliance', 'approved', 16, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q4FY25', 'dept_headcount', 'Risk & Compliance', 'filled', 13, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'dept_headcount', 'Finance', 'approved', 24, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'dept_headcount', 'Finance', 'filled', 22, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'dept_headcount', 'Human Resource', 'approved', 18, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'dept_headcount', 'Human Resource', 'filled', 17, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'dept_headcount', 'Corporate Performance', 'approved', 15, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'dept_headcount', 'Corporate Performance', 'filled', 15, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'dept_headcount', 'IT & Digital', 'approved', 21, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'dept_headcount', 'IT & Digital', 'filled', 19, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'dept_headcount', 'Risk & Compliance', 'approved', 16, null);
-insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY26', 'dept_headcount', 'Risk & Compliance', 'filled', 14, null);
+
+-- dept_headcount intentionally has no seed rows: the placeholder 5-department set this used to
+-- carry (Finance/HR/IT & Digital/Risk & Compliance/Corporate Performance) never matched Prokhas's
+-- real department structure. departmentHeadcountFor (src/lib/details.tsx) and the Excel template
+-- (scripts/generate_data_entry_template.py) now both key on the real 8: CEO'S Office, Internal
+-- Audit, Corporate Human Resource, SJPP Processing/Portfolio & Administration, SJKP Operation
+-- Management, Strategy & Stakeholder Management, Credit, Guarantee Scheme - Claims. Real figures
+-- exist live for Q2FY26 only (entered directly against the "pksof" project, not seeded here) —
+-- add real rows for other periods here once HR supplies them, rather than re-seeding placeholders.
+
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'recruitment_index', 'Time to Hire (TTH)', 'weight', 0.2, null);
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'recruitment_index', 'Time to Hire (TTH)', 'score', null, '4 / 5');
 insert into detail_metrics (entity_id, period_id, metric_key, dimension, dimension2, value, note) values ('HQ', 'Q1FY25', 'recruitment_index', 'Time to Hire (TTH)', 'weighted', 0.16, 'Avg 48 days to fulfil approved MRFs');

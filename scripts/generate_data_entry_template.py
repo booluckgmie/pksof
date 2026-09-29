@@ -621,7 +621,11 @@ def rp_rows():
             rows.append(("metric", "age_gender_breakdown", dim, dim2, f"{dim} — {dim2.title()}", vals))
 
     rows.append(("section", "Department Headcount", None))
-    for dept in ["Finance", "Human Resource", "Corporate Performance", "IT & Digital", "Risk & Compliance"]:
+    for dept in [
+        "CEO'S Office", "Internal Audit", "Corporate Human Resource",
+        "SJPP Processing/Portfolio & Administration", "SJKP Operation Management",
+        "Strategy & Stakeholder Management", "Credit", "Guarantee Scheme - Claims",
+    ]:
         for dim2, label in [("approved", "Approved"), ("filled", "Filled")]:
             a = anchors.get(("dept_headcount", dept, dim2))
             vals = series(a, "flat", decimals=0, spread=0.04) if a is not None else fresh_series(18, "flat", decimals=0, seed_key=dept + dim2)

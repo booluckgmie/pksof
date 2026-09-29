@@ -278,7 +278,11 @@ export function useDetails() {
       .map((r) => ({ grade: r.dimension, male: r.byDim2.male ?? 0, female: r.byDim2.female ?? 0, avgAge: r.byDim2.avgAge ?? 0 }));
 
   const departmentHeadcountFor = (periodId: PeriodId) =>
-    twoDimListFor("dept_headcount", periodId, ["Finance", "Human Resource", "Corporate Performance", "IT & Digital", "Risk & Compliance"])
+    twoDimListFor("dept_headcount", periodId, [
+      "CEO'S Office", "Internal Audit", "Corporate Human Resource",
+      "SJPP Processing/Portfolio & Administration", "SJKP Operation Management",
+      "Strategy & Stakeholder Management", "Credit", "Guarantee Scheme - Claims",
+    ])
       .map((r) => ({ dept: r.dimension, approved: r.byDim2.approved ?? 0, filled: r.byDim2.filled ?? 0 }));
 
   const recruitmentIndexByPeriod = useMemo(() => {
