@@ -42,7 +42,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(key); }
   };
   const { latestValue } = useWorkflow();
-  const { timeCharterByDept, clientSatisfactionServicesFor } = useDetails();
+  const { timeCharterByDept, clientSatisfactionServicesFor, latestClientSatisfactionServicePeriod } = useDetails();
   const { getFyTarget } = useKpiTargets();
   const kpi6 = latestValue("KPI6", entityId, periodId);
   const period = periodById(periodId);
@@ -53,16 +53,19 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   // KPI 5 is a bi-annual survey reported once a year (year-end), not something that varies by
   // quarter — regardless of which quarter the page's own picker is on, its card always shows the
   // selected FY's own annual result (Q4 of that FY), and its trend is a bar per year, not per
-  // quarter.
+  // quarter. This stays tied to the current FY2026 reporting year — it's also where
+  // ClientSatisfactionServiceEditor writes new survey data, so it must track the live year even
+  // while that year's own result isn't in yet.
   const kpi5PeriodId = `Q4FY${fy.slice(-2)}` as PeriodId;
   const kpi5 = latestValue("KPI5", entityId, kpi5PeriodId);
   const kpi5FyTarget = getFyTarget("KPI5", fy);
   const kpi5PeriodLabel = fy.replace("FY", "");
 
-  // Go-live cutover: FY2023/24 illustrative filler and the FY2025 pull are both gone — same
-  // FY2026-onward policy as the rest of the app (see data/periods.ts's `visiblePeriods`). KPI5 is
-  // Q4-only, so this stays empty until FY2026's year-end result is in.
-  const satisfactionYearlyTrend = ["FY2026"]
+  // FY2025's Q4 survey is real reported data (not the FY2023/24 illustrative filler the go-live
+  // cutover removed), so it belongs on the trend the same way Q4FY25 now feeds FH's own
+  // quarter-over-quarter comparisons — FY2026 simply won't show a bar yet since its own Q4 hasn't
+  // happened.
+  const satisfactionYearlyTrend = ["FY2025", "FY2026"]
     .map((yFy) => ({ yFy, r: latestValue("KPI5", entityId, `Q4FY${yFy.slice(-2)}` as PeriodId) }))
     .filter((x) => x.r.ytdActual !== null)
     .map(({ yFy, r }) => ({
@@ -75,7 +78,12 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
   const avgLabel = timeCharterByDept.periods.length === 2 ? `1H ${periodById(timeCharterByDept.periods[1].id).fy.replace("FY", "")}` : "Average";
   const overallAvg = meanOf(timeCharterByDept.overallByPeriod);
-  const serviceBreakdown = clientSatisfactionServicesFor(kpi5PeriodId);
+  // The per-service breakdown table is read-only, so unlike kpi5PeriodId above it isn't locked to
+  // the current FY — it shows whichever survey was most recently actually reported (right now
+  // that's still FY2025's, since FY2026's hasn't run), falling back to kpi5PeriodId only if
+  // nothing has ever been entered.
+  const serviceBreakdownPeriodId = latestClientSatisfactionServicePeriod() ?? kpi5PeriodId;
+  const serviceBreakdown = clientSatisfactionServicesFor(serviceBreakdownPeriodId);
 
   return (
     <div>
@@ -206,6 +214,11 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
           <div className="lg:col-span-7">
             <ClientSatisfactionServiceEditor periodId={kpi5PeriodId} />
+            {serviceBreakdown.hasData && serviceBreakdownPeriodId !== kpi5PeriodId && (
+              <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-1.5">
+                Showing the most recently reported survey — {periodById(serviceBreakdownPeriodId).fy.replace("FY", "FY ")} ({kpi5PeriodLabel}'s result isn't in yet).
+              </p>
+            )}
             {serviceBreakdown.hasData ? (
               <DownloadableFrame
                 filename="cp005-service-breakdown"

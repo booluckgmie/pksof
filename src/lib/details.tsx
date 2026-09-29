@@ -764,6 +764,22 @@ export function useDetails() {
     return { services, total, hasData: rows.length > 0 };
   }
 
+  /** The most recent period with a real client_satisfaction_service survey on record, regardless
+   * of FY — KPI 5 is a bi-annual survey reported at year-end, so the current FY's own Q4 often has
+   * nothing yet while the prior FY's real result is still the most useful thing to show. Unlike
+   * every picker-bound period on this page, this walks the full `periods` array (not
+   * visiblePeriods) so a real FY2025 survey isn't hidden just because FY2025 itself isn't
+   * browsable — same principle as financialResultsFor's own prior-quarter lookup. Only the
+   * *read* side works this way; ClientSatisfactionServiceEditor stays pointed at the current FY's
+   * Q4 so new data is always entered against the live reporting year. */
+  function latestClientSatisfactionServicePeriod(): PeriodId | null {
+    const rows = recordRows("client_satisfaction_service");
+    for (let i = periods.length - 1; i >= 0; i--) {
+      if (rows.some((r) => r.periodId === periods[i].id)) return periods[i].id;
+    }
+    return null;
+  }
+
   /** Per-department quarterly scoring — replaces the old flat SLA-target list. One row per
    * department per quarter (metric_key "time_charter_dept_score", dimension = department name,
    * value = that quarter's score), so the screen can both trend the Group average by quarter and
@@ -973,7 +989,7 @@ export function useDetails() {
     bumiputeraTrainingByPeriod,
     quarterlyTrend, financialResultsFor, varianceCommentaryFor, relatedPartyTransactionsUpTo,
     financialPositionFor, financialPositionBreakdownFor, agingOfReceivablesFor, otherInvestmentsDealsFor, otherInvestmentDealItemsFor, cashEffectiveRateFor,
-    managedEntityRatingsFor, managedEntityKpiQuarterlyFor, managedEntityKpiItemsFor, clientSatisfactionServicesFor, clientSatisfactionServiceItemsFor, timeCharterByDept, governanceKpiFor, governanceKpiItemsFor,
+    managedEntityRatingsFor, managedEntityKpiQuarterlyFor, managedEntityKpiItemsFor, clientSatisfactionServicesFor, clientSatisfactionServiceItemsFor, latestClientSatisfactionServicePeriod, timeCharterByDept, governanceKpiFor, governanceKpiItemsFor,
     processInitiatives, techInitiatives, initiativeRecordsFor, bumiputeraProcurementFor, peopleDevRecordsFor,
     pbtBreakdown, cirBreakdown,
   };
