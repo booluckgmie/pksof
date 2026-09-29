@@ -12,6 +12,10 @@ export interface UploadEvent {
   totalRows: number;
   savedRows: number;
   failedRows: number;
+  /** Storage path of the original .xlsx (upload-files bucket), or null when it wasn't saved —
+   * either an upload made before this feature existed, or a storage-save that failed (best-effort,
+   * see uploadFileToStorage's caller in DataEntry.tsx: never blocks the data submission itself). */
+  filePath: string | null;
 }
 
 export interface UploadEventRow {
@@ -37,6 +41,7 @@ interface UploadEventDbRow {
   total_rows: number;
   saved_rows: number;
   failed_rows: number;
+  file_path: string | null;
 }
 
 interface UploadEventRowDbRow {
@@ -63,6 +68,7 @@ function toEvent(row: UploadEventDbRow): UploadEvent {
     totalRows: row.total_rows,
     savedRows: row.saved_rows,
     failedRows: row.failed_rows,
+    filePath: row.file_path,
   };
 }
 
@@ -102,6 +108,7 @@ export async function insertUploadEvent(input: {
   totalRows: number;
   savedRows: number;
   failedRows: number;
+  filePath?: string | null;
 }): Promise<void> {
   const { error } = await getSupabase().from("upload_events").insert({
     id: input.id,
@@ -113,15 +120,42 @@ export async function insertUploadEvent(input: {
     total_rows: input.totalRows,
     saved_rows: input.savedRows,
     failed_rows: input.failedRows,
+    file_path: input.filePath ?? null,
   });
   if (error) throw error;
 }
 
-/** Deletes an upload's audit-trail record only (upload_event_rows cascades via its FK) — the
- * KPI submissions / detail_metrics / detail_records that upload already wrote are untouched. */
-export async function deleteUploadEvent(id: string): Promise<void> {
+/** Deletes an upload's audit-trail record (upload_event_rows cascades via its FK) and its stored
+ * file, if it has one — the KPI submissions / detail_metrics / detail_records that upload already
+ * wrote are untouched. Storage cleanup is best-effort: logged, not thrown, so a storage hiccup
+ * never blocks removing the audit-trail row itself. */
+export async function deleteUploadEvent(id: string, filePath?: string | null): Promise<void> {
   const { error } = await getSupabase().from("upload_events").delete().eq("id", id);
   if (error) throw error;
+  if (filePath) {
+    const { error: storageError } = await getSupabase().storage.from("upload-files").remove([filePath]);
+    if (storageError) console.error("Couldn't remove stored file for deleted upload", id, storageError);
+  }
+}
+
+/** Best-effort save of the original .xlsx to the upload-files bucket, path "<uploadId>/<file
+ * name>" — one object per upload event, so a re-upload (fresh uploadId) never collides with or
+ * overwrites an earlier one. Returns null (never throws) on failure so a storage hiccup can't
+ * block the data submission it's attached to — see DataEntry.tsx's caller. */
+export async function uploadFileToStorage(uploadId: string, file: File): Promise<string | null> {
+  const path = `${uploadId}/${file.name}`;
+  const { error } = await getSupabase().storage.from("upload-files").upload(path, file, { contentType: file.type || undefined });
+  if (error) {
+    console.error("Couldn't save uploaded file to storage — Upload History won't offer a download for this entry", error);
+    return null;
+  }
+  return path;
+}
+
+/** Public URL for a stored upload — the bucket is public-read (see migration 0018), so this is a
+ * plain, permanent URL rather than a time-limited signed one. */
+export function uploadFileUrl(path: string): string {
+  return getSupabase().storage.from("upload-files").getPublicUrl(path).data.publicUrl;
 }
 
 export async function insertUploadEventRows(rows: {

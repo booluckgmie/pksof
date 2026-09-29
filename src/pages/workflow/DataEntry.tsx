@@ -16,7 +16,7 @@ import { kpiById } from "@/data/kpis";
 import { periods, periodById } from "@/data/periods";
 import { parseWorkbook, type ParsedWorkbook } from "@/lib/excelTemplate";
 import { fetchDetailRecords, type DetailRecordRow } from "@/lib/api/details";
-import { insertUploadEvent, insertUploadEventRows } from "@/lib/api/uploads";
+import { insertUploadEvent, insertUploadEventRows, uploadFileToStorage } from "@/lib/api/uploads";
 import { downloadPillarTemplate, type TemplateValueLookup } from "@/lib/downloadTemplate";
 import { MODULE_LABEL, MODULE_ORDER, MODULE_BY_LABEL } from "@/lib/modules";
 import { cn } from "@/lib/utils";
@@ -164,6 +164,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
   const templateLookup: TemplateValueLookup = { entityId, getMetricValue, records, latestValue };
 
   const [fileName, setFileName] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [parsing, setParsing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const [parsed, setParsed] = useState<ParsedWorkbook>(EMPTY_PARSED);
@@ -186,6 +187,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
   const handleFileChange = async (file: File | undefined) => {
     if (!file) return;
     setFileName(file.name);
+    setFile(file);
     setParsing(true);
     setParseError(null);
     setParsed(EMPTY_PARSED);
@@ -301,6 +303,10 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
     }
 
     const failedCount = auditRows.filter((r) => r.status === "failed").length;
+    // Best-effort: uploadFileToStorage never throws (returns null on failure), so a storage
+    // hiccup only means this entry has no download later — it never blocks recording the upload
+    // or the data it already submitted above.
+    const filePath = file ? await uploadFileToStorage(uploadId, file) : null;
     try {
       await insertUploadEvent({
         id: uploadId, entityId, fileName: fileName ?? "unknown.xlsx",
@@ -308,6 +314,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
         periods: parsed.periodsFound.map((id) => periodById(id).label).join(", "),
         uploadedBy: userName || "reporting.officer",
         totalRows, savedRows: totalRows - failedCount, failedRows: failedCount,
+        filePath,
       });
       await insertUploadEventRows(auditRows);
     } catch (err) {
@@ -324,6 +331,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
       failed: auditRows.filter((r) => r.status === "failed").map((r) => ({ label: r.label, error: r.errorMessage ?? "Unknown error" })),
     });
     setFileName(null);
+    setFile(null);
     setParsed(EMPTY_PARSED);
   };
 
