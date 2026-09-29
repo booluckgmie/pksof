@@ -523,12 +523,22 @@ export function QoQHorizontalBars({
   const AXIS_H = 22;
   const H = LEGEND_H + categories.length * GROUP_H + AXIS_H;
 
-  const max = Math.max(...categories.flatMap((c) => [c.current, c.compare]), 1) * 1.2;
+  // A quarter can genuinely post a loss (PBT < 0), so the scale spans negative values too —
+  // niceMin stays 0 (and zeroX stays at PAD_L, unchanged) whenever every value is non-negative,
+  // which keeps this the same chart it always was for the common case.
+  const allValues = categories.flatMap((c) => [c.current, c.compare]);
+  const max = Math.max(...allValues, 1) * 1.2;
+  const min = Math.min(...allValues, 0) * 1.2;
   const plotW = W - PAD_L - PAD_R;
   const niceMax = Math.ceil(max / 10000) * 10000 || 1;
+  const niceMin = Math.floor(min / 10000) * 10000;
+  const span = niceMax - niceMin;
   const tickCount = 5;
-  const ticks = Array.from({ length: tickCount + 1 }, (_, i) => (niceMax / tickCount) * i);
+  const ticks = Array.from({ length: tickCount + 1 }, (_, i) => niceMin + (span / tickCount) * i);
   const axisY = LEGEND_H + categories.length * GROUP_H + 12;
+  const xFor = (v: number) => PAD_L + ((v - niceMin) / span) * plotW;
+  const zeroX = xFor(0);
+  const widthFor = (v: number) => (Math.abs(v) / span) * plotW;
 
   const currentColor = "hsl(var(--pk-navy))";
   const compareColor = "hsl(var(--pk-border))";
@@ -544,30 +554,55 @@ export function QoQHorizontalBars({
       </g>
 
       {ticks.map((t) => {
-        const x = PAD_L + (t / niceMax) * plotW;
+        const x = xFor(t);
         return <line key={t} x1={x} y1={LEGEND_H} x2={x} y2={LEGEND_H + categories.length * GROUP_H - 8} stroke="hsl(var(--pk-border))" strokeWidth={1} />;
       })}
 
       {categories.map((c, i) => {
         const groupY = LEGEND_H + i * GROUP_H;
-        const curW = (c.current / niceMax) * plotW;
-        const cmpW = (c.compare / niceMax) * plotW;
+        const curNeg = c.current < 0;
+        const cmpNeg = c.compare < 0;
+        const curW = widthFor(c.current);
+        const cmpW = widthFor(c.compare);
+        const curX = curNeg ? zeroX - curW : zeroX;
+        const cmpX = cmpNeg ? zeroX - cmpW : zeroX;
         const delta = c.current - c.compare;
         const pct = c.compare !== 0 ? (delta / Math.abs(c.compare)) * 100 : 0;
-        const bracketX = PAD_L + Math.max(curW, cmpW) + 8;
+        // The delta bracket sits just past whichever bar's outer edge reaches furthest right —
+        // for a negative bar that's the zero line itself, since it extends left instead.
+        const rightEdge = (v: number) => (v < 0 ? zeroX : zeroX + widthFor(v));
+        const bracketX = Math.max(rightEdge(c.current), rightEdge(c.compare)) + 8;
         return (
           <g key={c.label}>
             <text x={PAD_L - 8} y={groupY + BAR_H + BAR_GAP / 2 + 4} textAnchor="end" fontSize={10.5} fontWeight={700} className="fill-[hsl(var(--pk-ink-soft))]">
               {c.label}
             </text>
-            <rect x={PAD_L} y={groupY} width={curW} height={BAR_H} rx={2} fill={currentColor}>
+            <rect x={curX} y={groupY} width={curW} height={BAR_H} rx={2} fill={currentColor}>
               <title>{currentLabel} — {c.label}: {c.current.toLocaleString()}</title>
             </rect>
-            <text x={PAD_L + curW - 6} y={groupY + BAR_H / 2 + 4} textAnchor="end" fontSize={10.5} fontWeight={700} className="fill-white tnum">{c.current.toLocaleString()}</text>
-            <rect x={PAD_L} y={groupY + BAR_H + BAR_GAP} width={cmpW} height={BAR_H} rx={2} fill={compareColor}>
+            <text
+              x={curNeg ? curX + 6 : curX + curW - 6}
+              y={groupY + BAR_H / 2 + 4}
+              textAnchor={curNeg ? "start" : "end"}
+              fontSize={10.5}
+              fontWeight={700}
+              className="fill-white tnum"
+            >
+              {c.current.toLocaleString()}
+            </text>
+            <rect x={cmpX} y={groupY + BAR_H + BAR_GAP} width={cmpW} height={BAR_H} rx={2} fill={compareColor}>
               <title>{compareLabel} — {c.label}: {c.compare.toLocaleString()}</title>
             </rect>
-            <text x={PAD_L + cmpW - 6} y={groupY + BAR_H + BAR_GAP + BAR_H / 2 + 4} textAnchor="end" fontSize={10.5} fontWeight={700} className="fill-[hsl(var(--pk-ink))] tnum">{c.compare.toLocaleString()}</text>
+            <text
+              x={cmpNeg ? cmpX + 6 : cmpX + cmpW - 6}
+              y={groupY + BAR_H + BAR_GAP + BAR_H / 2 + 4}
+              textAnchor={cmpNeg ? "start" : "end"}
+              fontSize={10.5}
+              fontWeight={700}
+              className="fill-[hsl(var(--pk-ink))] tnum"
+            >
+              {c.compare.toLocaleString()}
+            </text>
 
             <line x1={bracketX} y1={groupY} x2={bracketX} y2={groupY + BAR_H * 2 + BAR_GAP} stroke="hsl(var(--pk-ink-faint))" strokeWidth={1} />
             <line x1={bracketX - 4} y1={groupY} x2={bracketX} y2={groupY} stroke="hsl(var(--pk-ink-faint))" strokeWidth={1} />
@@ -582,9 +617,9 @@ export function QoQHorizontalBars({
         );
       })}
 
-      <line x1={PAD_L} y1={LEGEND_H + categories.length * GROUP_H - 8} x2={PAD_L} y2={LEGEND_H} stroke="hsl(var(--pk-border))" strokeWidth={1} />
+      <line x1={zeroX} y1={LEGEND_H + categories.length * GROUP_H - 8} x2={zeroX} y2={LEGEND_H} stroke="hsl(var(--pk-border))" strokeWidth={1} />
       {ticks.map((t) => (
-        <text key={t} x={PAD_L + (t / niceMax) * plotW} y={axisY} textAnchor="middle" fontSize={9} className="fill-[hsl(var(--pk-ink-faint))] tnum">{t.toLocaleString()}</text>
+        <text key={t} x={xFor(t)} y={axisY} textAnchor="middle" fontSize={9} className="fill-[hsl(var(--pk-ink-faint))] tnum">{t.toLocaleString()}</text>
       ))}
     </svg>
   );
