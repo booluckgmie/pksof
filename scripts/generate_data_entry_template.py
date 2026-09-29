@@ -692,7 +692,7 @@ SCREEN_FOR = {
     "Age Breakdown (4 bands)": "RP001A Staff Demographics — Section C age heatmap",
     "Grade × Gender Breakdown": "RP001A Staff Demographics — Section D grade/gender cross-tab (male, female and average age per grade band)",
     "Age × Gender Breakdown": "RP001A Staff Demographics — Section C grouped bar chart",
-    "Department Headcount": "RP002 Approved Headcount & KPI 10 — Section A",
+    "Department Headcount": "RP001A Staff Demographics — Section E (Approved vs Filled) · RP002 Approved Headcount & KPI 10 — Section A panel",
     "Resignations": "RP003 / RP004 Turnover Rate trend",
 }
 
