@@ -630,8 +630,12 @@ export function useDetails() {
   function relatedPartyTransactionsUpTo(periodId: PeriodId) {
     const rows = metricRows("related_party_txn");
     const available = [...periodsWithData(rows, entityId, () => true)];
-    const cutoffIdx = visiblePeriods.findIndex((p) => p.id === periodId);
-    const periodsUsed = visiblePeriods.filter((p, i) => available.includes(p.id) && (cutoffIdx === -1 || i <= cutoffIdx)).slice().reverse();
+    // Same exception as financialResultsFor's own prior-quarter lookup: this trend window is
+    // allowed to reach a real FY2025 quarter as trailing history (Q4FY25 has real reported
+    // figures), even though FY2025 stays unselectable everywhere else. Bounded to `periods`
+    // (full list), not `visiblePeriods`.
+    const cutoffIdx = periods.findIndex((p) => p.id === periodId);
+    const periodsUsed = periods.filter((p, i) => available.includes(p.id) && (cutoffIdx === -1 || i <= cutoffIdx)).slice().reverse();
     const keys = [...new Set(rows.map((r) => `${r.dimension}::${r.dimension2}`))];
     const items = keys.map((key) => {
       const [category, rest] = key.split("::");
