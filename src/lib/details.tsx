@@ -844,10 +844,14 @@ export function useDetails() {
   /** Drill-down line items behind a headline KPI card (PBT's income-statement breakdown, CIR's
    * cost breakdown) — category distinguishes which breakdown a row belongs to. valueNum = FY
    * target, valueNum2 = YTD actual, textNote packs YTD target as a plain number string (CIR's
-   * rows leave target fields null — that breakdown only ever showed an actual-figures column). */
-  function financialBreakdownFor(category: string) {
+   * rows leave target fields null — that breakdown only ever showed an actual-figures column).
+   * Both CP003 and PFH001 have their own period picker for this exact table, so — unlike
+   * initiativeListFor's genuinely rolling lists — this needs to track whichever quarter is
+   * selected, not always jump to the latest upload (resolvePeriod falls back only when the
+   * selected quarter itself has no data yet). */
+  function financialBreakdownFor(category: string, periodId: PeriodId) {
     const rows = recordRows("financial_breakdown").filter((r) => r.category === category);
-    const eff = latestPeriodWithData(periodsWithData(rows, entityId, () => true));
+    const eff = resolvePeriod(periodId, periodsWithData(rows, entityId, () => true));
     return rows
       .filter((r) => r.periodId === eff)
       .map((r) => ({
@@ -857,8 +861,8 @@ export function useDetails() {
         ytdActual: r.valueNum2 ?? 0,
       }));
   }
-  const pbtBreakdown = useMemo(() => financialBreakdownFor("PBT"), [records, entityId]);
-  const cirBreakdown = useMemo(() => financialBreakdownFor("CIR"), [records, entityId]);
+  const pbtBreakdownFor = (periodId: PeriodId) => financialBreakdownFor("PBT", periodId);
+  const cirBreakdownFor = (periodId: PeriodId) => financialBreakdownFor("CIR", periodId);
 
   function initiativeListFor(recordType: string): Initiative[] {
     const rows = recordRows(recordType);
@@ -1009,6 +1013,6 @@ export function useDetails() {
     financialPositionFor, financialPositionBreakdownFor, agingOfReceivablesFor, otherInvestmentsDealsFor, otherInvestmentDealItemsFor, cashEffectiveRateFor,
     managedEntityRatingsFor, managedEntityKpiQuarterlyFor, managedEntityKpiItemsFor, clientSatisfactionServicesFor, clientSatisfactionServiceItemsFor, latestClientSatisfactionServicePeriod, timeCharterByDept, governanceKpiFor, governanceKpiItemsFor,
     processInitiatives, techInitiatives, initiativeRecordsFor, bumiputeraProcurementFor, peopleDevRecordsFor,
-    pbtBreakdown, cirBreakdown,
+    pbtBreakdownFor, cirBreakdownFor,
   };
 }

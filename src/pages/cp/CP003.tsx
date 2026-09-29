@@ -27,10 +27,12 @@ export function CP003({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   // quarter and never lets you pick a future, not-yet-reported one (see periodsUpTo/PeriodPicker.tsx).
   const [periodId, setPeriodId] = useState<PeriodId>(useCurrentPeriodId());
   const { latestValue } = useWorkflow();
-  const { quarterlyTrend: fullTrend, pbtBreakdown, cirBreakdown } = useDetails();
+  const { quarterlyTrend: fullTrend, pbtBreakdownFor, cirBreakdownFor } = useDetails();
   const { getFyTarget } = useKpiTargets();
   const kpi1 = latestValue("KPI1", entityId, periodId);
   const kpi2 = latestValue("KPI2", entityId, periodId);
+  const pbtBreakdown = pbtBreakdownFor(periodId);
+  const cirBreakdown = cirBreakdownFor(periodId);
   const period = periodById(periodId);
   const fy = period.fy;
   const periodLabel = period.label.replace(" FY", " ");
