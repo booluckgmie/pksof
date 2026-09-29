@@ -519,8 +519,14 @@ def fh_rows():
         rows.append(("metric", "fp_aging_receivables", dim, "", label, vals))
 
     rows.append(("section", "Receivables Aging (RM '000)", None))
+    # "Current" alone collided with fp_aging_receivables' own "Current" row above (same label,
+    # same blank sub) -- FIELD_LOOKUP can only hold one target per (sheet, label, sub), so every
+    # upload's "Current" value silently landed on whichever of the two came later in
+    # TEMPLATE_FIELDS (this one), leaving PFH004's real, displayed Aging of Receivables table
+    # missing its Current bucket. Every other row here already differs (en-dash spacing), so this
+    # is the only one that needed disambiguating.
     for label, dim, base in [
-        ("Current", "current", 420), ("1–30 days", "days_1_30", 180), ("31–60 days", "days_31_60", 95),
+        ("Current (MEC)", "current", 420), ("1–30 days", "days_1_30", 180), ("31–60 days", "days_31_60", 95),
         ("61–90 days", "days_61_90", 40), ("91–120 days", "days_91_120", 15),
         ("Over 120 days (impaired)", "days_over_120", 8),
     ]:
