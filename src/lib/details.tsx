@@ -395,8 +395,13 @@ export function useDetails() {
    * the immediately preceding quarter, Budget compares it to its own budget dim2 (present only
    * where a budget figure has actually been entered — not every quarter has one). */
   function financialResultsFor(periodId: PeriodId) {
-    const idx = visiblePeriods.findIndex((p) => p.id === periodId);
-    const priorId = idx > 0 ? visiblePeriods[idx - 1].id : null;
+    // Unlike every picker/trend window in this file, the "preceding quarter" comparison is
+    // allowed to reach one step past visiblePeriods' FY2026-only boundary — Q1FY26 has no
+    // predecessor within it, but its real preceding quarter (Q4FY25) is legitimate comparison
+    // input for Q1FY26's own figures, not a period anyone can browse to on its own. `periods`
+    // (unbounded) is used only for this single lookup; every picker still reads visiblePeriods.
+    const idx = periods.findIndex((p) => p.id === periodId);
+    const priorId = idx > 0 ? periods[idx - 1].id : null;
     const current = readQuarterPl(periodId, "actual");
     const prior = priorId ? readQuarterPl(priorId, "actual") : null;
     const budget = readQuarterPl(periodId, "budget");
@@ -467,8 +472,10 @@ export function useDetails() {
    * preceding one — powers each drill-down table under the Financial Position main table. */
   function financialPositionBreakdownFor(parentKey: keyof typeof FP_BREAKDOWN_LABELS, periodId: PeriodId) {
     const def = FP_BREAKDOWN_LABELS[parentKey];
-    const idx = visiblePeriods.findIndex((p) => p.id === periodId);
-    const priorId = idx > 0 ? visiblePeriods[idx - 1].id : null;
+    // See financialResultsFor's comment — the prior-quarter lookup alone is allowed past
+    // visiblePeriods' FY2026 boundary so Q1FY26 can compare against its real predecessor.
+    const idx = periods.findIndex((p) => p.id === periodId);
+    const priorId = idx > 0 ? periods[idx - 1].id : null;
     const rowsForP = metricRows("fp_breakdown").filter((r) => r.periodId === periodId && r.dimension === parentKey);
     const rowsForPrior = priorId ? metricRows("fp_breakdown").filter((r) => r.periodId === priorId && r.dimension === parentKey) : [];
     const rows = Object.entries(def.leaves).map(([key, label]) => ({
@@ -492,8 +499,10 @@ export function useDetails() {
    * Every total (Total Assets/Equity/Liabilities, and the summary "Cash and other investments" /
    * "Other assets" buckets) is derived from leaf figures so it can never drift out of reconciliation. */
   function financialPositionFor(periodId: PeriodId) {
-    const idx = visiblePeriods.findIndex((p) => p.id === periodId);
-    const priorId = idx > 0 ? visiblePeriods[idx - 1].id : null;
+    // See financialResultsFor's comment — the prior-quarter lookup alone is allowed past
+    // visiblePeriods' FY2026 boundary so Q1FY26 can compare against its real predecessor.
+    const idx = periods.findIndex((p) => p.id === periodId);
+    const priorId = idx > 0 ? periods[idx - 1].id : null;
     const val = (key: string, forPeriod: PeriodId) =>
       key in FP_BREAKDOWN_LABELS ? fpBreakdownTotal(forPeriod, key) : fpMainValue(forPeriod, key);
 
@@ -553,8 +562,10 @@ export function useDetails() {
    * quarters the client actually supplied an aging schedule for (not every dummy quarter has one). */
   function agingOfReceivablesFor(periodId: PeriodId) {
     const AGING_LABELS: Record<string, string> = { current: "Current", d1_30: "1-30 days", d31_60: "31-60 days", d61_90: "61-90 days", d91_120: "91-120 days", over_120: ">120 days (impaired)" };
-    const idx = visiblePeriods.findIndex((p) => p.id === periodId);
-    const priorId = idx > 0 ? visiblePeriods[idx - 1].id : null;
+    // See financialResultsFor's comment — the prior-quarter lookup alone is allowed past
+    // visiblePeriods' FY2026 boundary so Q1FY26 can compare against its real predecessor.
+    const idx = periods.findIndex((p) => p.id === periodId);
+    const priorId = idx > 0 ? periods[idx - 1].id : null;
     const rowsForP = metricRows("fp_aging_receivables").filter((r) => r.periodId === periodId);
     if (rowsForP.length === 0) return null;
     const rowsForPrior = priorId ? metricRows("fp_aging_receivables").filter((r) => r.periodId === priorId) : [];
