@@ -630,10 +630,16 @@ def rp_rows():
         "Risk Management", "Corporate Communications", "Compliance & Integrity",
         "Finance", "Administration & Security", "Information Technology",
     ]:
-        for dim2, label in [("approved", "Approved"), ("filled", "Filled")]:
+        # Unlike every other two-dimensional section here (age x gender, grade x gender,
+        # Bumiputera procurement), HR's own real headcount return puts the department name alone
+        # in the Metric column and "approved"/"filled" in Sub / Category — not baked into the
+        # label as "<dept> — Approved". Matched to that real convention (see 2026-09-29 upload)
+        # rather than our own, since an upload's row is matched on label+sub character-for-character
+        # and HR's own file layout isn't something we get to dictate.
+        for dim2 in ["approved", "filled"]:
             a = anchors.get(("dept_headcount", dept, dim2))
             vals = series(a, "flat", decimals=0, spread=0.04) if a is not None else fresh_series(18, "flat", decimals=0, seed_key=dept + dim2)
-            rows.append(("metric", "dept_headcount", dept, dim2, f"{dept} — {label}", vals))
+            rows.append(("metric", "dept_headcount", dept, dim2, dept, vals))
 
     rows.append(("section", "Resignations", None))
     a = anchors.get(("resigned", "count", ""))
