@@ -10,7 +10,6 @@ import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { kpis } from "@/data/kpis";
-import { entitySnapshot } from "@/data/factSeed";
 import { periodById } from "@/data/periods";
 import { entityById } from "@/data/entities";
 
@@ -39,9 +38,11 @@ export function Main({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const kpi12 = latestValue("KPI12", entityId, periodId);
 
   const entityModules = entityById(entityId).modules;
-  const groupSnap = entitySnapshot[entityId] ?? entitySnapshot.HQ;
-  const groupTone = STATUS_TONE[groupSnap.status] ?? STATUS_TONE["on-track"];
-  const overallTone = groupSnap.status === "on-track" ? "good" : groupSnap.status === "at-risk" ? "bad" : "pending";
+  // Live, not a snapshot: at-risk if any KPI is outright not met, attention if none are not-met but
+  // some can't yet be assessed, on-track only once every tracked KPI is actually met.
+  const groupStatus = notMet > 0 ? "at-risk" : notMeasurable > 0 ? "attention" : "on-track";
+  const groupTone = STATUS_TONE[groupStatus];
+  const overallTone = groupStatus === "on-track" ? "good" : groupStatus === "at-risk" ? "bad" : "pending";
 
   return (
     <div>

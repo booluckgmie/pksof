@@ -96,13 +96,3 @@ export const factSeed: FactKpiResultSeed[] = [
   { kpiId: "KPI12", entityId: "HQ", periodId: "Q1FY26", ytdTarget: 70.0, ytdActual: 92.4, status: "met" },
   { kpiId: "KPI13", entityId: "HQ", periodId: "Q1FY26", ytdTarget: null, ytdActual: null, status: "not-measurable", note: "Progress reporting only in Q1 — formal measurement from Q2" },
 ];
-
-/** Simple whole-of-entity snapshot for the Main Screen strip — dummy figures. */
-export const entitySnapshot: Record<string, { achievement: number; status: "on-track" | "at-risk" | "attention" }> = {
-  HQ: { achievement: 61.5, status: "on-track" },
-  SJPP: { achievement: 68.9, status: "on-track" },
-  SJKP: { achievement: 57.2, status: "attention" },
-  DANAHARTA: { achievement: 54.0, status: "at-risk" },
-  DANAINFRA: { achievement: 63.8, status: "on-track" },
-  GOVCO: { achievement: 59.6, status: "attention" },
-};
