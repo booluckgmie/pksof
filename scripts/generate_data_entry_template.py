@@ -686,14 +686,14 @@ SCREEN_FOR = {
     "PBT Breakdown (RM mil)": "CP003 Financial Perspective — PBT card drill-down",
     "CIR Breakdown (RM mil)": "CP003 Financial Perspective — CIR card drill-down",
     "Headcount Summary": "RP001 Total Headcount · RP002 Approved Headcount · CP008 Composition tab · Main pillar snapshot",
-    "Average Age": "RP001A Staff Demographics — Age Profile Summary donut",
+    "Average Age": "RP001A Staff Demographics — Section C Workforce Age Profile card (Average Age line) · Section D cross-tab (Average Age column/Total row)",
     "Gender Breakdown": "RP001A Staff Demographics — Section A",
     "Grade Breakdown (5 approved bands)": "RP001A Staff Demographics — Section B",
-    "Age Breakdown (4 bands)": "RP001A Staff Demographics — Section C age heatmap",
+    "Age Breakdown (4 bands)": "RP001A Staff Demographics — Section C Workforce Age Profile donut + table",
     "Grade × Gender Breakdown": "RP001A Staff Demographics — Section D grade/gender cross-tab (male, female and average age per grade band)",
     "Age × Gender Breakdown": "RP001A Staff Demographics — Section C grouped bar chart",
     "Department Headcount": "RP001A Staff Demographics — Section E (Approved vs Filled) · RP002 Approved Headcount & KPI 10 — Section A panel",
-    "Resignations": "RP003 / RP004 Turnover Rate trend",
+    "Resignations": "Not yet displayed — Turnover was removed from RP003/RP004 per UAT feedback (TC-038/TC-039); this figure has no current dashboard destination",
 }
 
 
