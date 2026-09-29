@@ -277,11 +277,21 @@ export function useDetails() {
     twoDimListFor("grade_gender_crosstab", periodId, ["Top Management", "Senior Management", "Management", "Executive", "Non-Executive"])
       .map((r) => ({ grade: r.dimension, male: r.byDim2.male ?? 0, female: r.byDim2.female ?? 0, avgAge: r.byDim2.avgAge ?? 0 }));
 
+  // The full 20-department list, spelled exactly as HR's own real headcount return does (e.g.
+  // "SJPP Processing, Portfolio & Adminstration" — comma, not slash; "Adminstration" is HR's own
+  // spelling, not ours) — this must match verbatim, since an Excel upload's row label is matched
+  // against this list character-for-character (see excelTemplate.ts's FIELD_LOOKUP) and a mismatch
+  // silently drops that row instead of erroring. The first 8 were an earlier, incomplete reading
+  // of this same list — a partial one confirmed against the real reference file on 2026-09-29.
   const departmentHeadcountFor = (periodId: PeriodId) =>
     twoDimListFor("dept_headcount", periodId, [
       "CEO'S Office", "Internal Audit", "Corporate Human Resource",
-      "SJPP Processing/Portfolio & Administration", "SJKP Operation Management",
+      "SJPP Processing, Portfolio & Adminstration", "SJKP Operation Management",
       "Strategy & Stakeholder Management", "Credit", "Guarantee Scheme - Claims",
+      "Corporate Advisory", "Secretarial Services", "Strategy & Monitoring",
+      "Operational Excellence", "Capital Markets", "Legal Affairs Department",
+      "Risk Management", "Corporate Communications", "Compliance & Integrity",
+      "Finance", "Administration & Security", "Information Technology",
     ])
       .map((r) => ({ dept: r.dimension, approved: r.byDim2.approved ?? 0, filled: r.byDim2.filled ?? 0 }));
 

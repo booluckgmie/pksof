@@ -623,8 +623,12 @@ def rp_rows():
     rows.append(("section", "Department Headcount", None))
     for dept in [
         "CEO'S Office", "Internal Audit", "Corporate Human Resource",
-        "SJPP Processing/Portfolio & Administration", "SJKP Operation Management",
+        "SJPP Processing, Portfolio & Adminstration", "SJKP Operation Management",
         "Strategy & Stakeholder Management", "Credit", "Guarantee Scheme - Claims",
+        "Corporate Advisory", "Secretarial Services", "Strategy & Monitoring",
+        "Operational Excellence", "Capital Markets", "Legal Affairs Department",
+        "Risk Management", "Corporate Communications", "Compliance & Integrity",
+        "Finance", "Administration & Security", "Information Technology",
     ]:
         for dim2, label in [("approved", "Approved"), ("filled", "Filled")]:
             a = anchors.get(("dept_headcount", dept, dim2))
