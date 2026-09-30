@@ -6,7 +6,7 @@ import { VarianceCommentaryPanel } from "@/components/pk/VarianceCommentaryPanel
 import { HighlightEditor } from "@/components/pk/HighlightEditor";
 import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
 import { useDetails } from "@/lib/details";
-import { periodById } from "@/data/periods";
+import { periods, periodById, periodReportLabel } from "@/data/periods";
 import type { PeriodId } from "@/types";
 
 const fmtM = (v: number | null) => (v === null ? "—" : `RM${(Math.abs(v) / 1000).toFixed(1)} million`);
@@ -38,6 +38,12 @@ export function FinancialResultsOverview({
   // standalone figure instead; falls back to the cumulative figure for any quarter that hasn't
   // had its own standalone total entered yet, rather than showing blank.
   const standaloneFor = (label: string) => quarterlyTrend.find((q) => q.period === label.replace(" FY20", " FY"));
+  // The "Actual vs Budget" table's own column headers read as report-style quarter labels
+  // ("1Q FY2026" / "4Q FY2025" — the immediately preceding quarter), not "<period> Actual"/
+  // "<period> Budget" — the Budget column still holds the real budget figures for periodId,
+  // only its header text follows this convention.
+  const periodIdx = periods.findIndex((p) => p.id === periodId);
+  const priorQuarterId = periodIdx > 0 ? periods[periodIdx - 1].id : null;
 
   return (
     <div>
@@ -189,8 +195,8 @@ export function FinancialResultsOverview({
           <DownloadableFrame filename="financial-results-table-actual-vs-budget">
             <FinancialResultsTable
               title="Actual vs Budget"
-              currentLabel={`${period.label} Actual`}
-              compareLabel={`${period.label} Budget`}
+              currentLabel={periodReportLabel(periodId)}
+              compareLabel={priorQuarterId ? periodReportLabel(priorQuarterId) : `${period.label} Budget`}
               current={results.current!}
               compare={results.budget.compare}
               revenueCurrent={results.budget.revenue}
