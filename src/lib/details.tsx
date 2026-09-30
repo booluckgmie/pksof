@@ -494,10 +494,7 @@ export function useDetails() {
    * preceding one — powers each drill-down table under the Financial Position main table. */
   function financialPositionBreakdownFor(parentKey: keyof typeof FP_BREAKDOWN_LABELS, periodId: PeriodId) {
     const def = FP_BREAKDOWN_LABELS[parentKey];
-    // See financialResultsFor's comment — the prior-quarter lookup alone is allowed past
-    // visiblePeriods' FY2026 boundary so Q1FY26 can compare against its real predecessor.
-    const idx = periods.findIndex((p) => p.id === periodId);
-    const priorId = idx > 0 ? periods[idx - 1].id : null;
+    const priorId = priorFyEndFor(periodId);
     const rowsForP = metricRows("fp_breakdown").filter((r) => r.periodId === periodId && r.dimension === parentKey);
     const rowsForPrior = priorId ? metricRows("fp_breakdown").filter((r) => r.periodId === priorId && r.dimension === parentKey) : [];
     const rows = Object.entries(def.leaves).map(([key, label]) => ({
@@ -520,11 +517,21 @@ export function useDetails() {
   /** The Financial Position statement itself — current vs. immediately preceding quarter, RM'000.
    * Every total (Total Assets/Equity/Liabilities, and the summary "Cash and other investments" /
    * "Other assets" buckets) is derived from leaf figures so it can never drift out of reconciliation. */
+  // Unlike financialResultsFor's QoQ comparison, the Statement of Financial Position is a
+  // point-in-time snapshot — its comparative column is always the prior *financial year-end*
+  // (the last audited balance sheet date), not simply the immediately preceding quarter. So
+  // Q2FY26 compares against Q4FY25 (31 Dec 2025), same as Q1FY26 does, not Q1FY26 itself.
+  // Same exception as financialResultsFor's own prior-period lookup: allowed past
+  // visiblePeriods' FY2026 boundary so this can reach a real FY2025 quarter as history.
+  function priorFyEndFor(periodId: PeriodId): PeriodId | null {
+    const period = periodById(periodId);
+    const prevFy = `FY${parseInt(period.fy.replace("FY", ""), 10) - 1}`;
+    const priorPeriod = periods.find((p) => p.fy === prevFy && p.quarter === 4);
+    return priorPeriod ? priorPeriod.id : null;
+  }
+
   function financialPositionFor(periodId: PeriodId) {
-    // See financialResultsFor's comment — the prior-quarter lookup alone is allowed past
-    // visiblePeriods' FY2026 boundary so Q1FY26 can compare against its real predecessor.
-    const idx = periods.findIndex((p) => p.id === periodId);
-    const priorId = idx > 0 ? periods[idx - 1].id : null;
+    const priorId = priorFyEndFor(periodId);
     const val = (key: string, forPeriod: PeriodId) =>
       key in FP_BREAKDOWN_LABELS ? fpBreakdownTotal(forPeriod, key) : fpMainValue(forPeriod, key);
 
@@ -584,10 +591,7 @@ export function useDetails() {
    * quarters the client actually supplied an aging schedule for (not every dummy quarter has one). */
   function agingOfReceivablesFor(periodId: PeriodId) {
     const AGING_LABELS: Record<string, string> = { current: "Current", d1_30: "1-30 days", d31_60: "31-60 days", d61_90: "61-90 days", d91_120: "91-120 days", over_120: ">120 days (impaired)" };
-    // See financialResultsFor's comment — the prior-quarter lookup alone is allowed past
-    // visiblePeriods' FY2026 boundary so Q1FY26 can compare against its real predecessor.
-    const idx = periods.findIndex((p) => p.id === periodId);
-    const priorId = idx > 0 ? periods[idx - 1].id : null;
+    const priorId = priorFyEndFor(periodId);
     const rowsForP = metricRows("fp_aging_receivables").filter((r) => r.periodId === periodId);
     if (rowsForP.length === 0) return null;
     const rowsForPrior = priorId ? metricRows("fp_aging_receivables").filter((r) => r.periodId === priorId) : [];
