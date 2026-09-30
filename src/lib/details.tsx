@@ -32,12 +32,13 @@ export const CLIENT_SATISFACTION_SERVICE_CATALOG: { category: string; service: s
 ];
 
 /** Managed Entities tracked under CP004's Managed Entities Performance Summary (KPI3) — the
- * fixed set the Excel template's own SJPP/SJKP/DanaInfra/GovCo/DanaHarta rows cover for
- * Rating/Weighted; ManagedEntityKpiEditor uses the same set for its item catalog's wording
- * fields. GovCo had real seeded data (and already rendered on CP004's own summary cards, which
- * derive their entity list from whatever's actually in the data) but was missing from this fixed
- * list, so its one item was never reachable in the in-app catalog editor. */
-export const MANAGED_ENTITY_NAMES = ["SJPP", "SJKP", "DanaInfra", "GovCo", "DanaHarta"] as const;
+ * fixed set the Excel template's own SJPP/SJKP/DanaInfra/GovCo rows cover for Rating/Weighted;
+ * ManagedEntityKpiEditor uses the same set for its item catalog's wording fields. GovCo had real
+ * seeded data (and already rendered on CP004's own summary cards, which derive their entity list
+ * from whatever's actually in the data) but was missing from this fixed list, so its one item was
+ * never reachable in the in-app catalog editor. DanaHarta removed per client instruction
+ * (2026-09-30) — its rows never carried real data. */
+export const MANAGED_ENTITY_NAMES = ["SJPP", "SJKP", "DanaInfra", "GovCo"] as const;
 
 export function DetailsProvider({ children }: { children: ReactNode }) {
   const [metrics, setMetrics] = useState<DetailMetricRow[]>([]);

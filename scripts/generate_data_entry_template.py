@@ -145,9 +145,10 @@ MANAGED_ENTITY_KPI_ITEMS = [
     ("DanaInfra", "Disbursement of funds made on disbursement date (applicable for existing mandates)"),
     ("DanaInfra", "Obtain optimal financing cost in fundraising"),
     ("GovCo", "Send reminder to MoF for GovCo's upcoming principal / profit payments"),
-    ("DanaHarta", "Finalisation of outstanding recovery / settlement cases within the period"),
-    ("DanaHarta", "Submission of quarterly recovery and compliance reports to relevant authorities"),
-    ("DanaHarta", "Engagement sessions with government agencies and financial institutions"),
+    # DanaHarta removed from KPI 3 support per client instruction (2026-09-30) — its 3 items were
+    # still carrying unreplaced seed data at both Q1FY26 and Q2FY26 (never a real reported entity
+    # here), so it's dropped from the template and the live Managed Entities Performance Summary
+    # table rather than left as a perpetually-stale row.
 ]
 
 # governance_kpi's 5 fixed components (20% weight each) -- same order as their "no" prefix in
