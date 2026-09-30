@@ -71,9 +71,20 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   // quarter after it comes live from fullTrend (financial_trend, the same data the PBT/CIR charts
   // below already read) and always reflects whatever's actually been reported — the live figures
   // are never overridden by the archive, they just pick up where it stops.
+  // Only show a live quarter once it's actually been reached by the page's own period picker —
+  // e.g. viewing Q1FY26 shouldn't already reveal 2Q FY2026's bar, same "fills in as you advance"
+  // behavior as CP001's threshold table.
   const financialResultsHistory = [
     ...HISTORICAL_FINANCIAL_RESULTS,
-    ...fullTrend.map((q) => ({ label: toExhibitLabel(q.period), revenue: q.revenue, pbt: q.pbt })),
+    ...fullTrend
+      .filter((q) => {
+        const m = q.period.match(/^Q(\d) FY(\d{2})$/);
+        if (!m) return true;
+        const qFy = `FY20${m[2]}`;
+        const qNum = Number(m[1]);
+        return qFy < fy || (qFy === fy && qNum <= period.quarter);
+      })
+      .map((q) => ({ label: toExhibitLabel(q.period), revenue: q.revenue, pbt: q.pbt })),
   ];
 
   return (
