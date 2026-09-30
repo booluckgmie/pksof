@@ -106,7 +106,7 @@ export function FinancialResultsOverview({
         const expensePct = pctOf(expenseDelta, b.expenses);
         return (
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
-            <div className="font-head font-bold text-[hsl(var(--pk-ink))] text-center mb-1">YTD Budget vs YTD Actual ({period.label})</div>
+            <div className="font-head font-bold text-[hsl(var(--pk-ink))] text-center mb-1">YTD Actual vs YTD Budget (3-Month)</div>
             {pbtDelta !== null && pbtPct !== null && (
               <p className="text-center text-xs text-[hsl(var(--pk-ink-soft))] mb-3">
                 Overall, the Group recorded <span className="font-semibold text-[hsl(var(--pk-accent))]">{pbtDelta >= 0 ? "higher" : "lower"} PBT by {fmtM(pbtDelta)} ({Math.abs(pbtPct).toFixed(0)}%)</span> compared to the budget for the quarter.
@@ -184,7 +184,7 @@ export function FinancialResultsOverview({
               revenueCompare={results.budget.revenueCompare}
               expensesCurrent={results.budget.expenses}
               expensesCompare={results.budget.expensesCompare}
-              hideRows={["dividend"]}
+              hideRows={["dividend", "netProfit"]}
             />
           </DownloadableFrame>
         ) : (
