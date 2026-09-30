@@ -8,7 +8,9 @@ import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { useWorkflow } from "@/lib/workflow";
 import { kpis } from "@/data/kpis";
-import { periodById } from "@/data/periods";
+import { periodById, periods } from "@/data/periods";
+import { cn } from "@/lib/utils";
+import type { PeriodId } from "@/types";
 
 export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId } = useSession();
@@ -18,6 +20,13 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const getResult = (kpiId: string) => latestValue(kpiId, entityId, periodId);
 
   const overall = kpis.reduce((sum, k) => sum + (getResult(k.id).weighted ?? 0), 0) * 100;
+
+  // The 4 quarters of the selected period's own FY, in order — each column below is that
+  // quarter's own cumulative/MOF threshold, and its own Result once reached (quarter <=
+  // the one currently picked), so the table fills in left-to-right as the picker advances
+  // instead of only ever showing one static "YTD" column next to 3 always-N/A placeholders.
+  const fyQuarters = periods.filter((p) => p.fy === period.fy).sort((a, b) => a.quarter - b.quarter);
+  const weightedFor = (qId: PeriodId) => kpis.reduce((sum, k) => sum + (latestValue(k.id, entityId, qId).weighted ?? 0), 0) * 100;
 
   return (
     <div>
@@ -31,20 +40,23 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <thead>
               <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
                 <th className="text-left font-medium px-2 py-1.5">Metric</th>
-                <th className="text-right font-medium px-2 py-1.5">YTD</th>
-                <th className="text-right font-medium px-2 py-1.5">Q2</th>
-                <th className="text-right font-medium px-2 py-1.5">Q3</th>
-                <th className="text-right font-medium px-2 py-1.5">Q4</th>
+                {fyQuarters.map((q) => (
+                  <th key={q.id} className="text-right font-medium px-2 py-1.5">Q{q.quarter}</th>
+                ))}
               </tr>
             </thead>
             <tbody className="tnum">
               <tr className="border-t border-[hsl(var(--pk-border))]">
                 <td className="px-2 py-1.5 text-[hsl(var(--pk-ink-soft))]">Cumulative Threshold</td>
-                <td className="text-right px-2 py-1.5">25.0%</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">50.0%</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">75.0%</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">100.0%</td>
+                {fyQuarters.map((q) => (
+                  <td key={q.id} className={cn("text-right px-2 py-1.5", q.quarter > period.quarter && "text-[hsl(var(--pk-ink-faint))]")}>{(q.cumulativeThreshold * 100).toFixed(1)}%</td>
+                ))}
               </tr>
               <tr className="border-t border-[hsl(var(--pk-border))]">
                 <td className="px-2 py-1.5 text-[hsl(var(--pk-ink-soft))]">MOF's Threshold</td>
-                <td className="text-right px-2 py-1.5">20.0%</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">40.0%</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">60.0%</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">80.0%</td>
+                {fyQuarters.map((q) => (
+                  <td key={q.id} className={cn("text-right px-2 py-1.5", q.quarter > period.quarter && "text-[hsl(var(--pk-ink-faint))]")}>{(q.mofThreshold * 100).toFixed(1)}%</td>
+                ))}
               </tr>
               <tr className="border-t border-[hsl(var(--pk-border))] font-semibold">
                 <td className="px-2 py-1.5 text-[hsl(var(--pk-ink))]">
@@ -55,7 +67,13 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                     </InfoTip>
                   </span>
                 </td>
-                <td className="text-right px-2 py-1.5 text-[hsl(var(--pk-good))]">{overall.toFixed(1)}%</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">N/A</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">N/A</td><td className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">N/A</td>
+                {fyQuarters.map((q) =>
+                  q.quarter <= period.quarter ? (
+                    <td key={q.id} className="text-right px-2 py-1.5 text-[hsl(var(--pk-good))]">{(q.id === periodId ? overall : weightedFor(q.id)).toFixed(1)}%</td>
+                  ) : (
+                    <td key={q.id} className="text-right px-2 py-1.5 text-[hsl(var(--pk-ink-faint))]">N/A</td>
+                  )
+                )}
               </tr>
             </tbody>
           </table>
