@@ -8,6 +8,7 @@ export interface PlSnapshot {
   otherIncome: number | null;
   totalIncome: number | null;
   expenses: number | null;
+  reversalBonusProvision: number | null;
   pbt: number | null;
   taxation: number | null;
   profitAfterTax: number | null;
@@ -59,6 +60,7 @@ const ROWS: MainRow[] = [
   { key: "otherIncome", label: "Other income", indent: true },
   { key: "totalIncome", label: "TOTAL INCOME", bold: true },
   { key: "expenses", label: "Expenses", drill: "expenses" },
+  { key: "reversalBonusProvision", label: "Reversal FY25 bonus provision", indent: true },
   { key: "pbt", label: "PROFIT BEFORE TAX", bold: true, shaded: true },
   { key: "taxation", label: "Taxation", indent: true },
   { key: "profitAfterTax", label: "PROFIT AFTER TAX", bold: true, shaded: true },

@@ -345,9 +345,21 @@ export function useDetails() {
         // since it's the FY's first quarter) — a separate pair from revenue_by_source/
         // expense_by_category's own YTD-cumulative totals, which the QoQ "Current Quarter vs
         // Preceding Quarter" comparison can't cleanly de-cumulate into (see PFH002's own note).
+        // totalExpenses nets out any one-off reversal (e.g. reversalBonusProvision) so it still
+        // reconciles to pbt on its own; the full P&L breakdown fields below carry the gross
+        // Expenses line and the reversal separately, for the detailed line-by-line table.
+        const has = (dim: string) => forPeriod.some((r) => r.dimension === dim);
         return {
           period: p.label.replace("FY20", "FY"), revenue: get("revenue"), pbt: get("pbt"), cir: get("cir"), netMargin: get("net_margin"),
           totalIncome: get("total_income") || null, totalExpenses: get("total_expenses") || null,
+          financeIncome: has("finance_income") ? get("finance_income") : null,
+          otherIncome: has("other_income") ? get("other_income") : null,
+          expenses: has("expenses") ? get("expenses") : null,
+          reversalBonusProvision: has("reversal_bonus_provision") ? get("reversal_bonus_provision") : null,
+          taxation: has("taxation") ? get("taxation") : null,
+          profitAfterTax: has("profit_after_tax") ? get("profit_after_tax") : null,
+          dividend: has("dividend") ? get("dividend") : null,
+          netProfit: has("net_profit") ? get("net_profit") : null,
         };
       });
   }, [metrics, entityId]);
@@ -402,7 +414,9 @@ export function useDetails() {
     const totalIncome = financeIncome !== null && otherIncome !== null ? revenue + financeIncome + otherIncome : null;
     const pbt = totalIncome !== null ? totalIncome + expenses : null;
     const netProfit = profitAfterTax !== null && dividend !== null ? profitAfterTax + dividend : null;
-    return { revenue, financeIncome, otherIncome, totalIncome, expenses, pbt, taxation, profitAfterTax, dividend, netProfit };
+    // pl_detail has no one-off "reversal" concept of its own — only the dedicated standalone-
+    // quarter figures (financial_trend, see quarterlyTrend) carry that when it applies.
+    return { revenue, financeIncome, otherIncome, totalIncome, expenses, reversalBonusProvision: null, pbt, taxation, profitAfterTax, dividend, netProfit };
   }
 
   function readBreakdown(periodId: PeriodId, dim2: "actual" | "budget", metricKey: string, labels: Record<string, string>) {

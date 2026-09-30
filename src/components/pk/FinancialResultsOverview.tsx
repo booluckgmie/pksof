@@ -1,7 +1,7 @@
 import { QoQHorizontalBars } from "@/components/pk/Charts";
 import { InfoNote } from "@/components/pk/Misc";
 import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
-import { FinancialResultsTable } from "@/components/pk/FinancialResultsTable";
+import { FinancialResultsTable, type PlSnapshot } from "@/components/pk/FinancialResultsTable";
 import { VarianceCommentaryPanel } from "@/components/pk/VarianceCommentaryPanel";
 import { HighlightEditor } from "@/components/pk/HighlightEditor";
 import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
@@ -44,6 +44,26 @@ export function FinancialResultsOverview({
   // only its header text follows this convention.
   const periodIdx = periods.findIndex((p) => p.id === periodId);
   const priorQuarterId = periodIdx > 0 ? periods[periodIdx - 1].id : null;
+  // Full standalone-quarter P&L (RM'000) for the "Current Quarter vs Preceding Quarter" detailed
+  // table, when quarterlyTrend has captured every line for that quarter — falls back to the
+  // cumulative-derived snapshot (results.current/results.qoq.compare) otherwise.
+  const fullStandaloneFor = (label: string): PlSnapshot | null => {
+    const q = standaloneFor(label);
+    if (!q || q.financeIncome === null || q.otherIncome === null || q.totalIncome === null || q.expenses === null || q.reversalBonusProvision === null || q.taxation === null || q.profitAfterTax === null || q.dividend === null || q.netProfit === null) return null;
+    return {
+      revenue: q.revenue * 1000,
+      financeIncome: q.financeIncome * 1000,
+      otherIncome: q.otherIncome * 1000,
+      totalIncome: q.totalIncome * 1000,
+      expenses: -q.expenses * 1000,
+      reversalBonusProvision: q.reversalBonusProvision * 1000,
+      pbt: q.pbt * 1000,
+      taxation: -q.taxation * 1000,
+      profitAfterTax: q.profitAfterTax * 1000,
+      dividend: -q.dividend * 1000,
+      netProfit: q.netProfit * 1000,
+    };
+  };
 
   return (
     <div>
@@ -178,8 +198,8 @@ export function FinancialResultsOverview({
                 title="Current Quarter vs Preceding Quarter"
                 currentLabel={period.label}
                 compareLabel={results.qoq.compareLabel}
-                current={results.current!}
-                compare={results.qoq.compare}
+                current={fullStandaloneFor(period.label) ?? results.current!}
+                compare={fullStandaloneFor(results.qoq.compareLabel) ?? results.qoq.compare}
                 revenueCurrent={results.qoq.revenue}
                 revenueCompare={results.qoq.revenueCompare}
                 expensesCurrent={results.qoq.expenses}
@@ -203,7 +223,7 @@ export function FinancialResultsOverview({
               revenueCompare={results.budget.revenueCompare}
               expensesCurrent={results.budget.expenses}
               expensesCompare={results.budget.expensesCompare}
-              hideRows={["dividend", "netProfit"]}
+              hideRows={["dividend", "netProfit", "reversalBonusProvision"]}
             />
           </DownloadableFrame>
         ) : (
