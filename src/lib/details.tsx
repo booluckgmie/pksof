@@ -975,6 +975,14 @@ export function useDetails() {
     return { revenue: get("revenue"), staffCost: get("staffCost"), adminCost: get("adminCost"), pbt: get("pbt"), outlook: get("outlook") };
   }
 
+  /** One free-text "Highlight(s)" box per section per quarter (Financial Results QoQ, Actual vs
+   * Budget vs PY, Financial Position) — stored on detail_metrics' own `note` column the same way
+   * as varianceCommentaryFor, dimension = the section key. Read by HighlightEditor, which falls
+   * back to that section's own auto-computed bullets whenever nothing's been entered yet. */
+  function sectionHighlightFor(periodId: PeriodId, section: "qoq" | "budget" | "financial_position"): string {
+    return metricRows("section_highlight").find((r) => r.periodId === periodId && r.dimension === section)?.note ?? "";
+  }
+
   /** Id-carrying deal schedule behind PFH004's "Other investments" drill-down for one exact
    * quarter — what OtherInvestmentDealsEditor reads/writes. Unlike every other table here, this
    * record type has no Excel coverage at all (not even a numeric column), so both the deal wording
@@ -1035,7 +1043,7 @@ export function useDetails() {
     gradeBreakdownFor, ageBreakdownFor, ageGenderBreakdownFor, averageAgeByPeriod,
     gradeGenderCrossTabFor, departmentHeadcountFor, recruitmentIndexByPeriod,
     bumiputeraTrainingByPeriod,
-    quarterlyTrend, financialResultsFor, varianceCommentaryFor, relatedPartyTransactionsUpTo,
+    quarterlyTrend, financialResultsFor, varianceCommentaryFor, sectionHighlightFor, relatedPartyTransactionsUpTo,
     financialPositionFor, financialPositionBreakdownFor, agingOfReceivablesFor, otherInvestmentsDealsFor, otherInvestmentDealItemsFor, cashEffectiveRateFor,
     managedEntityRatingsFor, managedEntityKpiQuarterlyFor, managedEntityKpiItemsFor, clientSatisfactionServicesFor, clientSatisfactionServiceItemsFor, latestClientSatisfactionServicePeriod, clientSatisfactionYearlyTrend, timeCharterByDept, governanceKpiFor, governanceKpiItemsFor,
     processInitiatives, techInitiatives, initiativeRecordsFor, bumiputeraProcurementFor, peopleDevRecordsFor,

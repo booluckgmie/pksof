@@ -3,6 +3,7 @@ import { InfoNote } from "@/components/pk/Misc";
 import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { FinancialResultsTable } from "@/components/pk/FinancialResultsTable";
 import { VarianceCommentaryPanel } from "@/components/pk/VarianceCommentaryPanel";
+import { HighlightEditor } from "@/components/pk/HighlightEditor";
 import { PeriodPickerCompact } from "@/components/pk/PeriodPicker";
 import { useDetails } from "@/lib/details";
 import { periodById } from "@/data/periods";
@@ -27,18 +28,9 @@ export function FinancialResultsOverview({
   setPeriodId: (id: PeriodId) => void;
   tableKind: "qoq" | "budget";
 }) {
-  const { financialResultsFor, varianceCommentaryFor } = useDetails();
+  const { financialResultsFor } = useDetails();
   const period = periodById(periodId);
   const results = financialResultsFor(periodId);
-  const commentary = varianceCommentaryFor(periodId);
-  const commentaryFields: { key: keyof typeof commentary; label: string }[] = [
-    { key: "revenue", label: "Revenue" },
-    { key: "staffCost", label: "Staff Cost" },
-    { key: "adminCost", label: "Admin & Operating Cost" },
-    { key: "pbt", label: "Profit Before Tax" },
-    { key: "outlook", label: "Outlook" },
-  ];
-  const hasCommentary = commentaryFields.some((f) => commentary[f.key].trim() !== "");
 
   return (
     <div>
@@ -87,11 +79,16 @@ export function FinancialResultsOverview({
                 />
               </DownloadableFrame>
               <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
-                <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlight(s) (current quarter against preceding quarter)</div>
-                <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
-                  <li>Income was {incomeDelta !== null && incomePct !== null ? `${fmtM(incomeDelta)} (${Math.abs(incomePct).toFixed(0)}%) ${incomeDelta >= 0 ? "higher" : "lower"}` : "—"} than the preceding quarter.</li>
-                  <li>Expenses were {expenseDelta !== null && expensePct !== null ? `${fmtM(expenseDelta)} (${Math.abs(expensePct).toFixed(0)}%) ${expenseDelta >= 0 ? "higher" : "lower"}` : "—"} than the preceding quarter.</li>
-                </ul>
+                <HighlightEditor
+                  periodId={periodId}
+                  section="qoq"
+                  fallback={
+                    <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
+                      <li>Income was {incomeDelta !== null && incomePct !== null ? `${fmtM(incomeDelta)} (${Math.abs(incomePct).toFixed(0)}%) ${incomeDelta >= 0 ? "higher" : "lower"}` : "—"} than the preceding quarter.</li>
+                      <li>Expenses were {expenseDelta !== null && expensePct !== null ? `${fmtM(expenseDelta)} (${Math.abs(expensePct).toFixed(0)}%) ${expenseDelta >= 0 ? "higher" : "lower"}` : "—"} than the preceding quarter.</li>
+                    </ul>
+                  }
+                />
               </div>
             </div>
           </div>
@@ -138,20 +135,16 @@ export function FinancialResultsOverview({
                 />
               </DownloadableFrame>
               <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
-                <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlight(s)</div>
-                {hasCommentary ? (
-                  <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
-                    {commentaryFields.filter((f) => commentary[f.key].trim() !== "").map((f) => (
-                      <li key={f.key}><span className="font-semibold text-[hsl(var(--pk-ink))]">{f.label}: </span>{commentary[f.key]}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
-                    <li>Income was {incomeDelta !== null && incomePct !== null ? `${fmtM(incomeDelta)} (${Math.abs(incomePct).toFixed(0)}%) ${incomeDelta >= 0 ? "higher" : "lower"}` : "—"} than budget.</li>
-                    <li>Expenses were {expenseDelta !== null && expensePct !== null ? `${fmtM(expenseDelta)} (${Math.abs(expensePct).toFixed(0)}%) ${expenseDelta >= 0 ? "higher" : "lower"}` : "—"} than budget.</li>
-                    <li className="text-2xs text-[hsl(var(--pk-ink-faint))] italic">No driver commentary entered for this quarter yet — see Variance Commentary below to add it.</li>
-                  </ul>
-                )}
+                <HighlightEditor
+                  periodId={periodId}
+                  section="budget"
+                  fallback={
+                    <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
+                      <li>Income was {incomeDelta !== null && incomePct !== null ? `${fmtM(incomeDelta)} (${Math.abs(incomePct).toFixed(0)}%) ${incomeDelta >= 0 ? "higher" : "lower"}` : "—"} than budget.</li>
+                      <li>Expenses were {expenseDelta !== null && expensePct !== null ? `${fmtM(expenseDelta)} (${Math.abs(expensePct).toFixed(0)}%) ${expenseDelta >= 0 ? "higher" : "lower"}` : "—"} than budget.</li>
+                    </ul>
+                  }
+                />
               </div>
             </div>
           </div>

@@ -6,6 +6,7 @@ import { InfoNote } from "@/components/pk/Misc";
 import { PeriodPickerCompact, useLocalPeriodId } from "@/components/pk/PeriodPicker";
 import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { OtherInvestmentDealsEditor } from "@/components/pk/OtherInvestmentDealsEditor";
+import { HighlightEditor } from "@/components/pk/HighlightEditor";
 import { useDetails } from "@/lib/details";
 import { periodEndDateLabel, periodEndDateWords } from "@/data/periods";
 import { cn } from "@/lib/utils";
@@ -116,23 +117,28 @@ export function PFH004({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 </table>
               </DownloadableFrame>
               <div className="rounded-md border border-dashed border-[hsl(var(--pk-accent))] bg-[hsl(var(--pk-accent-soft))] p-3">
-                <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-accent))] font-semibold mb-1.5">Highlights</div>
-                <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
-                  {!priorId ? (
-                    <li className="text-2xs text-[hsl(var(--pk-ink-faint))] italic">No preceding-quarter figures to compare {fp.currentLabel} against yet.</li>
-                  ) : (() => {
-                    const ci = variance(fp.cashAndInvestments.current, fp.cashAndInvestments.prior);
-                    const oa = variance(fp.otherAssets.current, fp.otherAssets.prior);
-                    const tl = variance(fp.totalLiabilities.current, fp.totalLiabilities.prior);
-                    return (
-                      <>
-                        <li className="list-disc ml-3">Cash and other investments {ci.abs !== null && ci.abs >= 0 ? "higher" : "lower"} by {fmtM(ci.abs)} against the preceding quarter.</li>
-                        <li className="list-disc ml-3">Other assets {oa.abs !== null && oa.abs >= 0 ? "higher" : "lower"} by {fmtM(oa.abs)} against the preceding quarter.</li>
-                        <li className="list-disc ml-3">Total liabilities {tl.abs !== null && tl.abs >= 0 ? "higher" : "lower"} by {fmtM(tl.abs)} against the preceding quarter.</li>
-                      </>
-                    );
-                  })()}
-                </ul>
+                <HighlightEditor
+                  periodId={periodId}
+                  section="financial_position"
+                  fallback={
+                    <ul className="flex flex-col gap-2 text-xs text-[hsl(var(--pk-ink-soft))] leading-snug">
+                      {!priorId ? (
+                        <li className="text-2xs text-[hsl(var(--pk-ink-faint))] italic">No preceding-quarter figures to compare {fp.currentLabel} against yet.</li>
+                      ) : (() => {
+                        const ci = variance(fp.cashAndInvestments.current, fp.cashAndInvestments.prior);
+                        const oa = variance(fp.otherAssets.current, fp.otherAssets.prior);
+                        const tl = variance(fp.totalLiabilities.current, fp.totalLiabilities.prior);
+                        return (
+                          <>
+                            <li className="list-disc ml-3">Cash and other investments {ci.abs !== null && ci.abs >= 0 ? "higher" : "lower"} by {fmtM(ci.abs)} against the preceding quarter.</li>
+                            <li className="list-disc ml-3">Other assets {oa.abs !== null && oa.abs >= 0 ? "higher" : "lower"} by {fmtM(oa.abs)} against the preceding quarter.</li>
+                            <li className="list-disc ml-3">Total liabilities {tl.abs !== null && tl.abs >= 0 ? "higher" : "lower"} by {fmtM(tl.abs)} against the preceding quarter.</li>
+                          </>
+                        );
+                      })()}
+                    </ul>
+                  }
+                />
               </div>
             </div>
           </div>
