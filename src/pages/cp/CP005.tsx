@@ -42,7 +42,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(key); }
   };
   const { latestValue } = useWorkflow();
-  const { timeCharterByDept, clientSatisfactionServicesFor, latestClientSatisfactionServicePeriod } = useDetails();
+  const { timeCharterByDept, clientSatisfactionServicesFor, latestClientSatisfactionServicePeriod, clientSatisfactionYearlyTrend } = useDetails();
   const { getFyTarget } = useKpiTargets();
   const kpi6 = latestValue("KPI6", entityId, periodId);
   const period = periodById(periodId);
@@ -61,20 +61,14 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const kpi5FyTarget = getFyTarget("KPI5", fy);
   const kpi5PeriodLabel = fy.replace("FY", "");
 
-  // FY2025's Q4 survey is real reported data (not the FY2023/24 illustrative filler the go-live
-  // cutover removed), so it belongs on the trend the same way Q4FY25 now feeds FH's own
-  // quarter-over-quarter comparisons — FY2026 simply won't show a bar yet since its own Q4 hasn't
-  // happened.
-  const satisfactionYearlyTrend = ["FY2025", "FY2026"]
-    .map((yFy) => ({ yFy, r: latestValue("KPI5", entityId, `Q4FY${yFy.slice(-2)}` as PeriodId) }))
-    .filter((x) => x.r.ytdActual !== null)
-    .map(({ yFy, r }) => ({
-      label: yFy,
-      segments: [
-        { label: "Actual", value: r.ytdActual as number, color: r.status === "met" ? "hsl(var(--pk-good))" : "hsl(var(--pk-warn))" },
-        { label: "Gap to target", value: Math.max((r.ytdTarget ?? 0) - (r.ytdActual as number), 0), color: "hsl(var(--pk-surface-2))" },
-      ],
-    }));
+  // Real FY2023-FY2025 Corp. Average Rating history from the client's own consolidated
+  // satisfaction report — no FY2023/FY2024 period exists to hang a fact_kpi_results target off
+  // of, so this is a plain actual-rating trend (no gap-to-target segment) rather than routed
+  // through KPI5's own quarterly workflow data.
+  const satisfactionYearlyTrend = clientSatisfactionYearlyTrend().map((y) => ({
+    label: y.label,
+    segments: [{ label: "Rating", value: y.rating, color: "hsl(var(--pk-accent))" }],
+  }));
 
   const avgLabel = timeCharterByDept.periods.length === 2 ? `1H ${periodById(timeCharterByDept.periods[1].id).fy.replace("FY", "")}` : "Average";
   const overallAvg = meanOf(timeCharterByDept.overallByPeriod);
@@ -201,14 +195,14 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               <DownloadableFrame
                 filename="cp005-satisfaction-historical-trend"
                 csvData={{
-                  headers: ["Year", "Actual", "Gap to target"],
-                  rows: satisfactionYearlyTrend.map((y) => [y.label, y.segments[0].value.toFixed(1), y.segments[1].value.toFixed(1)]),
+                  headers: ["Year", "Corp. Average Rating"],
+                  rows: satisfactionYearlyTrend.map((y) => [y.label, y.segments[0].value.toFixed(1)]),
                 }}
               >
                 <StackedBarTrend data={satisfactionYearlyTrend} />
               </DownloadableFrame>
             ) : (
-              <NoDataState title="No annual result yet" body="KPI 5 is a bi-annual survey reported once a year, at year-end — FY2026's result isn't in yet." />
+              <NoDataState title="No annual result yet" body="KPI 5 is a bi-annual survey reported once a year, at year-end." />
             )}
           </div>
 
@@ -224,10 +218,11 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 filename="cp005-service-breakdown"
                 className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card overflow-x-auto"
                 csvData={{
-                  headers: ["Category", "Service(s)", "Prior Rating", "Avg Service Rating", "Band", "Survey(s) Sent", "Response(s) Received", "% of Responses"],
+                  headers: ["Category", "Service(s)", "FY2023", "FY2024", "FY2025", "Band", "Survey(s) Sent", "Response(s) Received", "% of Responses"],
                   rows: [
                     ...serviceBreakdown.services.map((s) => [
                       s.category, s.service,
+                      s.fy2023 !== null ? s.fy2023.toFixed(1) : "—",
                       s.priorRating !== null ? s.priorRating.toFixed(1) : "—",
                       s.rating !== null ? s.rating.toFixed(1) : "—",
                       s.rating !== null ? s.band : "—",
@@ -236,6 +231,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                     ]),
                     ...(serviceBreakdown.total ? [[
                       "", "Corp. Average Rating",
+                      serviceBreakdown.total.fy2023 !== null ? serviceBreakdown.total.fy2023.toFixed(1) : "—",
                       serviceBreakdown.total.priorRating !== null ? serviceBreakdown.total.priorRating.toFixed(1) : "—",
                       serviceBreakdown.total.rating !== null ? serviceBreakdown.total.rating.toFixed(1) : "—",
                       serviceBreakdown.total.rating !== null ? serviceBreakdown.total.band : "—",
@@ -249,13 +245,15 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                   <thead>
                     <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))] divide-x divide-white/15">
                       <th rowSpan={2} className={cn(TH_CLASS, "align-bottom")}>Service(s)</th>
-                      <th rowSpan={2} className={cn(TH_RIGHT_CLASS, "align-bottom")}>Prior Rating</th>
-                      <th colSpan={4} className="text-center font-bold px-3 py-1.5 border-b border-white/15">Current Analysis</th>
+                      <th colSpan={3} className="text-center font-bold px-3 py-1.5 border-b border-white/15">Rating by Year</th>
+                      <th colSpan={3} className="text-center font-bold px-3 py-1.5 border-b border-white/15">FY2025 Survey</th>
                     </tr>
                     <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))] divide-x divide-white/15">
-                      <th className={TH_RIGHT_CLASS}>Avg Service Rating</th>
-                      <th className={TH_RIGHT_CLASS}>Survey(s) Sent</th>
-                      <th className={TH_RIGHT_CLASS}>Response(s) Received</th>
+                      <th className={TH_RIGHT_CLASS}>FY2023</th>
+                      <th className={TH_RIGHT_CLASS}>FY2024</th>
+                      <th className={TH_RIGHT_CLASS}>FY2025</th>
+                      <th className={TH_RIGHT_CLASS}>Sent</th>
+                      <th className={TH_RIGHT_CLASS}>Received</th>
                       <th className={TH_RIGHT_CLASS}>% of Responses</th>
                     </tr>
                   </thead>
@@ -269,13 +267,14 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                           <Fragment key={s.service}>
                             {showCategory && (
                               <tr>
-                                <td colSpan={6} className="pt-2.5 pb-1 px-3 text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-medium bg-[hsl(var(--pk-surface-2))]">
+                                <td colSpan={7} className="pt-2.5 pb-1 px-3 text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] font-medium bg-[hsl(var(--pk-surface-2))]">
                                   {s.category}
                                 </td>
                               </tr>
                             )}
                             <tr className="border-t border-[hsl(var(--pk-border))] divide-x divide-[hsl(var(--pk-border))]">
                               <td className="px-3 py-2 text-[hsl(var(--pk-ink))]">{s.service}</td>
+                              <td className="px-3 py-2 text-right tnum text-[hsl(var(--pk-ink-faint))]">{s.fy2023 !== null ? s.fy2023.toFixed(1) : "—"}</td>
                               <td className="px-3 py-2 text-right tnum text-[hsl(var(--pk-ink-faint))]">{s.priorRating !== null ? s.priorRating.toFixed(1) : "—"}</td>
                               <td className="px-3 py-2 text-right tnum font-medium">
                                 {s.rating !== null ? (
@@ -296,6 +295,7 @@ export function CP005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                     {serviceBreakdown.total && (
                       <tr className="border-t-2 border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] font-semibold divide-x divide-[hsl(var(--pk-border))]">
                         <td className="px-3 py-2.5">Corp. Average Rating</td>
+                        <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.fy2023 !== null ? serviceBreakdown.total.fy2023.toFixed(1) : "—"}</td>
                         <td className="px-3 py-2.5 text-right tnum">{serviceBreakdown.total.priorRating !== null ? serviceBreakdown.total.priorRating.toFixed(1) : "—"}</td>
                         <td className="px-3 py-2.5 text-right tnum">
                           <span className="inline-flex items-center gap-1.5 justify-end">

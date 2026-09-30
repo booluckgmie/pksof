@@ -756,6 +756,15 @@ export function useDetails() {
     return { sent, received, responseRate: sent && received !== null ? Math.round((received / sent) * 100) : null };
   }
 
+  /** FY2023 rating per service — a fixed historical constant from the client's own consolidated
+   * 2023-2025 satisfaction report, kept in its own record_type (not packed into
+   * client_satisfaction_service's textNote) so ClientSatisfactionServiceEditor's "sent|received"
+   * save can never silently clobber it. Looked up by label alone, independent of periodId, since
+   * FY2023 doesn't correspond to any period the app tracks (periods start at FY2025). */
+  function fy2023RatingFor(service: string): number | null {
+    return recordRows("client_satisfaction_fy2023").find((r) => r.label === service)?.valueNum ?? null;
+  }
+
   function clientSatisfactionServicesFor(periodId: PeriodId) {
     const rows = recordRows("client_satisfaction_service").filter((r) => r.periodId === periodId);
     const byService = (service: string) => rows.find((r) => r.label === service);
@@ -764,6 +773,7 @@ export function useDetails() {
       return {
         category,
         service,
+        fy2023: fy2023RatingFor(service),
         priorRating: r?.valueNum2 ?? null,
         rating: r?.valueNum ?? null,
         band: ratingBand(r?.valueNum ?? null),
@@ -773,6 +783,7 @@ export function useDetails() {
     const totalRow = byService("Corp. Average Rating");
     const total = totalRow
       ? {
+          fy2023: fy2023RatingFor("Corp. Average Rating"),
           priorRating: totalRow.valueNum2,
           rating: totalRow.valueNum,
           band: ratingBand(totalRow.valueNum),
@@ -780,6 +791,20 @@ export function useDetails() {
         }
       : null;
     return { services, total, hasData: rows.length > 0 };
+  }
+
+  /** The 3-year Corp. Average Rating trend (FY2023-FY2025) behind CP005's "Historical trend (by
+   * year)" chart — sourced the same way as the service breakdown table above (fy2023RatingFor
+   * plus client_satisfaction_service's own valueNum2/valueNum for FY2024/FY2025), rather than
+   * fact_kpi_results, since no FY2023/FY2024 period exists to hang a KPI result off of. */
+  function clientSatisfactionYearlyTrend(): { label: string; rating: number }[] {
+    const totalRow = recordRows("client_satisfaction_service").find((r) => r.label === "Corp. Average Rating");
+    const points: { label: string; rating: number | null }[] = [
+      { label: "FY2023", rating: fy2023RatingFor("Corp. Average Rating") },
+      { label: "FY2024", rating: totalRow?.valueNum2 ?? null },
+      { label: "FY2025", rating: totalRow?.valueNum ?? null },
+    ];
+    return points.filter((p): p is { label: string; rating: number } => p.rating !== null);
   }
 
   /** The most recent period with a real client_satisfaction_service survey on record, regardless
@@ -1011,7 +1036,7 @@ export function useDetails() {
     bumiputeraTrainingByPeriod,
     quarterlyTrend, financialResultsFor, varianceCommentaryFor, relatedPartyTransactionsUpTo,
     financialPositionFor, financialPositionBreakdownFor, agingOfReceivablesFor, otherInvestmentsDealsFor, otherInvestmentDealItemsFor, cashEffectiveRateFor,
-    managedEntityRatingsFor, managedEntityKpiQuarterlyFor, managedEntityKpiItemsFor, clientSatisfactionServicesFor, clientSatisfactionServiceItemsFor, latestClientSatisfactionServicePeriod, timeCharterByDept, governanceKpiFor, governanceKpiItemsFor,
+    managedEntityRatingsFor, managedEntityKpiQuarterlyFor, managedEntityKpiItemsFor, clientSatisfactionServicesFor, clientSatisfactionServiceItemsFor, latestClientSatisfactionServicePeriod, clientSatisfactionYearlyTrend, timeCharterByDept, governanceKpiFor, governanceKpiItemsFor,
     processInitiatives, techInitiatives, initiativeRecordsFor, bumiputeraProcurementFor, peopleDevRecordsFor,
     pbtBreakdownFor, cirBreakdownFor,
   };
