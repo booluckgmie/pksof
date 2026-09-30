@@ -11,13 +11,16 @@ export function CP002({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const [periodId, setPeriodId] = useLocalPeriodId();
   const { latestValue } = useWorkflow();
   const getResult = (kpiId: string) => latestValue(kpiId, entityId, periodId);
+  // FY2025 is excluded from the picker (pre-launch cutover), but Q4FY25's real reported result is
+  // still useful reference context next to the live FY's own figures — see KpiPerformanceTable.
+  const getFy2025Result = (kpiId: string) => latestValue(kpiId, entityId, "Q4FY25");
 
   return (
     <div>
       <ScreenHeader id="CP002" subtitle="All KPI performance grouped by the six perspectives for the selected period." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <DownloadableFrame filename="cp002-kpi-performance-status">
-        <KpiPerformanceTable getResult={getResult} onNavigate={onNavigate} />
+        <KpiPerformanceTable getResult={getResult} getFy2025Result={getFy2025Result} onNavigate={onNavigate} />
       </DownloadableFrame>
       <p className="text-2xs text-[hsl(var(--pk-ink-faint))] mt-3">
         Workflow: Draft → Submit → Review → Approve or Reject → Publish. Only approved (published) data is shown here — use{" "}

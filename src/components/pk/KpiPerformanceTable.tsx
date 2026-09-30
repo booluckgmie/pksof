@@ -19,9 +19,14 @@ function fmt(v: number | null, unit: string) {
 
 export function KpiPerformanceTable({
   getResult,
+  getFy2025Result,
   onNavigate,
 }: {
   getResult: (kpiId: string) => KpiResult;
+  /** FY2025's own YTD Actual (Q4FY25 — the last quarter before go-live) per KPI, for the
+   * reference column below. FY2025 is excluded from every period picker (pre-launch cutover),
+   * but the year's real reported results are still useful context next to the live FY's figures. */
+  getFy2025Result?: (kpiId: string) => KpiResult;
   onNavigate: (id: ScreenId) => void;
 }) {
   let totalWeighted = 0;
@@ -35,6 +40,7 @@ export function KpiPerformanceTable({
             <th className="text-right font-medium px-3 py-2">Wt</th>
             <th className="text-left font-medium px-3 py-2">#</th>
             <th className="text-left font-medium px-3 py-2">KPI</th>
+            {getFy2025Result && <th className="text-right font-medium px-3 py-2">FY2025 Actual</th>}
             <th className="text-right font-medium px-3 py-2">FY Target</th>
             <th className="text-right font-medium px-3 py-2">YTD Target</th>
             <th className="text-right font-medium px-3 py-2">YTD Actual</th>
@@ -81,6 +87,7 @@ export function KpiPerformanceTable({
                       </InfoTip>
                     </span>
                   </td>
+                  {getFy2025Result && <td className="px-3 py-2 text-right tnum text-[hsl(var(--pk-ink-faint))]">{fmt(getFy2025Result(k.id).ytdActual, k.unit)}</td>}
                   <td className="px-3 py-2 text-right tnum">{k.fyTarget !== null ? fmt(k.fyTarget, k.unit) : "—"}</td>
                   <td className="px-3 py-2 text-right tnum text-[hsl(var(--pk-ink-faint))]">{fmt(r.ytdTarget, k.unit)}</td>
                   <td className="px-3 py-2 text-right tnum font-medium">{fmt(r.ytdActual, k.unit)}</td>
