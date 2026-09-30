@@ -530,7 +530,10 @@ export function QoQHorizontalBars({
   const BAR_H = 22;
   const BAR_GAP = 4;
   const GROUP_H = BAR_H * 2 + BAR_GAP + 30;
-  const LEGEND_H = 22;
+  // Stacked (not side-by-side) so long labels like "Actual (Filled Position)" and "Budgeted
+  // (Approved Headcount)" never overlap — side-by-side only worked for short words like
+  // "Budget"/"Actual", which this chart is no longer limited to.
+  const LEGEND_H = 34;
   const AXIS_H = 22;
   const H = LEGEND_H + categories.length * GROUP_H + AXIS_H;
 
@@ -559,8 +562,8 @@ export function QoQHorizontalBars({
       <g>
         <rect x={PAD_L} y={4} width={10} height={10} rx={2} fill={currentColor} />
         <text x={PAD_L + 14} y={13} fontSize={10.5} className="fill-[hsl(var(--pk-ink))]">{currentLabel}</text>
-        <rect x={PAD_L + 100} y={4} width={10} height={10} rx={2} fill={compareColor} />
-        <text x={PAD_L + 114} y={13} fontSize={10.5} className="fill-[hsl(var(--pk-ink))]">{compareLabel}</text>
+        <rect x={PAD_L} y={20} width={10} height={10} rx={2} fill={compareColor} />
+        <text x={PAD_L + 14} y={29} fontSize={10.5} className="fill-[hsl(var(--pk-ink))]">{compareLabel}</text>
         <text x={W - PAD_R} y={13} textAnchor="end" fontSize={9.5} className="fill-[hsl(var(--pk-ink-faint))]">{unit}</text>
       </g>
 
