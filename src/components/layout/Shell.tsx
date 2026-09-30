@@ -12,20 +12,6 @@ import { cn } from "@/lib/utils";
 import { screens, type ScreenId } from "@/lib/nav";
 import prokhasLogo from "@/assets/prokhas-logo.png";
 
-/** Purely cosmetic: this internal deployment builds a staging bundle and a production bundle
- * from the exact same source against the exact same Supabase project, so nothing in the data
- * distinguishes them — without this, someone could easily mistake one tab for the other. Reads
- * `VITE_APP_ENV` (set per build in `.env.staging` / `.env.production`, see DEPLOY.md), so it
- * renders nothing unless the build was actually made for staging. */
-function StagingBanner() {
-  if (import.meta.env.VITE_APP_ENV !== "staging") return null;
-  return (
-    <div className="sticky top-0 z-40 shrink-0 bg-amber-400 text-amber-950 text-center text-2xs font-semibold uppercase tracking-wide py-1">
-      Staging environment — not for official reporting
-    </div>
-  );
-}
-
 const PILLAR_NAV: { id: ScreenId; label: string; group: string }[] = [
   { id: "MAIN", label: "Main", group: "main" },
   { id: "CP001", label: "Corporate Performance", group: "cp" },
@@ -149,7 +135,6 @@ export function Shell({
 
   return (
     <div className="flex flex-col min-h-screen bg-[hsl(var(--pk-paper))]">
-      <StagingBanner />
       <div className="flex flex-1 min-h-0">
       {showSidebar && (
         <Sidebar current={current} onNavigate={onNavigate} mobileOpen onCloseMobile={() => setSidebarOpen(false)} />
