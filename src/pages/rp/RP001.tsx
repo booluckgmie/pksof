@@ -35,12 +35,11 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
       <ScreenHeader id="RP001" subtitle="Tracks headcount metrics and recruitment efficiency across key hiring stages." onNavigate={onNavigate} periodId={periodId} right={<FinancialYearQuarterPicker periodId={periodId} onChange={setPeriodId} />} />
 
       <SectionLabel>Section A — Demographics: Total Headcount</SectionLabel>
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
         <StatCard label="Total Employee(s)" value={String(headcountSummary.totalEmployees)} />
         <StatCard label="Bumiputera" value={String(headcountSummary.bumiputera)} tone="good" />
         <StatCard label="Non-Bumiputera" value={String(headcountSummary.nonBumiputera)} />
         <StatCard label="Approved Headcount" value={String(headcountSummary.approvedHeadcount)} />
-        <StatCard label="Vacant Position" value={String(headcountSummary.approvedHeadcount - headcountSummary.filledPosition)} tone="pending" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
