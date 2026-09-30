@@ -426,6 +426,27 @@ export function useDetails() {
     return Object.entries(labels).map(([key, label]) => ({ key, label, value: rows.find((r) => r.dimension === key)?.value ?? null }));
   }
 
+  /** Standalone (own-quarter) category breakdown, for the QoQ "Current Quarter vs Preceding
+   * Quarter" drill-down — revenue_by_source/expense_by_category are stored YTD-cumulative, so
+   * showing them as-is double-counts everything before the FY's first quarter. Q1 already equals
+   * its own cumulative; any later quarter de-cumulates category-by-category against the
+   * immediately preceding quarter's own cumulative, recursively (so a Q3-vs-Q2 comparison still
+   * shows Q2's own standalone figure, not its H1 cumulative one). This subtraction reconciles
+   * cleanly to the category total with no residual gap — unlike PBT, whose one-off reversal lives
+   * outside these two tables entirely (see readQuarterPl). */
+  function standaloneBreakdown(periodId: PeriodId, dim2: "actual" | "budget", metricKey: string, labels: Record<string, string>) {
+    const current = readBreakdown(periodId, dim2, metricKey, labels);
+    if (periodById(periodId).quarter === 1) return current;
+    const idx = periods.findIndex((p) => p.id === periodId);
+    const priorId = idx > 0 ? periods[idx - 1].id : null;
+    if (!priorId) return current;
+    const priorCumulative = readBreakdown(priorId, dim2, metricKey, labels);
+    return current.map((item) => {
+      const priorValue = priorCumulative.find((p) => p.key === item.key)?.value ?? null;
+      return { ...item, value: item.value !== null && priorValue !== null ? item.value - priorValue : item.value };
+    });
+  }
+
   /** Powers PFH002's revamped "Current Quarter vs Preceding Quarter" and "Actual vs Budget"
    * tables, each with a Revenue/Expenses drill-down — everything RM'000, everything derived from
    * financial_trend + pl_detail + revenue_by_source + expense_by_category so there's one source
@@ -445,7 +466,7 @@ export function useDetails() {
     const budget = readQuarterPl(periodId, "budget");
     return {
       current,
-      qoq: prior && priorId ? { compareLabel: periodById(priorId).label, compare: prior, revenue: readBreakdown(periodId, "actual", "revenue_by_source", REVENUE_SOURCE_LABELS), revenueCompare: readBreakdown(priorId, "actual", "revenue_by_source", REVENUE_SOURCE_LABELS), expenses: readBreakdown(periodId, "actual", "expense_by_category", EXPENSE_CATEGORY_LABELS), expensesCompare: readBreakdown(priorId, "actual", "expense_by_category", EXPENSE_CATEGORY_LABELS) } : null,
+      qoq: prior && priorId ? { compareLabel: periodById(priorId).label, compare: prior, revenue: standaloneBreakdown(periodId, "actual", "revenue_by_source", REVENUE_SOURCE_LABELS), revenueCompare: standaloneBreakdown(priorId, "actual", "revenue_by_source", REVENUE_SOURCE_LABELS), expenses: standaloneBreakdown(periodId, "actual", "expense_by_category", EXPENSE_CATEGORY_LABELS), expensesCompare: standaloneBreakdown(priorId, "actual", "expense_by_category", EXPENSE_CATEGORY_LABELS) } : null,
       budget: budget ? { compare: budget, revenue: readBreakdown(periodId, "actual", "revenue_by_source", REVENUE_SOURCE_LABELS), revenueCompare: readBreakdown(periodId, "budget", "revenue_by_source", REVENUE_SOURCE_LABELS), expenses: readBreakdown(periodId, "actual", "expense_by_category", EXPENSE_CATEGORY_LABELS), expensesCompare: readBreakdown(periodId, "budget", "expense_by_category", EXPENSE_CATEGORY_LABELS) } : null,
     };
   }
