@@ -16,9 +16,6 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { latestValue } = useWorkflow();
   const period = periodById(periodId);
   const getResult = (kpiId: string) => latestValue(kpiId, entityId, periodId);
-  // FY2025 is excluded from the picker (pre-launch cutover), but Q4FY25's real reported result is
-  // still useful reference context next to the live FY's own figures — see KpiPerformanceTable.
-  const getFy2025Result = (kpiId: string) => latestValue(kpiId, entityId, "Q4FY25");
 
   const overall = kpis.reduce((sum, k) => sum + (getResult(k.id).weighted ?? 0), 0) * 100;
 
@@ -68,7 +65,7 @@ export function CP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
 
       <div className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))] mb-2">Corporate KPI Performance Status (YTD)</div>
       <DownloadableFrame filename="cp001-kpi-performance-status">
-        <KpiPerformanceTable getResult={getResult} getFy2025Result={getFy2025Result} onNavigate={onNavigate} />
+        <KpiPerformanceTable getResult={getResult} onNavigate={onNavigate} />
       </DownloadableFrame>
     </div>
   );
