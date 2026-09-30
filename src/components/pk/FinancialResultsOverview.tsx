@@ -116,21 +116,21 @@ export function FinancialResultsOverview({
               <DownloadableFrame
                 filename="financial-results-budget-vs-actual"
                 csvData={{
-                  headers: ["Category", "Budget", "Actual"],
+                  headers: ["Category", "Actual", "Budget"],
                   rows: [
-                    ["Total Income", b.totalIncome ?? 0, c.totalIncome ?? 0],
-                    ["Total Expenses", Math.abs(b.expenses ?? 0), Math.abs(c.expenses ?? 0)],
-                    ["Profit Before Tax", b.pbt ?? 0, c.pbt ?? 0],
+                    ["Total Income", c.totalIncome ?? 0, b.totalIncome ?? 0],
+                    ["Total Expenses", Math.abs(c.expenses ?? 0), Math.abs(b.expenses ?? 0)],
+                    ["Profit Before Tax", c.pbt ?? 0, b.pbt ?? 0],
                   ],
                 }}
               >
                 <QoQHorizontalBars
-                  currentLabel="Budget"
-                  compareLabel="Actual"
+                  currentLabel="Actual"
+                  compareLabel="Budget"
                   categories={[
-                    { label: "Total Income", current: b.totalIncome ?? 0, compare: c.totalIncome ?? 0 },
-                    { label: "Total Expenses", current: Math.abs(b.expenses ?? 0), compare: Math.abs(c.expenses ?? 0) },
-                    { label: "Profit Before Tax", current: b.pbt ?? 0, compare: c.pbt ?? 0 },
+                    { label: "Total Income", current: c.totalIncome ?? 0, compare: b.totalIncome ?? 0 },
+                    { label: "Total Expenses", current: Math.abs(c.expenses ?? 0), compare: Math.abs(b.expenses ?? 0) },
+                    { label: "Profit Before Tax", current: c.pbt ?? 0, compare: b.pbt ?? 0 },
                   ]}
                 />
               </DownloadableFrame>
