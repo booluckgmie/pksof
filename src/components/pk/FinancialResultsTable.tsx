@@ -83,6 +83,7 @@ export function FinancialResultsTable({
   revenueCompare,
   expensesCurrent,
   expensesCompare,
+  hideRows,
 }: {
   title: string;
   currentLabel: string;
@@ -93,8 +94,12 @@ export function FinancialResultsTable({
   revenueCompare: BreakdownItem[];
   expensesCurrent: BreakdownItem[];
   expensesCompare: BreakdownItem[];
+  /** Row keys to leave out entirely — e.g. Dividend on the Actual vs Budget table, which never
+   * gets a real budget figure entered against it. */
+  hideRows?: (keyof PlSnapshot)[];
 }) {
   const [open, setOpen] = useState<"revenue" | "expenses" | null>(null);
+  const rows = hideRows ? ROWS.filter((r) => !hideRows.includes(r.key)) : ROWS;
 
   const breakdownFor = (which: "revenue" | "expenses") =>
     which === "revenue" ? { items: revenueCurrent, compareItems: revenueCompare, totalLabel: "TOTAL REVENUE" } : { items: expensesCurrent, compareItems: expensesCompare, totalLabel: "TOTAL EXPENSES" };
@@ -121,7 +126,7 @@ export function FinancialResultsTable({
             </tr>
           </thead>
           <tbody>
-            {ROWS.map((r) => {
+            {rows.map((r) => {
               const cur = current[r.key];
               const cmp = compare[r.key];
               const v = variance(cur, cmp);

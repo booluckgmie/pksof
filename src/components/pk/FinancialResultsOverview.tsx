@@ -184,6 +184,7 @@ export function FinancialResultsOverview({
               revenueCompare={results.budget.revenueCompare}
               expensesCurrent={results.budget.expenses}
               expensesCompare={results.budget.expensesCompare}
+              hideRows={["dividend"]}
             />
           </DownloadableFrame>
         ) : (
