@@ -411,12 +411,14 @@ export function useDetails() {
     const taxation = forP.find((r) => r.dimension === "taxation")?.value ?? null;
     const profitAfterTax = forP.find((r) => r.dimension === "profit_after_tax")?.value ?? null;
     const dividend = forP.find((r) => r.dimension === "dividend")?.value ?? null;
+    // A one-off reversal (e.g. reversal of an FY25 bonus provision) only exists for the quarter
+    // it happened in — not present for most quarters/dim2s, so it's read separately and
+    // defaults to not affecting pbt at all rather than to 0-as-a-real-figure.
+    const reversalBonusProvision = forP.find((r) => r.dimension === "reversal_bonus_provision")?.value ?? null;
     const totalIncome = financeIncome !== null && otherIncome !== null ? revenue + financeIncome + otherIncome : null;
-    const pbt = totalIncome !== null ? totalIncome + expenses : null;
+    const pbt = totalIncome !== null ? totalIncome + expenses + (reversalBonusProvision ?? 0) : null;
     const netProfit = profitAfterTax !== null && dividend !== null ? profitAfterTax + dividend : null;
-    // pl_detail has no one-off "reversal" concept of its own — only the dedicated standalone-
-    // quarter figures (financial_trend, see quarterlyTrend) carry that when it applies.
-    return { revenue, financeIncome, otherIncome, totalIncome, expenses, reversalBonusProvision: null, pbt, taxation, profitAfterTax, dividend, netProfit };
+    return { revenue, financeIncome, otherIncome, totalIncome, expenses, reversalBonusProvision, pbt, taxation, profitAfterTax, dividend, netProfit };
   }
 
   function readBreakdown(periodId: PeriodId, dim2: "actual" | "budget", metricKey: string, labels: Record<string, string>) {

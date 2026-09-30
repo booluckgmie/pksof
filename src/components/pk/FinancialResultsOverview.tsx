@@ -137,18 +137,22 @@ export function FinancialResultsOverview({
       {tableKind === "budget" && results.current && results.budget && (() => {
         const c = results.current!;
         const b = results.budget!.compare;
+        // Net of any one-off reversal (e.g. reversal of an FY25 bonus provision), so the chart's
+        // Total Expenses bar reconciles with the PBT bar the same way the detailed table's own
+        // Expenses + Reversal FY25 bonus provision rows do.
+        const netExpenses = (snap: typeof c) => (snap.expenses ?? 0) + (snap.reversalBonusProvision ?? 0);
         const pbtDelta = c.pbt !== null && b.pbt !== null ? c.pbt - b.pbt : null;
         const pbtPct = pctOf(pbtDelta, b.pbt);
         const incomeDelta = c.totalIncome !== null && b.totalIncome !== null ? c.totalIncome - b.totalIncome : null;
         const incomePct = pctOf(incomeDelta, b.totalIncome);
-        const expenseDelta = c.expenses !== null && b.expenses !== null ? c.expenses - b.expenses : null;
-        const expensePct = pctOf(expenseDelta, b.expenses);
+        const expenseDelta = netExpenses(c) - netExpenses(b);
+        const expensePct = pctOf(expenseDelta, netExpenses(b));
         return (
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
             <div className="font-head font-bold text-[hsl(var(--pk-ink))] text-center mb-1">YTD Actual vs YTD Budget</div>
             {pbtDelta !== null && pbtPct !== null && (
               <p className="text-center text-xs text-[hsl(var(--pk-ink-soft))] mb-3">
-                Overall, the Group recorded <span className="font-semibold text-[hsl(var(--pk-accent))]">{pbtDelta >= 0 ? "higher" : "lower"} PBT by {fmtM(pbtDelta)} ({Math.abs(pbtPct).toFixed(0)}%)</span> compared to the budget for the quarter.
+                Overall, the Group recorded <span className="font-semibold text-[hsl(var(--pk-accent))]">{pbtDelta >= 0 ? "higher" : "lower"} PBT by {fmtM(pbtDelta)} ({Math.abs(pbtPct).toFixed(0)}%)</span> compared to the budget for the period.
               </p>
             )}
             <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
@@ -158,7 +162,7 @@ export function FinancialResultsOverview({
                   headers: ["Category", "Actual", "Budget"],
                   rows: [
                     ["Total Income", c.totalIncome ?? 0, b.totalIncome ?? 0],
-                    ["Total Expenses", Math.abs(c.expenses ?? 0), Math.abs(b.expenses ?? 0)],
+                    ["Total Expenses", Math.abs(netExpenses(c)), Math.abs(netExpenses(b))],
                     ["Profit Before Tax", c.pbt ?? 0, b.pbt ?? 0],
                   ],
                 }}
@@ -168,7 +172,7 @@ export function FinancialResultsOverview({
                   compareLabel="Budget"
                   categories={[
                     { label: "Total Income", current: c.totalIncome ?? 0, compare: b.totalIncome ?? 0 },
-                    { label: "Total Expenses", current: Math.abs(c.expenses ?? 0), compare: Math.abs(b.expenses ?? 0) },
+                    { label: "Total Expenses", current: Math.abs(netExpenses(c)), compare: Math.abs(netExpenses(b)) },
                     { label: "Profit Before Tax", current: c.pbt ?? 0, compare: b.pbt ?? 0 },
                   ]}
                 />
@@ -223,7 +227,6 @@ export function FinancialResultsOverview({
               revenueCompare={results.budget.revenueCompare}
               expensesCurrent={results.budget.expenses}
               expensesCompare={results.budget.expensesCompare}
-              hideRows={["dividend", "netProfit", "reversalBonusProvision"]}
             />
           </DownloadableFrame>
         ) : (
