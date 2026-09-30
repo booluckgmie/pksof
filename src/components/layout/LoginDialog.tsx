@@ -126,8 +126,8 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
                   onChange={(e) => changeHomeEntity(e.target.value as EntityId)}
                   className="flex-1 bg-transparent text-sm outline-none text-[hsl(var(--pk-ink))]"
                 >
-                  {entities.map((e) => (
-                    <option key={e.id} value={e.id} disabled={e.id !== "HQ"}>{e.fullName}</option>
+                  {entities.filter((e) => e.id === "HQ").map((e) => (
+                    <option key={e.id} value={e.id}>{e.fullName}</option>
                   ))}
                 </select>
               </div>
