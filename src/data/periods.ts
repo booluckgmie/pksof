@@ -76,6 +76,22 @@ export function periodEndDateWords(periodId: PeriodId, fyEndMonth: number = FISC
   return `${lastDay.getUTCDate()} ${MONTH_NAMES_LONG[lastDay.getUTCMonth()]} ${lastDay.getUTCFullYear()}`;
 }
 
+/** "Apr 26 – Jun 26" — a quarter's calendar-month span in the client's RPT-report header style
+ * (e.g. Related Party Transactions: "2Q FY2026 (Apr 26 – Jun 26)"). */
+export function periodMonthRangeLabel(periodId: PeriodId, fyEndMonth: number = FISCAL_YEAR_END_MONTH): string {
+  const [start, endExclusive] = periodDateRange(periodById(periodId), fyEndMonth);
+  const end = new Date(endExclusive.getTime() - 24 * 60 * 60 * 1000);
+  const shortMonth = (d: Date) => `${MONTH_NAMES_LONG[d.getUTCMonth()].slice(0, 3)} ${String(d.getUTCFullYear()).slice(-2)}`;
+  return `${shortMonth(start)} – ${shortMonth(end)}`;
+}
+
+/** "2Q FY2026" — the client's report-header quarter format (quarter digit before "Q"), vs. this
+ * app's own internal "Q2 FY2026" picker/label convention. */
+export function periodReportLabel(periodId: PeriodId): string {
+  const p = periodById(periodId);
+  return `${p.quarter}Q ${p.fy}`;
+}
+
 /** [start, end) calendar-quarter date range for a period, derived from its fy + quarter (FY = calendar year). */
 function periodDateRange(p: Period, fyEndMonth: number): [Date, Date] {
   const year = parseInt(p.fy.replace("FY", ""), 10);

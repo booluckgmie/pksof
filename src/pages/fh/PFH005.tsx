@@ -10,11 +10,14 @@ import { cn } from "@/lib/utils";
 import type { ScreenId } from "@/lib/nav";
 import { useDetails } from "@/lib/details";
 import { useSession } from "@/lib/session";
+import { useOrgSettings } from "@/lib/orgSettings";
+import { periodMonthRangeLabel, periodReportLabel } from "@/data/periods";
 
 const fmt = (v: number | null) => (v === null ? "—" : v.toLocaleString("en-MY", { maximumFractionDigits: 0 }));
 
 export function PFH005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { isRestrictedPillar, homeEntityName } = useSession();
+  const { fiscalYearEndMonth } = useOrgSettings();
   const { relatedPartyTransactionsUpTo } = useDetails();
   const [periodId, setPeriodId] = useLocalPeriodId();
   const { periods: rptPeriods, items } = relatedPartyTransactionsUpTo(periodId);
@@ -62,7 +65,10 @@ export function PFH005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <tr className="text-2xs uppercase tracking-wide text-white bg-[hsl(var(--pk-navy))]">
               <th className="text-left font-medium px-3 py-2.5">RM'000</th>
               {rptPeriods.map((p) => (
-                <th key={p.id} className="text-right font-medium px-3 py-2.5">{p.label}</th>
+                <th key={p.id} className="text-right font-medium px-3 py-2.5">
+                  <div>{periodReportLabel(p.id)}</div>
+                  <div className="font-normal normal-case text-white/80">({periodMonthRangeLabel(p.id, fiscalYearEndMonth)})</div>
+                </th>
               ))}
             </tr>
           </thead>
@@ -72,10 +78,10 @@ export function PFH005({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
                 <tr className="border-t-2 border-[hsl(var(--pk-border))]">
                   <td className="px-3 pt-3 pb-1 font-bold text-[hsl(var(--pk-ink))]" colSpan={rptPeriods.length + 1}>{g.category}</td>
                 </tr>
-                {g.subheadings.map((sh) => (
+                {g.subheadings.map((sh, shIdx) => (
                   <Fragment key={sh.subheading}>
                     <tr>
-                      <td className="px-3 pt-1.5 pb-0.5 text-[hsl(var(--pk-ink-soft))]" colSpan={rptPeriods.length + 1}>{sh.subheading}:</td>
+                      <td className={cn("px-3 pb-0.5 text-[hsl(var(--pk-ink-soft))]", shIdx === 0 ? "pt-1.5" : "pt-4")} colSpan={rptPeriods.length + 1}>{sh.subheading}:</td>
                     </tr>
                     {sh.rows.map((it) => {
                       // A party code in the RPT data (e.g. "GOVCO") doesn't always match
