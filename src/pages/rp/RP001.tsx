@@ -1,7 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { StatCard } from "@/components/pk/Misc";
-import { Donut, GroupedBarTrend } from "@/components/pk/Charts";
+import { Donut, QoQHorizontalBars } from "@/components/pk/Charts";
 import { DownloadableFrame } from "@/components/pk/DownloadableFrame";
 import { DurationFilterBar, useDurationFilter } from "@/components/pk/DurationFilter";
 import { RecruitmentIndexScorecard } from "@/components/pk/RecruitmentIndexScorecard";
@@ -48,18 +48,22 @@ export function RP001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             <div className="text-xs font-bold underline text-[hsl(var(--pk-ink-soft))]">Headcount Trend — past 4 quarters</div>
             <DurationFilterBar duration={duration} onChange={setDuration} total={fullHeadcountTrend.length} label="" />
           </div>
-          <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-2">Budgeted headcount vs Actual headcount</div>
+          <div className="text-2xs text-[hsl(var(--pk-ink-faint))] mb-2">Budgeted (Approved Headcount) vs Actual (Filled Position)</div>
           <DownloadableFrame
             filename="rp001-headcount-trend"
             csvData={{
-              headers: ["Period", "Budgeted Headcount", "Actual Headcount"],
+              headers: ["Period", "Budgeted (Approved Headcount)", "Actual (Filled Position)"],
               rows: headcountTrend.map((h) => [h.period, h.approved, h.actual]),
             }}
           >
-            <GroupedBarTrend
-              data={headcountTrend.map((h) => ({ label: h.period.replace(" FY", " '"), a: h.approved, b: h.actual }))}
-              aLabel="Budgeted"
-              bLabel="Actual"
+            <QoQHorizontalBars
+              categories={headcountTrend.map((h) => ({ label: h.period.replace(" FY", " '"), current: h.actual, compare: h.approved }))}
+              currentLabel="Actual (Filled Position)"
+              compareLabel="Budgeted (Approved Headcount)"
+              unit="Headcount"
+              axisStep={10}
+              formatValue={(v) => v.toLocaleString()}
+              formatDelta={(absDelta) => absDelta.toLocaleString()}
             />
           </DownloadableFrame>
         </div>

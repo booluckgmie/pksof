@@ -500,18 +500,29 @@ export function FinancialResultsHistoryChart({
  * Horizontal paired-bar comparison — the client's own "Overview of Quarterly Financial
  * Results" exhibit (Current Quarter vs Preceding Quarter). Each category gets a current-
  * quarter bar and a compare-quarter bar sharing one axis, with a bracket + variance label
- * (RM Xm, Y%) between them. Values are plain numbers (RM'000); `unit` labels the axis.
+ * between them. Defaults assume RM'000 currency (the original exhibit); pass `formatValue`/
+ * `formatDelta`/`axisStep` to reuse this for a plain-count series (e.g. headcount) instead.
  */
 export function QoQHorizontalBars({
   categories,
   currentLabel,
   compareLabel,
   unit = "RM'000",
+  axisStep = 10000,
+  formatValue = (v: number) => v.toLocaleString(),
+  formatDelta = (absDelta: number) => `RM${(absDelta / 1000).toFixed(1)}m`,
 }: {
   categories: { label: string; current: number; compare: number }[];
   currentLabel: string;
   compareLabel: string;
   unit?: string;
+  /** Axis ticks/bar-scale round to the nearest multiple of this — 10,000 suits RM'000 currency;
+   * pass something smaller (e.g. 10) for a plain-count series like headcount. */
+  axisStep?: number;
+  /** How each bar's own value label reads — defaults to a plain thousands-separated number. */
+  formatValue?: (v: number) => string;
+  /** How the bracket's variance label reads, given the (always non-negative) delta magnitude. */
+  formatDelta?: (absDelta: number) => string;
 }) {
   const W = 620;
   const PAD_L = 92;
@@ -530,8 +541,8 @@ export function QoQHorizontalBars({
   const max = Math.max(...allValues, 1) * 1.2;
   const min = Math.min(...allValues, 0) * 1.2;
   const plotW = W - PAD_L - PAD_R;
-  const niceMax = Math.ceil(max / 10000) * 10000 || 1;
-  const niceMin = Math.floor(min / 10000) * 10000;
+  const niceMax = Math.ceil(max / axisStep) * axisStep || 1;
+  const niceMin = Math.floor(min / axisStep) * axisStep;
   const span = niceMax - niceMin;
   const tickCount = 5;
   const ticks = Array.from({ length: tickCount + 1 }, (_, i) => niceMin + (span / tickCount) * i);
@@ -578,7 +589,7 @@ export function QoQHorizontalBars({
               {c.label}
             </text>
             <rect x={curX} y={groupY} width={curW} height={BAR_H} rx={2} fill={currentColor}>
-              <title>{currentLabel} — {c.label}: {c.current.toLocaleString()}</title>
+              <title>{currentLabel} — {c.label}: {formatValue(c.current)}</title>
             </rect>
             <text
               x={curNeg ? curX + 6 : curX + curW - 6}
@@ -588,10 +599,10 @@ export function QoQHorizontalBars({
               fontWeight={700}
               className="fill-white tnum"
             >
-              {c.current.toLocaleString()}
+              {formatValue(c.current)}
             </text>
             <rect x={cmpX} y={groupY + BAR_H + BAR_GAP} width={cmpW} height={BAR_H} rx={2} fill={compareColor}>
-              <title>{compareLabel} — {c.label}: {c.compare.toLocaleString()}</title>
+              <title>{compareLabel} — {c.label}: {formatValue(c.compare)}</title>
             </rect>
             <text
               x={cmpNeg ? cmpX + 6 : cmpX + cmpW - 6}
@@ -601,14 +612,14 @@ export function QoQHorizontalBars({
               fontWeight={700}
               className="fill-[hsl(var(--pk-ink))] tnum"
             >
-              {c.compare.toLocaleString()}
+              {formatValue(c.compare)}
             </text>
 
             <line x1={bracketX} y1={groupY} x2={bracketX} y2={groupY + BAR_H * 2 + BAR_GAP} stroke="hsl(var(--pk-ink-faint))" strokeWidth={1} />
             <line x1={bracketX - 4} y1={groupY} x2={bracketX} y2={groupY} stroke="hsl(var(--pk-ink-faint))" strokeWidth={1} />
             <line x1={bracketX - 4} y1={groupY + BAR_H * 2 + BAR_GAP} x2={bracketX} y2={groupY + BAR_H * 2 + BAR_GAP} stroke="hsl(var(--pk-ink-faint))" strokeWidth={1} />
             <text x={bracketX + 5} y={groupY + BAR_H + BAR_GAP / 2 - 3} fontSize={9.5} fontStyle="italic" fontWeight={700} className="fill-[hsl(var(--pk-ink))] tnum">
-              RM{(Math.abs(delta) / 1000).toFixed(1)}m
+              {formatDelta(Math.abs(delta))}
             </text>
             <text x={bracketX + 5} y={groupY + BAR_H + BAR_GAP / 2 + 9} fontSize={9.5} fontStyle="italic" fontWeight={700} className="fill-[hsl(var(--pk-ink))] tnum">
               {Math.abs(pct).toFixed(0)}%
