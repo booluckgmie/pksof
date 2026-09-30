@@ -28,9 +28,16 @@ export function FinancialResultsOverview({
   setPeriodId: (id: PeriodId) => void;
   tableKind: "qoq" | "budget";
 }) {
-  const { financialResultsFor } = useDetails();
+  const { financialResultsFor, quarterlyTrend } = useDetails();
   const period = periodById(periodId);
   const results = financialResultsFor(periodId);
+  // revenue_by_source/expense_by_category (which financialResultsFor's current/compare come from)
+  // are YTD-cumulative, not standalone-quarter — fine for the Budget vs Actual (YTD) comparison,
+  // but wrong for "Current Quarter vs Preceding Quarter", which needs each quarter's own 3-month
+  // figure. quarterlyTrend's totalIncome/totalExpenses (financial_trend, RM millions) carry that
+  // standalone figure instead; falls back to the cumulative figure for any quarter that hasn't
+  // had its own standalone total entered yet, rather than showing blank.
+  const standaloneFor = (label: string) => quarterlyTrend.find((q) => q.period === label.replace(" FY20", " FY"));
 
   return (
     <div>
@@ -40,8 +47,14 @@ export function FinancialResultsOverview({
       </div>
 
       {tableKind === "qoq" && results.current && results.qoq && (() => {
-        const c = results.current!;
-        const b = results.qoq!.compare;
+        const curStandalone = standaloneFor(period.label);
+        const priorStandalone = standaloneFor(results.qoq.compareLabel);
+        const c = curStandalone && curStandalone.totalIncome !== null && curStandalone.totalExpenses !== null
+          ? { ...results.current!, totalIncome: curStandalone.totalIncome * 1000, expenses: -curStandalone.totalExpenses * 1000, pbt: curStandalone.pbt * 1000 }
+          : results.current!;
+        const b = priorStandalone && priorStandalone.totalIncome !== null && priorStandalone.totalExpenses !== null
+          ? { ...results.qoq!.compare, totalIncome: priorStandalone.totalIncome * 1000, expenses: -priorStandalone.totalExpenses * 1000, pbt: priorStandalone.pbt * 1000 }
+          : results.qoq!.compare;
         const pbtDelta = c.pbt !== null && b.pbt !== null ? c.pbt - b.pbt : null;
         const incomeDelta = c.totalIncome !== null && b.totalIncome !== null ? c.totalIncome - b.totalIncome : null;
         const incomePct = pctOf(incomeDelta, b.totalIncome);
@@ -106,7 +119,7 @@ export function FinancialResultsOverview({
         const expensePct = pctOf(expenseDelta, b.expenses);
         return (
           <div className="rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] shadow-card p-4 mb-4">
-            <div className="font-head font-bold text-[hsl(var(--pk-ink))] text-center mb-1">YTD Actual vs YTD Budget (3-Month)</div>
+            <div className="font-head font-bold text-[hsl(var(--pk-ink))] text-center mb-1">YTD Actual vs YTD Budget</div>
             {pbtDelta !== null && pbtPct !== null && (
               <p className="text-center text-xs text-[hsl(var(--pk-ink-soft))] mb-3">
                 Overall, the Group recorded <span className="font-semibold text-[hsl(var(--pk-accent))]">{pbtDelta >= 0 ? "higher" : "lower"} PBT by {fmtM(pbtDelta)} ({Math.abs(pbtPct).toFixed(0)}%)</span> compared to the budget for the quarter.

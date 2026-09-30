@@ -341,7 +341,14 @@ export function useDetails() {
       .map((p) => {
         const forPeriod = rows.filter((r) => r.periodId === p.id);
         const get = (dim: string) => forPeriod.find((r) => r.dimension === dim)?.value ?? 0;
-        return { period: p.label.replace("FY20", "FY"), revenue: get("revenue"), pbt: get("pbt"), cir: get("cir"), netMargin: get("net_margin") };
+        // totalIncome/totalExpenses are standalone-quarter figures (Q1 = its own cumulative,
+        // since it's the FY's first quarter) — a separate pair from revenue_by_source/
+        // expense_by_category's own YTD-cumulative totals, which the QoQ "Current Quarter vs
+        // Preceding Quarter" comparison can't cleanly de-cumulate into (see PFH002's own note).
+        return {
+          period: p.label.replace("FY20", "FY"), revenue: get("revenue"), pbt: get("pbt"), cir: get("cir"), netMargin: get("net_margin"),
+          totalIncome: get("total_income") || null, totalExpenses: get("total_expenses") || null,
+        };
       });
   }, [metrics, entityId]);
 
