@@ -91,8 +91,24 @@ export function RP001A({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
               centerLabel="Total Employee(s)"
             />
           </div>
-          <div className="sm:w-52 shrink-0">
+          <div className="sm:w-52 shrink-0 flex flex-col gap-2.5">
             <StatCard label="Total Employee(s)" value={String(headcountSummary.totalEmployees)} />
+            <div className="flex flex-col gap-1.5">
+              {[
+                { label: "Male", value: genderBreakdown.male, color: "hsl(var(--pk-navy))" },
+                { label: "Female", value: genderBreakdown.female, color: "hsl(var(--pk-accent))" },
+              ].map((s) => (
+                <div key={s.label} className="flex items-center justify-between text-xs rounded-lg border border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface-2))] px-3 py-2">
+                  <span className="inline-flex items-center gap-1.5 font-semibold text-[hsl(var(--pk-ink))]">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                    {s.label}
+                  </span>
+                  <span className="tnum text-[hsl(var(--pk-ink-soft))]">
+                    {s.value} ({Math.round((s.value / (genderBreakdown.male + genderBreakdown.female || 1)) * 100)}%)
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
