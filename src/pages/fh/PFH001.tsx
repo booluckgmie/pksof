@@ -21,6 +21,33 @@ import { kpiById } from "@/data/kpis";
 import { periodById } from "@/data/periods";
 import type { PeriodId } from "@/types";
 
+/** The client's own "Overview of Financial Results" archived history (1Q FY2023 – 4Q FY2025) —
+ * fixed reference data, since no period before FY2026 exists in the live Supabase-backed period
+ * system (go-live cutover). 1Q–3Q FY2023 predate the SJPP income-recognition structure change
+ * (per the client's own exhibit) and render in a paler tone; every live FY2026 quarter appends
+ * after this, straight from Supabase, and always wins over this archive for its own quarter. */
+const HISTORICAL_FINANCIAL_RESULTS: { label: string; revenue: number; pbt: number; faded?: boolean }[] = [
+  { label: "1Q FY2023", revenue: 55.6, pbt: 45.3, faded: true },
+  { label: "2Q FY2023", revenue: 67.7, pbt: 59.3, faded: true },
+  { label: "3Q FY2023", revenue: 52.4, pbt: 41.7, faded: true },
+  { label: "4Q FY2023", revenue: 23.6, pbt: 11.9 },
+  { label: "1Q FY2024", revenue: 34.5, pbt: 22.5 },
+  { label: "2Q FY2024", revenue: 36.1, pbt: 27.5 },
+  { label: "3Q FY2024", revenue: 40.1, pbt: 27.0 },
+  { label: "4Q FY2024", revenue: 42.7, pbt: 29.3 },
+  { label: "1Q FY2025", revenue: 40.4, pbt: 27.7 },
+  { label: "2Q FY2025", revenue: 44.0, pbt: 33.0 },
+  { label: "3Q FY2025", revenue: 44.1, pbt: 30.9 },
+  { label: "4Q FY2025", revenue: 56.4, pbt: 41.0 },
+];
+
+/** "Q1 FY26" (quarterlyTrend's own label format) -> "1Q FY2026", matching
+ * HISTORICAL_FINANCIAL_RESULTS' label convention so the merged x-axis reads consistently. */
+function toExhibitLabel(period: string): string {
+  const m = period.match(/^Q(\d) FY(\d{2})$/);
+  return m ? `${m[1]}Q FY20${m[2]}` : period;
+}
+
 export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId } = useSession();
   // Local to this screen only — see CP003's own Reporting period filter for why.
@@ -40,10 +67,14 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const kpi2FyTarget = getFyTarget("KPI2", fy);
   const { duration, setDuration, filtered: quarterlyTrend } = useDurationFilter(fullTrend);
   const [openBreakdown, setOpenBreakdown] = useState<{ pbt: boolean; cir: boolean }>({ pbt: false, cir: false });
-  // Was a hardcoded, single-quarter exhibit (FINANCIAL_RESULTS_HISTORY) that never reflected the
-  // period-driven Supabase dataset — fullTrend (the same live financial_trend data the PBT/CIR
-  // charts below already read) covers this exactly, it just wasn't wired in here.
-  const financialResultsHistory = fullTrend.map((q) => ({ label: q.period, revenue: q.revenue, pbt: q.pbt }));
+  // HISTORICAL_FINANCIAL_RESULTS (1Q FY2023 – 4Q FY2025) is fixed archive data; every FY2026
+  // quarter after it comes live from fullTrend (financial_trend, the same data the PBT/CIR charts
+  // below already read) and always reflects whatever's actually been reported — the live figures
+  // are never overridden by the archive, they just pick up where it stops.
+  const financialResultsHistory = [
+    ...HISTORICAL_FINANCIAL_RESULTS,
+    ...fullTrend.map((q) => ({ label: toExhibitLabel(q.period), revenue: q.revenue, pbt: q.pbt })),
+  ];
 
   return (
     <div>
@@ -88,10 +119,14 @@ export function PFH001({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
             rows: financialResultsHistory.map((h) => [h.label, h.revenue, h.pbt]),
           }}
         >
-          {/* dividerBeforeIndex/banner described the now-removed FY2023-2025 history (the old
-              SJPP income-recognition structure and its later impact) -- nothing left to mark
-              now that the chart starts at FY2026. */}
-          <FinancialResultsHistoryChart data={financialResultsHistory} />
+          <FinancialResultsHistoryChart
+            data={financialResultsHistory}
+            dividerBeforeIndex={HISTORICAL_FINANCIAL_RESULTS.length}
+            banner={[
+              { label: "Old SJPP income recognition structure", from: 0, to: 2 },
+              { label: "Impact from changes in SJPP income recognition structure", from: 3, to: financialResultsHistory.length - 1 },
+            ]}
+          />
         </DownloadableFrame>
       </div>
 
