@@ -127,7 +127,7 @@ export function LoginDialog({ open, onOpenChange }: { open: boolean; onOpenChang
                   className="flex-1 bg-transparent text-sm outline-none text-[hsl(var(--pk-ink))]"
                 >
                   {entities.map((e) => (
-                    <option key={e.id} value={e.id}>{e.fullName}</option>
+                    <option key={e.id} value={e.id} disabled={e.id !== "HQ"}>{e.fullName}</option>
                   ))}
                 </select>
               </div>
