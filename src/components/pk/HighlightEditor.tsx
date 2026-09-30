@@ -65,9 +65,11 @@ export function HighlightEditor({
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             rows={3}
+            maxLength={2000}
             className="rounded-md border border-[hsl(var(--pk-border))] px-2.5 py-1.5 text-xs bg-[hsl(var(--pk-surface))] outline-none resize-none"
             placeholder="e.g. Income was RM2.3 million (8%) higher than the preceding quarter, driven by acquired-loans income and SJPP management fee."
           />
+          <div className="text-3xs text-[hsl(var(--pk-ink-faint))] text-right -mt-1">{draft.length}/2000</div>
           <div className="flex items-center gap-2 justify-end">
             <button onClick={() => setEditing(false)} className="text-2xs text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))] px-2.5 py-1.5">Cancel</button>
             <button
