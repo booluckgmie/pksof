@@ -59,7 +59,7 @@ create table periods (
   is_open_for_entry     boolean not null default false
 );
 
--- ── Users (demo auth mapping — this prototype does not yet use Supabase Auth;
+-- ── Users (demo auth mapping — this app does not yet use Supabase Auth;
 --    see the README note in src/lib/supabase.ts before using this in production) ──
 
 create table app_users (
@@ -86,7 +86,7 @@ create table fact_kpi_results (
 
 -- ── Submissions: maker-checker workflow (Draft -> Submitted -> Published/Rejected) ──
 
--- submitted_by/reviewed_by are free text, not a foreign key to app_users: this prototype's
+-- submitted_by/reviewed_by are free text, not a foreign key to app_users: this app's
 -- login accepts any typed corporate ID (no real auth yet), so a submission must not fail
 -- just because the typed name isn't one of the seeded demo users.
 create table submissions (
@@ -110,9 +110,9 @@ create index idx_submissions_kpi_entity_period on submissions(kpi_id, entity_id,
 create index idx_fact_entity_period on fact_kpi_results(entity_id, period_id);
 
 -- ── Row Level Security ────────────────────────────────────────────────────
--- Prototype-grade policies: public read on reference/fact data (it's a dashboard,
+-- Early-stage policies: public read on reference/fact data (it's a dashboard,
 -- not secret), open insert on submissions (anyone using the app can submit a KPI
--- update, same as the current in-memory prototype). There is no real login yet —
+-- update, same as the current in-memory version). There is no real login yet —
 -- the app's "sign in" is a role-selector demo, not Supabase Auth — so these
 -- policies cannot yet distinguish real users. Before this goes anywhere near
 -- production: wire up Supabase Auth, add a policy that ties app_users.id to

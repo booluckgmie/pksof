@@ -66,7 +66,7 @@ create policy "public read detail_records" on detail_records for select using (t
 -- maker-checker queue behind it -- there's nowhere for a review trail to come
 -- from without duplicating that whole workflow for ~15 more datasets. Treat
 -- this the same as submissions.insert pre-0002: open write, appropriate for a
--- prototype with no real auth, flagged here for the same tightening (tie to
+-- this app with no real auth, flagged here for the same tightening (tie to
 -- auth.uid() + role) before production.
 create policy "public write detail_metrics" on detail_metrics for insert with check (true);
 create policy "public update detail_metrics" on detail_metrics for update using (true) with check (true);

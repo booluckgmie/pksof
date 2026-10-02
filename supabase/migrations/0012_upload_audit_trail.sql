@@ -5,7 +5,7 @@
 -- Two append-only tables, written once per upload from src/pages/workflow/DataEntry.tsx and never
 -- updated or deleted after — an audit trail that could itself be edited after the fact wouldn't be
 -- much of one. No maker-checker queue behind this (matches detail_metrics/detail_records' own
--- "no approval trail, prototype-open-write, tie to a signed-in role before production" caveat —
+-- "no approval trail, open-write, tie to a signed-in role before production" caveat —
 -- see supabase/README.md).
 --
 --   upload_events      — one row per upload action: the file, who, when, which entity, which

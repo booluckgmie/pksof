@@ -90,7 +90,7 @@ function periodsWithData(rows: { entityId: EntityId; periodId: PeriodId | MonthP
 
 /** Nothing submitted yet for `periodId`? Fall back to the nearest earlier period that has data,
  * so browsing an unreported quarter shows the last known state instead of going blank/zero —
- * same continuity the static prototype data had, now driven by whatever's actually been entered.
+ * same continuity the original static seed data had, now driven by whatever's actually been entered.
  * Bounded to `visiblePeriods` (go-live cutover, see data/periods.ts) so this never silently walks
  * back into FY2025's pre-launch demo data — an unreported FY2026 quarter shows blank/zero, not a
  * stale FY2025 figure standing in for it. */

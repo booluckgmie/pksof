@@ -1,7 +1,7 @@
 -- Group Performance Dashboard — seed data
 -- Transcribed exactly from the app's existing dummy dataset
 -- (src/data/entities.ts, perspectives.ts, kpis.ts, periods.ts, factSeed.ts)
--- so the Supabase-backed app shows identical figures to the static prototype.
+-- so the Supabase-backed app shows identical figures to the original static dataset.
 
 -- ── Entities ───────────────────────────────────────────────────────────
 

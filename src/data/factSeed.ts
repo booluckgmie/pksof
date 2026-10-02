@@ -3,7 +3,7 @@ import type { FactKpiResultSeed } from "@/types";
 /**
  * SAMPLE / DUMMY DATA — illustrative only.
  * Shaped like real quarterly submissions but with invented figures,
- * so the prototype can be explored without touching live numbers.
+ * so the app can be explored without touching live numbers.
  *
  * FY2025 is a closed financial year — all four quarters are seeded as final,
  * published figures, for year-over-year reference against FY2026.

@@ -164,7 +164,7 @@ fallback, had been updated. Both now agree.
 
 ## 4. Security note — this app has no real login yet
 
-The "Sign in" screen accepts any typed corporate ID (a demo/prototype pattern, not real auth),
+The "Sign in" screen accepts any typed corporate ID (a demo pattern, not real auth),
 so no RLS policy here can check *who* is writing — there's no `auth.uid()` to check against.
 Read access is deliberately public (it's a dashboard, not secret data).
 
@@ -292,7 +292,7 @@ and `src/lib/roles.ts`'s `roleDefs` drop it too.
 ## 5. Troubleshooting: "duplicate key value violates unique constraint" on `entities`
 
 Means `entities` already has rows from an earlier seed run (e.g. from before a rename). Since
-this is prototype data with no real submissions to preserve, the clean fix is to wipe every app
+this is seed data with no real submissions to preserve, the clean fix is to wipe every app
 table and re-seed:
 
 ```sql
