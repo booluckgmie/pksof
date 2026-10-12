@@ -196,13 +196,13 @@ export function FinancialResultsOverview({
 
       <div className="mb-4">
         {tableKind === "qoq" ? (
-          results.qoq ? (
+          results.current && results.qoq ? (
             <DownloadableFrame filename="financial-results-table-current-vs-preceding-quarter">
               <FinancialResultsTable
                 title="Current Quarter vs Preceding Quarter"
                 currentLabel={period.label}
                 compareLabel={results.qoq.compareLabel}
-                current={fullStandaloneFor(period.label) ?? results.current!}
+                current={fullStandaloneFor(period.label) ?? results.current}
                 compare={fullStandaloneFor(results.qoq.compareLabel) ?? results.qoq.compare}
                 revenueCurrent={results.qoq.revenue}
                 revenueCompare={results.qoq.revenueCompare}
@@ -212,16 +212,18 @@ export function FinancialResultsOverview({
             </DownloadableFrame>
           ) : (
             <div className="rounded-lg border border-dashed border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-6 text-center">
-              <p className="text-xs text-[hsl(var(--pk-ink-faint))]">No preceding-quarter figures to compare {period.label} against yet.</p>
+              <p className="text-xs text-[hsl(var(--pk-ink-faint))]">
+                {!results.current ? `No actual figures entered for ${period.label} yet.` : `No preceding-quarter figures to compare ${period.label} against yet.`}
+              </p>
             </div>
           )
-        ) : results.budget ? (
+        ) : results.current && results.budget ? (
           <DownloadableFrame filename="financial-results-table-actual-vs-budget">
             <FinancialResultsTable
               title="Actual vs Budget"
               currentLabel={periodReportLabel(periodId)}
               compareLabel={priorQuarterId ? periodReportLabel(priorQuarterId) : `${period.label} Budget`}
-              current={results.current!}
+              current={results.current}
               compare={results.budget.compare}
               revenueCurrent={results.budget.revenue}
               revenueCompare={results.budget.revenueCompare}
@@ -231,7 +233,9 @@ export function FinancialResultsOverview({
           </DownloadableFrame>
         ) : (
           <div className="rounded-lg border border-dashed border-[hsl(var(--pk-border))] bg-[hsl(var(--pk-surface))] p-6 text-center">
-            <p className="text-xs text-[hsl(var(--pk-ink-faint))]">No budget figures entered for {period.label} yet.</p>
+            <p className="text-xs text-[hsl(var(--pk-ink-faint))]">
+              {!results.current ? `No actual figures entered for ${period.label} yet.` : `No budget figures entered for ${period.label} yet.`}
+            </p>
           </div>
         )}
       </div>
