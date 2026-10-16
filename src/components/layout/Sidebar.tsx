@@ -251,6 +251,7 @@ export function Sidebar({
                 {canEnterData && <NavTag id="DATA_ENTRY" icon={PenLine} active={current === "DATA_ENTRY"} onClick={() => navigate("DATA_ENTRY")} />}
                 {canVerify && <NavTag id="VERIFY_PUBLISH" icon={CheckSquare} active={current === "VERIFY_PUBLISH"} onClick={() => navigate("VERIFY_PUBLISH")} />}
                 {role === "admin" && <NavTag id="SETTINGS" icon={SettingsIcon} active={current === "SETTINGS"} onClick={() => navigate("SETTINGS")} />}
+                {role === "admin" && <NavTag id="ACCESS_MGMT" icon={Users} active={current === "ACCESS_MGMT"} onClick={() => navigate("ACCESS_MGMT")} />}
               </div>
             </>
           )}

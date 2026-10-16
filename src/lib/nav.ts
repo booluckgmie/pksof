@@ -3,7 +3,7 @@ export type ScreenId =
   | "CP001" | "CP002" | "CP003" | "CP004" | "CP005" | "CP006" | "CP007" | "CP008" | "CP009"
   | "PFH001" | "PFH002" | "PFH003" | "PFH004" | "PFH005"
   | "RP001" | "RP001A" | "RP002" | "RP003" | "RP004"
-  | "DATA_ENTRY" | "VERIFY_PUBLISH" | "SETTINGS"
+  | "DATA_ENTRY" | "VERIFY_PUBLISH" | "SETTINGS" | "ACCESS_MGMT" | "RESET_PASSWORD"
   | "GLOSSARY";
 
 export interface ScreenDef {
@@ -43,6 +43,11 @@ export const screens: Record<ScreenId, ScreenDef> = {
   DATA_ENTRY: { id: "DATA_ENTRY", code: "ENTRY", label: "Data Entry", level: "L2", group: "gov", parent: "MAIN" },
   VERIFY_PUBLISH: { id: "VERIFY_PUBLISH", code: "VERIFY", label: "Verify & Publish", level: "L2", group: "gov", parent: "MAIN" },
   SETTINGS: { id: "SETTINGS", code: "SETTINGS", label: "Settings", level: "L2", group: "gov", parent: "MAIN" },
+  ACCESS_MGMT: { id: "ACCESS_MGMT", code: "ACCESS", label: "Access Management", level: "L2", group: "gov", parent: "MAIN" },
+  // Not part of the normal breadcrumb/sidebar flow — reached only via a password-recovery email
+  // link or the forced first-login password-change gate (see App.tsx). Parented to MAIN only so
+  // breadcrumbTrail() has something to resolve if it's ever rendered.
+  RESET_PASSWORD: { id: "RESET_PASSWORD", code: "RESET", label: "Set Your Password", level: "L2", group: "gov", parent: "MAIN" },
 
   GLOSSARY: { id: "GLOSSARY", code: "REF001", label: "Glossary", level: "L1", group: "ref", parent: "MAIN" },
 };

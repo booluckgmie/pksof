@@ -113,6 +113,7 @@ export type Role =
   | "exec"
   | "dept_head"
   | "reporting_officer"
+  | "approving_officer"
   | "admin";
 
 export interface RoleDef {
@@ -121,6 +122,7 @@ export interface RoleDef {
   description: string;
   canEnterData: boolean;
   canVerify: boolean;
+  canDelete: boolean;
   readOnly: boolean;
   pillarLocked: boolean; // restricted to one entity
   moduleLocked: boolean; // restricted to one CP/FH/RP pillar within that entity

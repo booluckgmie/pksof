@@ -30,6 +30,8 @@ import { RP004 } from "@/pages/rp/RP004";
 import { DataEntry } from "@/pages/workflow/DataEntry";
 import { VerifyPublish } from "@/pages/workflow/VerifyPublish";
 import { Settings } from "@/pages/workflow/Settings";
+import { AccessManagement } from "@/pages/workflow/AccessManagement";
+import { ResetPassword } from "@/pages/workflow/ResetPassword";
 import { CP009 } from "@/pages/cp/CP009";
 import { Glossary } from "@/pages/Glossary";
 import { screens, type ScreenId } from "@/lib/nav";
@@ -49,13 +51,15 @@ const SCREEN_MAP: Record<ScreenId, React.ComponentType<{ onNavigate: (id: Screen
   DATA_ENTRY: DataEntry,
   VERIFY_PUBLISH: VerifyPublish,
   SETTINGS: Settings,
+  ACCESS_MGMT: AccessManagement,
+  RESET_PASSWORD: ResetPassword,
   GLOSSARY: Glossary,
 };
 
 /** Prokhas' own dashboards — off-limits to a login scoped to a Managed Entity pillar. */
 const HQ_ONLY_GROUPS = new Set(["cp", "fh", "rp"]);
 /** Requires a real sign-in — browsing every other screen doesn't. */
-const LOGIN_REQUIRED_SCREENS = new Set<ScreenId>(["DATA_ENTRY", "VERIFY_PUBLISH", "SETTINGS"]);
+const LOGIN_REQUIRED_SCREENS = new Set<ScreenId>(["DATA_ENTRY", "VERIFY_PUBLISH", "SETTINGS", "ACCESS_MGMT"]);
 /** Maps a screen's nav group onto the Entity.modules code it corresponds to. */
 const GROUP_MODULE: Partial<Record<string, Module>> = { cp: "CP", fh: "FH", rp: "RP" };
 
@@ -80,10 +84,13 @@ function readEntityFromUrl(): EntityId {
 }
 
 function AuthedApp() {
-  const { loggedIn, isRestrictedPillar, homeEntityName, role, entityId, entityName, setEntityId, assignedModule, assignedModuleLabel, canEnterData, canVerify } = useSession();
+  const { loggedIn, isRestrictedPillar, homeEntityName, role, entityId, entityName, setEntityId, assignedModule, assignedModuleLabel, canEnterData, canVerify, authReady, mustChangePassword, passwordRecovery } = useSession();
   const [screen, setScreen] = useState<ScreenId>(() => readScreenFromUrl());
   const [loginOpen, setLoginOpen] = useState(false);
-  const prevLoggedIn = useRef(loggedIn);
+  // null until authReady's first true — so restoring a saved session on page load/refresh (an
+  // async `loggedIn` flip from false -> true) doesn't read as an explicit sign-in below and bounce
+  // a deep link to MAIN. Only a *subsequent* change, after that baseline is set, is explicit.
+  const prevLoggedIn = useRef<boolean | null>(null);
   const entityFromUrlApplied = useRef(false);
 
   // Every navigation updates the address bar so the browser's Back/Forward buttons move between
@@ -138,12 +145,24 @@ function AuthedApp() {
   }, []);
 
   // Sign-in and sign-out both land back on Main — never carries a gated screen across the switch.
-  // Guarded to actual transitions (not the initial mount) so a deep link isn't reset on load.
+  // Guarded to actual transitions (not the initial mount, and not a session being silently
+  // restored on refresh — see prevLoggedIn's comment above) so a deep link isn't reset on load.
   useEffect(() => {
-    if (prevLoggedIn.current !== loggedIn) navigate("MAIN", { replace: true });
+    if (!authReady) return;
+    if (prevLoggedIn.current !== null && prevLoggedIn.current !== loggedIn) navigate("MAIN", { replace: true });
     prevLoggedIn.current = loggedIn;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loggedIn]);
+  }, [loggedIn, authReady]);
+
+  // Every seeded account starts on the shared "prokhas" default password and must set its own
+  // before doing anything else; a password-recovery email link lands the same way. Re-fires on
+  // every screen change while either condition holds, so navigating away (sidebar, back button)
+  // bounces straight back rather than slipping past the gate.
+  const forcePasswordReset = passwordRecovery || (loggedIn && mustChangePassword);
+  useEffect(() => {
+    if (forcePasswordReset && screen !== "RESET_PASSWORD") navigate("RESET_PASSWORD", { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [forcePasswordReset, screen]);
 
   // Apply a deep-linked `?entity=` once on mount (after that, entityId is session-driven).
   useEffect(() => {
@@ -168,6 +187,7 @@ function AuthedApp() {
 
   const loginRequired = LOGIN_REQUIRED_SCREENS.has(screen) && !loggedIn;
   const settingsBlocked = screen === "SETTINGS" && loggedIn && role !== "admin";
+  const accessMgmtBlocked = screen === "ACCESS_MGMT" && loggedIn && role !== "admin";
   // DATA_ENTRY/VERIFY_PUBLISH were only ever gated on being logged in at all, not on the signed-in
   // role actually having that capability — role simulation (post-UAT) found a Department Head
   // (canEnterData: false) could still reach Data Entry, and worse, a Reporting Officer
@@ -195,9 +215,9 @@ function AuthedApp() {
   // a Department Head can always view everything regardless of assigned pillar — their sign-off
   // scope (Verify & Publish's own pending queue, see scopePendingFor) is what actually stays
   // pillar-scoped for them, not what they can look at.
-  const viewsAllPillars = role === "dept_head" || (role === "reporting_officer" && assignedModule === "CP");
+  const viewsAllPillars = role === "dept_head" || role === "approving_officer" || (role === "reporting_officer" && assignedModule === "CP");
   const moduleBlocksGroup = !viewsAllPillars && !!assignedModule && !!groupModule && groupModule !== assignedModule;
-  const blocked = (isRestrictedPillar && HQ_ONLY_GROUPS.has(group)) || entityBlocksGroup || moduleBlocksGroup || settingsBlocked || dataEntryBlocked || verifyBlocked || loginRequired;
+  const blocked = (isRestrictedPillar && HQ_ONLY_GROUPS.has(group)) || entityBlocksGroup || moduleBlocksGroup || settingsBlocked || accessMgmtBlocked || dataEntryBlocked || verifyBlocked || loginRequired;
   const Screen = SCREEN_MAP[screen];
 
   return (
@@ -212,7 +232,9 @@ function AuthedApp() {
               ? "Sign in required"
               : settingsBlocked
                 ? "System Administrator only"
-                : dataEntryBlocked
+                : accessMgmtBlocked
+                  ? "System Administrator only"
+                  : dataEntryBlocked
                   ? "Data Entry isn't part of your role"
                   : verifyBlocked
                     ? "Verify & Publish isn't part of your role"
@@ -227,10 +249,12 @@ function AuthedApp() {
               ? "Uploading data and verifying/publishing submissions needs a real sign-in — browsing the dashboards doesn't."
               : settingsBlocked
                 ? "Organisation-wide settings are restricted to the System Administrator role."
-                : dataEntryBlocked
-                  ? "Your role doesn't upload data — only Reporting Officers and the System Administrator do."
+                : accessMgmtBlocked
+                  ? "Managing users and access is restricted to the System Administrator role."
+                  : dataEntryBlocked
+                  ? "Your role doesn't upload data — only Reporting Officers, Approving Officers and the System Administrator do."
                   : verifyBlocked
-                    ? "Your role doesn't verify and publish submissions — only Department Heads and the System Administrator do."
+                    ? "Your role doesn't verify and publish submissions — only Approving Officers, Department Heads and the System Administrator do."
                     : moduleBlocksGroup
                       ? `Your login is assigned to ${assignedModuleLabel} only — this screen belongs to a different pillar.`
                       : entityBlocksGroup && !isRestrictedPillar

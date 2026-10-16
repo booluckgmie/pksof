@@ -203,13 +203,13 @@ function SourceTag({ source }: { source: Submission["source"] | DetailSubmission
 }
 
 export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
-  const { userName, entityId, pillarLocked, assignedModule, role } = useSession();
+  const { userName, entityId, pillarLocked, assignedModule, canDelete } = useSession();
   const {
     pending: allPending, submissions: allSubmissions, approve, approveAll, reject, editSubmission,
     detailPending: allDetailPending, approveDetail, approveAllDetail, rejectDetail,
   } = useWorkflow();
   const { refresh: refreshDetails } = useDetails();
-  const canDeleteUploads = role === "admin" || role === "dept_head";
+  const canDeleteUploads = canDelete;
 
   /** A Department Head is entity-locked (pillarLocked) — scope every tab here to just their own
    * entity, the same way Data Entry already scopes for a Reporting Officer, rather than showing
