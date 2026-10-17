@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Lock } from "lucide-react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 import { SessionProvider, useSession } from "@/lib/session";
 import { WorkflowProvider } from "@/lib/workflow";
 import { DetailsProvider } from "@/lib/details";
@@ -32,6 +33,7 @@ import { VerifyPublish } from "@/pages/workflow/VerifyPublish";
 import { Settings } from "@/pages/workflow/Settings";
 import { AccessManagement } from "@/pages/workflow/AccessManagement";
 import { ResetPassword } from "@/pages/workflow/ResetPassword";
+import { SiteUsage } from "@/pages/workflow/SiteUsage";
 import { CP009 } from "@/pages/cp/CP009";
 import { Glossary } from "@/pages/Glossary";
 import { screens, type ScreenId } from "@/lib/nav";
@@ -53,13 +55,14 @@ const SCREEN_MAP: Record<ScreenId, React.ComponentType<{ onNavigate: (id: Screen
   SETTINGS: Settings,
   ACCESS_MGMT: AccessManagement,
   RESET_PASSWORD: ResetPassword,
+  SITE_USAGE: SiteUsage,
   GLOSSARY: Glossary,
 };
 
 /** Prokhas' own dashboards — off-limits to a login scoped to a Managed Entity pillar. */
 const HQ_ONLY_GROUPS = new Set(["cp", "fh", "rp"]);
 /** Requires a real sign-in — browsing every other screen doesn't. */
-const LOGIN_REQUIRED_SCREENS = new Set<ScreenId>(["DATA_ENTRY", "VERIFY_PUBLISH", "SETTINGS", "ACCESS_MGMT"]);
+const LOGIN_REQUIRED_SCREENS = new Set<ScreenId>(["DATA_ENTRY", "VERIFY_PUBLISH", "SETTINGS", "ACCESS_MGMT", "SITE_USAGE"]);
 /** Maps a screen's nav group onto the Entity.modules code it corresponds to. */
 const GROUP_MODULE: Partial<Record<string, Module>> = { cp: "CP", fh: "FH", rp: "RP" };
 
@@ -188,6 +191,7 @@ function AuthedApp() {
   const loginRequired = LOGIN_REQUIRED_SCREENS.has(screen) && !loggedIn;
   const settingsBlocked = screen === "SETTINGS" && loggedIn && role !== "admin";
   const accessMgmtBlocked = screen === "ACCESS_MGMT" && loggedIn && role !== "admin";
+  const siteUsageBlocked = screen === "SITE_USAGE" && loggedIn && role !== "admin";
   // DATA_ENTRY/VERIFY_PUBLISH were only ever gated on being logged in at all, not on the signed-in
   // role actually having that capability — role simulation (post-UAT) found a Department Head
   // (canEnterData: false) could still reach Data Entry, and worse, a Reporting Officer
@@ -217,7 +221,7 @@ function AuthedApp() {
   // pillar-scoped for them, not what they can look at.
   const viewsAllPillars = role === "dept_head" || role === "approving_officer" || (role === "reporting_officer" && assignedModule === "CP");
   const moduleBlocksGroup = !viewsAllPillars && !!assignedModule && !!groupModule && groupModule !== assignedModule;
-  const blocked = (isRestrictedPillar && HQ_ONLY_GROUPS.has(group)) || entityBlocksGroup || moduleBlocksGroup || settingsBlocked || accessMgmtBlocked || dataEntryBlocked || verifyBlocked || loginRequired;
+  const blocked = (isRestrictedPillar && HQ_ONLY_GROUPS.has(group)) || entityBlocksGroup || moduleBlocksGroup || settingsBlocked || accessMgmtBlocked || siteUsageBlocked || dataEntryBlocked || verifyBlocked || loginRequired;
   const Screen = SCREEN_MAP[screen];
 
   return (
@@ -234,7 +238,9 @@ function AuthedApp() {
                 ? "System Administrator only"
                 : accessMgmtBlocked
                   ? "System Administrator only"
-                  : dataEntryBlocked
+                  : siteUsageBlocked
+                    ? "System Administrator only"
+                    : dataEntryBlocked
                   ? "Data Entry isn't part of your role"
                   : verifyBlocked
                     ? "Verify & Publish isn't part of your role"
@@ -251,7 +257,9 @@ function AuthedApp() {
                 ? "Organisation-wide settings are restricted to the System Administrator role."
                 : accessMgmtBlocked
                   ? "Managing users and access is restricted to the System Administrator role."
-                  : dataEntryBlocked
+                  : siteUsageBlocked
+                    ? "Site usage analytics are restricted to the System Administrator role."
+                    : dataEntryBlocked
                   ? "Your role doesn't upload data — only Reporting Officers, Approving Officers and the System Administrator do."
                   : verifyBlocked
                     ? "Your role doesn't verify and publish submissions — only Approving Officers, Department Heads and the System Administrator do."
@@ -295,6 +303,7 @@ function App() {
               <AuthedApp />
               <Toaster position="bottom-right" richColors />
               <SpeedInsights />
+              <Analytics />
             </DetailsProvider>
           </WorkflowProvider>
         </SessionProvider>

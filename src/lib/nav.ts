@@ -4,6 +4,7 @@ export type ScreenId =
   | "PFH001" | "PFH002" | "PFH003" | "PFH004" | "PFH005"
   | "RP001" | "RP001A" | "RP002" | "RP003" | "RP004"
   | "DATA_ENTRY" | "VERIFY_PUBLISH" | "SETTINGS" | "ACCESS_MGMT" | "RESET_PASSWORD"
+  | "SITE_USAGE"
   | "GLOSSARY";
 
 export interface ScreenDef {
@@ -48,6 +49,9 @@ export const screens: Record<ScreenId, ScreenDef> = {
   // link or the forced first-login password-change gate (see App.tsx). Parented to MAIN only so
   // breadcrumbTrail() has something to resolve if it's ever rendered.
   RESET_PASSWORD: { id: "RESET_PASSWORD", code: "RESET", label: "Set Your Password", level: "L2", group: "gov", parent: "MAIN" },
+  // Vercel Web Analytics for this deployment (page views/visitors/top pages/countries/devices/
+  // referrers) — a System Administrator utility, same gating tier as Settings/Access Management.
+  SITE_USAGE: { id: "SITE_USAGE", code: "USAGE", label: "Site Usage", level: "L2", group: "gov", parent: "MAIN" },
 
   GLOSSARY: { id: "GLOSSARY", code: "REF001", label: "Glossary", level: "L1", group: "ref", parent: "MAIN" },
 };

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   LayoutGrid, TrendingUp, Landmark, ShieldCheck, Users, Workflow, GraduationCap, Handshake,
   Wallet, ClipboardList, FileText, Scale, ArrowLeftRight, User, IdCard, LogOut, PenLine, CheckSquare, Lock, X,
-  Settings as SettingsIcon, BookUser, BookOpen,
+  Settings as SettingsIcon, BookUser, BookOpen, BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { cpNav, fhNav, rpNav, screens, type ScreenId } from "@/lib/nav";
@@ -252,6 +252,7 @@ export function Sidebar({
                 {canVerify && <NavTag id="VERIFY_PUBLISH" icon={CheckSquare} active={current === "VERIFY_PUBLISH"} onClick={() => navigate("VERIFY_PUBLISH")} />}
                 {role === "admin" && <NavTag id="SETTINGS" icon={SettingsIcon} active={current === "SETTINGS"} onClick={() => navigate("SETTINGS")} />}
                 {role === "admin" && <NavTag id="ACCESS_MGMT" icon={Users} active={current === "ACCESS_MGMT"} onClick={() => navigate("ACCESS_MGMT")} />}
+                {role === "admin" && <NavTag id="SITE_USAGE" icon={BarChart3} active={current === "SITE_USAGE"} onClick={() => navigate("SITE_USAGE")} />}
               </div>
             </>
           )}
