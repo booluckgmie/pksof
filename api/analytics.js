@@ -36,7 +36,7 @@ function send(res, code, body, cache) {
   res.setHeader('cache-control', cache || 'public, max-age=0, s-maxage=300, stale-while-revalidate=900');
   res.end(JSON.stringify(body));
 }
-module.exports = async function handler(req, res, deps) {
+export default async function handler(req, res, deps) {
   if (req.method && req.method !== 'GET' && req.method !== 'HEAD') { res.statusCode = 405; res.setHeader('Allow', 'GET, HEAD'); return res.end(); }
   const env = process.env, token = env.VERCEL_ANALYTICS_TOKEN, projectId = env.VERCEL_ANALYTICS_PROJECT_ID || env.VERCEL_PROJECT_ID;
   if (!token || !projectId) return send(res, 200, { connected: false, reason: !token ? 'no_token' : 'no_project' }, 'public, max-age=0, s-maxage=60');
@@ -52,5 +52,6 @@ module.exports = async function handler(req, res, deps) {
   } catch (e) {
     return send(res, 200, { connected: false, reason: 'api_error', detail: String(e && e.message || e).slice(0, 120) }, 'public, max-age=0, s-maxage=30');
   }
-};
-module.exports.readRows = readRows;
+}
+
+export { readRows };
