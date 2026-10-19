@@ -1,4 +1,4 @@
-/** Client for GET /api/analytics (api/analytics.js) — aggregated Vercel Web Analytics for this
+/** Client for GET /api/analytics (api/analytics.cjs) — aggregated Vercel Web Analytics for this
  * project. Mirrors the serverless function's own response shape 1:1 rather than re-normalising
  * it client-side. `connected: false` is a normal, expected response (analytics not configured
  * yet for this project) — not an error — so SiteUsage.tsx renders a setup state for it instead
