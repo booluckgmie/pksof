@@ -1,0 +1,51 @@
+# Runs the whole self-hosted stack on the internal server: MariaDB + the new backend API
+# (which also serves the already-built frontend — see server/Dockerfile and
+# DEPLOY_INTERNAL.md). Nothing here touches Vercel/Supabase — this is a wholly separate,
+# standalone deployment target; the live pksof.vercel.app site keeps running exactly as it is.
+#
+# Before `docker compose up -d --build`:
+#   1. Build the frontend for this target: a .env with VITE_API_URL set (see
+#      server/.env.example's PUBLIC_APP_URL for the matching value), then `npm run build` from
+#      the repo root — produces `dist/`, which this compose file's build step picks up.
+#   2. Copy server/.env.example to server/.env and fill in real values (DB password, JWT
+#      secret, SMTP creds, etc).
+#   3. First boot only: apply server/schema.sql and server/seed-reference-data.sql, then run
+#      scripts/export-from-supabase.ts to bring over your real data. See DEPLOY_INTERNAL.md.
+
+services:
+  mariadb:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-change-me-root}
+      MARIADB_DATABASE: ${DB_NAME:-pksof}
+      MARIADB_USER: ${DB_USER:-pksof}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-change-me}
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    env_file:
+      - server/.env
+    environment:
+      DB_HOST: mariadb
+    ports:
+      - "4000:4000"
+    volumes:
+      - uploads-data:/data/uploads
+
+volumes:
+  mariadb-data:
+  uploads-data:
