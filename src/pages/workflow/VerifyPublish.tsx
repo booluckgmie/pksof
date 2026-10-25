@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Check, X, FileSpreadsheet, PenLine, History, Inbox, CheckCheck, Pencil, Search, Loader2, Files, Activity as ActivityIcon, LogIn, UploadIcon, Send, CircleCheck, CircleX, CheckCircle2 } from "lucide-react";
+import { Check, X, FileSpreadsheet, PenLine, History, Inbox, CheckCheck, Pencil, Search, Loader2, Files, Activity as ActivityIcon, LogIn, UploadIcon, Send, CircleCheck, CircleX, CheckCircle2, FolderCog } from "lucide-react";
 import { ScreenHeader } from "@/components/pk/ScreenHeader";
 import { WorkflowChip } from "@/components/pk/StatusChip";
 import { NoDataState } from "@/components/pk/DataOrigin";
 import { Pager } from "@/components/pk/Pager";
 import { AuditTrailPanel } from "@/components/pk/AuditTrailPanel";
 import { UploadsPanel } from "@/components/pk/UploadsPanel";
+import { OverflowPanel } from "@/components/pk/OverflowPanel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import type { ScreenId } from "@/lib/nav";
 import { useSession } from "@/lib/session";
@@ -21,6 +22,7 @@ import { cn } from "@/lib/utils";
 import type { DetailSubmission, Submission } from "@/types";
 import { fetchUploadEvents, type UploadEvent } from "@/lib/api/uploads";
 import { fetchActivityEvents, type ActivityEvent } from "@/lib/api/activity";
+import { fetchTemplateOverflowEntries, type TemplateOverflowEntry } from "@/lib/api/templateOverflow";
 
 const PAGE_SIZE = 10;
 
@@ -224,7 +226,7 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
   const pending = useMemo(() => scopePendingFor(allPending, { pillarLocked, entityId, assignedModule }), [allPending, pillarLocked, entityId, assignedModule]);
   const submissions = useMemo(() => (moduleExcluded ? [] : pillarLocked ? allSubmissions.filter((s) => s.entityId === entityId) : allSubmissions), [allSubmissions, pillarLocked, entityId, moduleExcluded]);
   const detailPending = useMemo(() => scopeDetailPendingFor(allDetailPending, { pillarLocked, entityId, assignedModule }), [allDetailPending, pillarLocked, entityId, assignedModule]);
-  const [tab, setTab] = useState<"pending" | "audit" | "uploads" | "activity">("pending");
+  const [tab, setTab] = useState<"pending" | "audit" | "uploads" | "overflow" | "activity">("pending");
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -240,9 +242,23 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
   const [logins, setLogins] = useState<ActivityEvent[] | null>(null);
   const [loginsError, setLoginsError] = useState<string | null>(null);
   const [approvalResult, setApprovalResult] = useState<ApprovalResult | null>(null);
+  const [overflowEntries, setOverflowEntries] = useState<TemplateOverflowEntry[] | null>(null);
 
-  const changeTab = (t: "pending" | "audit" | "uploads" | "activity") => { setTab(t); setPage(1); setDetailPage(1); };
+  const changeTab = (t: "pending" | "audit" | "uploads" | "overflow" | "activity") => { setTab(t); setPage(1); setDetailPage(1); };
   const changeSearch = (q: string) => { setSearch(q); setPage(1); setDetailPage(1); };
+
+  // Loaded on mount, not lazily on tab visit, so the "Customize queue" tab's badge count is
+  // accurate without the admin having to open it first — same reason pending/detailPending above
+  // (from useWorkflow) are always loaded rather than fetched per-tab.
+  useEffect(() => {
+    fetchTemplateOverflowEntries()
+      .then(setOverflowEntries)
+      .catch((err: Error) => console.error("Couldn't load the customize queue count", err));
+  }, []);
+  const overflowPendingCount = useMemo(() => {
+    const scoped = pillarLocked ? (overflowEntries ?? []).filter((e) => e.entityId === entityId) : overflowEntries ?? [];
+    return scoped.filter((e) => e.status === "pending").length;
+  }, [overflowEntries, pillarLocked, entityId]);
 
   useEffect(() => {
     if (tab !== "activity" || activityUploads !== null) return;
@@ -351,6 +367,9 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
           </button>
           <button onClick={() => changeTab("uploads")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors", tab === "uploads" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
             <Files className="h-3.5 w-3.5" />Upload History
+          </button>
+          <button onClick={() => changeTab("overflow")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors", tab === "overflow" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
+            <FolderCog className="h-3.5 w-3.5" />Customize queue {overflowPendingCount > 0 && <span className="ml-0.5 tnum">({overflowPendingCount})</span>}
           </button>
           <button onClick={() => changeTab("activity")} className={cn("flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors", tab === "activity" ? "bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))]" : "text-[hsl(var(--pk-ink-faint))] hover:text-[hsl(var(--pk-ink))]")}>
             <ActivityIcon className="h-3.5 w-3.5" />Activity
@@ -553,6 +572,8 @@ export function VerifyPublish({ onNavigate }: { onNavigate: (id: ScreenId) => vo
         <AuditTrailPanel submissions={submissions} showEntityColumn={!pillarLocked} />
       ) : tab === "uploads" ? (
         <UploadsPanel entityId={pillarLocked ? entityId : undefined} assignedModule={assignedModule} canDelete={canDeleteUploads} />
+      ) : tab === "overflow" ? (
+        <OverflowPanel entityId={pillarLocked ? entityId : undefined} reviewerName={userName || "checker"} />
       ) : loginsError || activityUploadsError ? (
         <p className="text-sm text-[hsl(var(--pk-bad))]">Couldn't load activity: {loginsError ?? activityUploadsError}</p>
       ) : activityFeed === null ? (

@@ -17,12 +17,13 @@ import { periods, periodById } from "@/data/periods";
 import { parseWorkbook, type ParsedWorkbook } from "@/lib/excelTemplate";
 import { fetchDetailRecords, type DetailRecordRow } from "@/lib/api/details";
 import { insertUploadEvent, insertUploadEventRows, uploadFileToStorage } from "@/lib/api/uploads";
+import { insertTemplateOverflowEntries } from "@/lib/api/templateOverflow";
 import { downloadPillarTemplate, type TemplateValueLookup } from "@/lib/downloadTemplate";
 import { MODULE_LABEL, MODULE_ORDER, MODULE_BY_LABEL } from "@/lib/modules";
 import { cn } from "@/lib/utils";
 import type { Module, PeriodId } from "@/types";
 
-const EMPTY_PARSED: ParsedWorkbook = { kpiRows: [], metricRows: [], recordRows: [], periodsFound: [], sheetsFound: [] };
+const EMPTY_PARSED: ParsedWorkbook = { kpiRows: [], metricRows: [], recordRows: [], periodsFound: [], sheetsFound: [], overflowRows: [] };
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -78,6 +79,7 @@ interface UploadResultSummary {
   periodLabels: string;
   kpiCount: number;
   detailQueued: number;
+  overflowCount: number;
   failed: { label: string; error: string }[];
 }
 
@@ -119,7 +121,13 @@ function UploadResultDialog({ result, onClose }: { result: UploadResultSummary |
                   {result.detailQueued} detail figure{result.detailQueued > 1 ? "s" : ""} routed to the checker queue
                 </div>
               )}
-              {result.kpiCount === 0 && result.detailQueued === 0 && result.failed.length === 0 && (
+              {result.overflowCount > 0 && (
+                <div className="flex items-center gap-2 text-[hsl(var(--pk-ink))]">
+                  <AlertTriangle className="h-4 w-4 text-[hsl(var(--pk-warn))] shrink-0" />
+                  {result.overflowCount} row{result.overflowCount > 1 ? "s" : ""} didn't match the template and {result.overflowCount > 1 ? "were" : "was"} queued for admin review — nothing was discarded
+                </div>
+              )}
+              {result.kpiCount === 0 && result.detailQueued === 0 && result.failed.length === 0 && result.overflowCount === 0 && (
                 <div className="text-[hsl(var(--pk-ink-faint))]">Nothing was saved from this file.</div>
               )}
             </div>
@@ -160,8 +168,8 @@ function UploadResultDialog({ result, onClose }: { result: UploadResultSummary |
 export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }) {
   const { entityId, userName, assignedModule, assignedModuleLabel, periodId } = useSession();
   const { submit, submissions, editSubmission, latestValue, submitDetail } = useWorkflow();
-  const { getMetricValue, records } = useDetails();
-  const templateLookup: TemplateValueLookup = { entityId, getMetricValue, records, latestValue };
+  const { getMetricValue, getMetricNote, records } = useDetails();
+  const templateLookup: TemplateValueLookup = { entityId, getMetricValue, getMetricNote, records, latestValue };
 
   const [fileName, setFileName] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -199,19 +207,26 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
         const kpiRows = raw.kpiRows.filter((r) => r.sheet === assignedModuleLabel);
         const metricRows = raw.metricRows.filter((r) => r.sheet === assignedModuleLabel);
         const recordRows = raw.recordRows.filter((r) => r.sheet === assignedModuleLabel);
+        const overflowRows = raw.overflowRows.filter((r) => r.sheet === assignedModuleLabel);
         const periodsFound = [...new Set([...kpiRows, ...metricRows, ...recordRows].map((r) => r.periodId))];
-        result = { kpiRows, metricRows, recordRows, periodsFound, sheetsFound: raw.sheetsFound.filter((s) => s === assignedModuleLabel) };
+        result = { kpiRows, metricRows, recordRows, periodsFound, sheetsFound: raw.sheetsFound.filter((s) => s === assignedModuleLabel), overflowRows };
         if (skippedSheets.length > 0) {
           toast.warning(`Only "${assignedModuleLabel}" is saved from your uploads`, { description: `Skipped ${skippedSheets.join(", ")} in this file — that's outside your assigned pillar.` });
         }
       }
       setParsed(result);
       if (result.kpiRows.length === 0 && result.metricRows.length === 0 && result.recordRows.length === 0) {
-        setParseError(
-          assignedModuleLabel
-            ? `No "${assignedModuleLabel}" data found in this file — you're assigned to that pillar only, so other sheets in this workbook won't be processed here.`
-            : "Nothing recognized in this file — check it's built from the standard 3-pillar template (Corporate Performance / Financial Health / Resource & People sheets) with quarter columns matching a real reporting period label."
-        );
+        if (result.overflowRows.length > 0) {
+          setParseError(
+            `Nothing in this file matched a known row, column, or number — but ${result.overflowRows.length} row${result.overflowRows.length > 1 ? "s" : ""} will be queued for admin review if you submit, rather than being discarded. Check it's built from the standard template if this looks wrong.`
+          );
+        } else {
+          setParseError(
+            assignedModuleLabel
+              ? `No "${assignedModuleLabel}" data found in this file — you're assigned to that pillar only, so other sheets in this workbook won't be processed here.`
+              : "Nothing recognized in this file — check it's built from the standard 3-pillar template (Corporate Performance / Financial Health / Resource & People sheets) with quarter columns matching a real reporting period label."
+          );
+        }
       }
     } catch (err) {
       setParseError(err instanceof Error ? err.message : "Couldn't read this file.");
@@ -221,7 +236,9 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
   };
 
   const handleSubmitParsed = async () => {
-    if (totalRows === 0) return;
+    // A file that matched nothing at all still has somewhere to go, if it has overflow rows —
+    // submitting records those to the customize queue rather than the button just doing nothing.
+    if (totalRows === 0 && parsed.overflowRows.length === 0) return;
     setSubmittingParsed(true);
     setSubmitProgress({ done: 0, total: totalRows });
 
@@ -250,9 +267,20 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
     let detailQueued = 0;
     for (const row of parsed.metricRows) {
       const module = MODULE_BY_LABEL[row.sheet];
-      submitDetail({ dest: "metric", module, entityId, periodId: row.periodId, metricKey: row.metricKey, dimension: row.dimension, dimension2: row.dimension2, valueNum: row.value, source: "excel-upload", submittedBy: userName || "reporting.officer" });
+      // A narrative field (section_highlight, variance_commentary) parses to a string — it has
+      // no numeric value, its figure is its note, same convention HighlightEditor/
+      // VarianceCommentaryPanel already write directly through (see workflow.tsx's
+      // writeApprovedDetail, which now forwards a detail_submission's own note the same way).
+      const textValue = typeof row.value === "string" ? row.value : null;
+      const numValue = typeof row.value === "number" ? row.value : null;
+      submitDetail({
+        dest: "metric", module, entityId, periodId: row.periodId, metricKey: row.metricKey, dimension: row.dimension, dimension2: row.dimension2,
+        valueNum: numValue,
+        note: textValue ?? undefined,
+        source: "excel-upload", submittedBy: userName || "reporting.officer",
+      });
       detailQueued++;
-      auditRows.push({ id: nextAuditId(), uploadId, dest: "metric", sheet: row.sheet, label: `${row.metricKey}/${row.dimension}`, periodId: row.periodId, value: row.value, status: "saved" });
+      auditRows.push({ id: nextAuditId(), uploadId, dest: "metric", sheet: row.sheet, label: `${row.metricKey}/${row.dimension}`, periodId: row.periodId, value: numValue, status: "saved" });
       setSubmitProgress((p) => ({ ...p, done: p.done + 1 }));
     }
     // A record can carry more than one uploadable number (e.g. managed_entity_kpi's Rating +
@@ -320,6 +348,16 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
     } catch (err) {
       console.error("Failed to record upload audit trail", err);
     }
+    // Best-effort, same as the audit trail above: a row this upload didn't recognize (or a
+    // conflicting duplicate) is never worth blocking or failing the rows that DID match over —
+    // it's only lost for real if this insert itself silently fails, so it's logged, not thrown.
+    if (parsed.overflowRows.length > 0) {
+      try {
+        await insertTemplateOverflowEntries(parsed.overflowRows.map((row) => ({ uploadId, entityId, ...row })));
+      } catch (err) {
+        console.error("Failed to record unmatched upload rows to the customize queue", err);
+      }
+    }
     setSubmittingParsed(false);
 
     const periodLabels = parsed.periodsFound.map((id) => periodById(id).label).join(", ");
@@ -328,6 +366,7 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
       periodLabels,
       kpiCount: parsed.kpiRows.length,
       detailQueued,
+      overflowCount: parsed.overflowRows.length,
       failed: auditRows.filter((r) => r.status === "failed").map((r) => ({ label: r.label, error: r.errorMessage ?? "Unknown error" })),
     });
     setFileName(null);
@@ -409,6 +448,17 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
             </div>
           )}
 
+          {parsed.overflowRows.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className="text-2xs font-medium rounded-full px-2 py-0.5 bg-[hsl(var(--pk-warn-soft))] text-[hsl(var(--pk-warn))]"
+                title="These didn't match a known row/column/number and will be saved to the Customize queue for admin review instead of being submitted."
+              >
+                {parsed.overflowRows.length} row{parsed.overflowRows.length > 1 ? "s" : ""} not recognized — will be queued for review
+              </span>
+            </div>
+          )}
+
           {parsed.kpiRows.length > 0 && (
             <div className="flex flex-col gap-2">
               <span className="text-2xs uppercase tracking-wide text-[hsl(var(--pk-ink-faint))]">
@@ -452,10 +502,15 @@ export function DataEntry({ onNavigate }: { onNavigate: (id: ScreenId) => void }
 
           <button
             onClick={handleSubmitParsed}
-            disabled={totalRows === 0 || submittingParsed}
+            disabled={(totalRows === 0 && parsed.overflowRows.length === 0) || submittingParsed}
             className="mt-1 inline-flex items-center justify-center gap-2 rounded-md bg-[hsl(var(--pk-accent))] text-[hsl(var(--pk-accent-ink))] font-medium text-sm py-2.5 hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <Send className="h-4 w-4" />{submittingParsed ? "Submitting…" : `Submit ${totalRows} extracted value${totalRows === 1 ? "" : "s"}`}
+            <Send className="h-4 w-4" />
+            {submittingParsed
+              ? "Submitting…"
+              : totalRows > 0
+                ? `Submit ${totalRows} extracted value${totalRows === 1 ? "" : "s"}`
+                : `Queue ${parsed.overflowRows.length} unrecognized row${parsed.overflowRows.length === 1 ? "" : "s"} for review`}
           </button>
           {submittingParsed && (
             <div className="flex flex-col gap-1">

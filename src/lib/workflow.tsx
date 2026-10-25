@@ -226,6 +226,10 @@ export function WorkflowProvider({ children }: { children: ReactNode }) {
         dimension: target.dimension!,
         dimension2: target.dimension2,
         value: target.valueNum,
+        // A narrative row (section_highlight, variance_commentary — see excelTemplate.ts's
+        // valueKind: 'text') has no numeric value at all; its figure is this note, queued the
+        // same way HighlightEditor/VarianceCommentaryPanel already write it directly.
+        note: target.note || undefined,
       });
     }
     return upsertDetailRecord({

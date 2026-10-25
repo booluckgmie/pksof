@@ -183,6 +183,12 @@ export function useDetails() {
   const getMetricValue = (periodId: PeriodId, metricKey: string, dimension: string, dimension2 = ""): number | null =>
     metrics.find((r) => r.entityId === entityId && r.periodId === periodId && r.metricKey === metricKey && r.dimension === dimension && r.dimension2 === dimension2)?.value ?? null;
 
+  /** Same exact lookup as getMetricValue, but for a narrative field (section_highlight,
+   * variance_commentary) whose figure lives in `note`, not `value` — used by the Data Entry
+   * template's pre-fill so a text-kind row's download shows the current narrative, not blank. */
+  const getMetricNote = (periodId: PeriodId, metricKey: string, dimension: string, dimension2 = ""): string | null =>
+    metrics.find((r) => r.entityId === entityId && r.periodId === periodId && r.metricKey === metricKey && r.dimension === dimension && r.dimension2 === dimension2)?.note ?? null;
+
   const headcountSummaryByPeriod = useMemo(() => {
     const rows = metricRows("headcount_summary");
     const available = periodsWithData(rows, entityId, () => true);
@@ -1086,7 +1092,7 @@ export function useDetails() {
   }
 
   return {
-    loading, refresh, getMetricValue, records,
+    loading, refresh, getMetricValue, getMetricNote, records,
     headcountSummaryByPeriod, headcountTrend, genderBreakdownByPeriod,
     gradeBreakdownFor, ageBreakdownFor, ageGenderBreakdownFor, averageAgeByPeriod,
     gradeGenderCrossTabFor, departmentHeadcountFor, recruitmentIndexByPeriod,

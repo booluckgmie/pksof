@@ -561,6 +561,28 @@ def fh_rows():
         _, vn2, _ = record_anchors.get(("financial_breakdown", "CIR", item), (None, None, None))
         vals = series(vn2, "flat", decimals=1, spread=0.05, floor=-999) if vn2 is not None else fresh_series(15, "flat", decimals=1, floor=-999, seed_key=item + "cir")
         rows.append(("record", "financial_breakdown", item, "CIR", f"{item} — YTD Actual (CIR)", vals, "valueNum2"))
+
+    # Narrative fields -- a free-text box per quarter, not a number, so these carry no sample
+    # values (every quarter stays blank) and are marked valueKind='text' in the TS manifest
+    # (see js_entry) so the parser accepts prose instead of coercing to a number.
+    rows.append(("section", "Highlights — Narrative (PFH002 / PFH003 / PFH004)", None))
+    for dim, label in [
+        ("qoq", "Highlight(s) — Financial Results (QoQ) [PFH002]"),
+        ("budget", "Highlight(s) — Actual vs Budget vs PY [PFH003]"),
+        ("financial_position", "Highlight(s) — Financial Position [PFH004]"),
+    ]:
+        rows.append(("metric", "section_highlight", dim, "", label, [None] * len(QUARTER_LABELS)))
+
+    rows.append(("section", "Variance Commentary (PFH003)", None))
+    for dim, label in [
+        ("revenue", "Variance Commentary — Revenue"),
+        ("staffCost", "Variance Commentary — Staff Cost"),
+        ("adminCost", "Variance Commentary — Admin & Operating Cost"),
+        ("pbt", "Variance Commentary — Profit Before Tax"),
+        ("outlook", "Variance Commentary — Outlook"),
+    ]:
+        rows.append(("metric", "variance_commentary", dim, "", label, [None] * len(QUARTER_LABELS)))
+
     return rows
 
 
@@ -715,7 +737,13 @@ SCREEN_FOR = {
     "Age × Gender Breakdown": "RP001A Staff Demographics — Section C grouped bar chart",
     "Department Headcount": "RP001A Staff Demographics — Section E (Approved vs Filled) · RP002 Approved Headcount & KPI 10 — Section A panel",
     "Resignations": "Not yet displayed — Turnover was removed from RP003/RP004 per UAT feedback (TC-038/TC-039); this figure has no current dashboard destination",
+    "Highlights — Narrative (PFH002 / PFH003 / PFH004)": "PFH002/PFH003/PFH004 — the \"Highlight(s)\" box at the top of each screen. Free text, not a number — leave blank if nothing to add this quarter.",
+    "Variance Commentary (PFH003)": "PFH003 Actual vs Budget vs PY — Variance Commentary panel (one driver sentence per row). Free text, not a number.",
 }
+
+# metric_key values whose figure is a free-text narrative (stored on detail_metrics.note) rather
+# than a number -- see js_entry's valueKind emission and excelTemplate.ts's matching branch.
+TEXT_VALUE_METRIC_KEYS = {"section_highlight", "variance_commentary"}
 
 
 PILLAR_SLUG = {
@@ -774,8 +802,6 @@ def build_workbook(qi: int, pillar: str) -> openpyxl.Workbook:
         ("counts, not a uniform number) stay entered directly in-app on CP004.", 11, False, "333333"),
         ("Likewise for External Client Satisfaction's service breakdown: only the current rating is here — each service's", 11, False, "333333"),
         ("prior-year comparison rating and survey sent/received counts stay entered directly in-app on CP005.", 11, False, "333333"),
-        ("The Variance Commentary notes (PFH003) are also entered directly in-app — a commentary sentence per line, not a", 11, False, "333333"),
-        ("number, so it doesn't fit this template's one-number-per-quarter column.", 11, False, "333333"),
         ("PFH004's Other Investments deal schedule (each deal's own bank, dates, rating, instrument, tenure and interest", 11, False, "333333"),
         ("rate) stays entered directly in-app too — it's a list of deals, not one figure per quarter.", 11, False, "333333"),
         ("No conditional formatting or colour-coded cells are used anywhere in this workbook — every figure is a plain", 11, False, "333333"),
@@ -915,7 +941,8 @@ def js_entry(sheet, entry, screen):
         return f"  {{ sheet: '{sheet}', label: '{esc(display)}', sub: '{esc(category or '—')}', screen: '{esc(screen)}', dest: 'record', recordType: '{record_type}', recordLabel: '{esc(label)}', recordField: '{record_field}' }},"
     _, metric_key, dim, dim2, display, _ = entry
     sub = esc(dim2) if dim2 else "—"
-    return f"  {{ sheet: '{sheet}', label: '{esc(display)}', sub: '{sub}', screen: '{esc(screen)}', dest: 'metric', metricKey: '{metric_key}', dimension: '{esc(dim)}', dimension2: '{esc(dim2)}' }},"
+    value_kind = ", valueKind: 'text'" if metric_key in TEXT_VALUE_METRIC_KEYS else ""
+    return f"  {{ sheet: '{sheet}', label: '{esc(display)}', sub: '{sub}', screen: '{esc(screen)}', dest: 'metric', metricKey: '{metric_key}', dimension: '{esc(dim)}', dimension2: '{esc(dim2)}'{value_kind} }},"
 
 
 ts_lines = [
@@ -926,7 +953,7 @@ ts_lines = [
     "// \"Displayed on Dashboard\" column shows (see SCREEN_FOR in the generator script).",
     "export type TemplateFieldDest =",
     "  | { dest: 'kpi'; kpiId: string }",
-    "  | { dest: 'metric'; metricKey: string; dimension: string; dimension2: string }",
+    "  | { dest: 'metric'; metricKey: string; dimension: string; dimension2: string; valueKind?: 'number' | 'text' }",
     "  | { dest: 'record'; recordType: string; recordLabel: string; recordField: 'valueNum' | 'valueNum2' | 'textNote' };",
     "",
     "export const TEMPLATE_FIELDS: ({ sheet: string; label: string; sub: string; screen: string } & TemplateFieldDest)[] = [",

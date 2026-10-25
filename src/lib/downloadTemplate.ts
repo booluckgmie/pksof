@@ -40,15 +40,19 @@ function groupKey(field: (typeof TEMPLATE_FIELDS)[number]): string {
 export interface TemplateValueLookup {
   entityId: EntityId;
   getMetricValue: (periodId: PeriodId, metricKey: string, dimension: string, dimension2?: string) => number | null;
+  /** Same lookup as getMetricValue, but for a narrative (valueKind: 'text') field, whose figure
+   * lives in the metric row's `note` rather than its `value`. */
+  getMetricNote: (periodId: PeriodId, metricKey: string, dimension: string, dimension2?: string) => string | null;
   records: DetailRecordRow[];
   latestValue: (kpiId: string, entityId: EntityId, periodId: PeriodId) => { ytdActual: number | null };
 }
 
-function currentValueFor(field: (typeof TEMPLATE_FIELDS)[number], periodId: PeriodId, lookup: TemplateValueLookup): number | null {
+function currentValueFor(field: (typeof TEMPLATE_FIELDS)[number], periodId: PeriodId, lookup: TemplateValueLookup): number | string | null {
   if (field.dest === "kpi") {
     return lookup.latestValue(field.kpiId, lookup.entityId, periodId).ytdActual;
   }
   if (field.dest === "metric") {
+    if (field.valueKind === "text") return lookup.getMetricNote(periodId, field.metricKey, field.dimension, field.dimension2);
     return lookup.getMetricValue(periodId, field.metricKey, field.dimension, field.dimension2);
   }
   const category = field.sub === "—" ? "" : field.sub;
@@ -115,7 +119,6 @@ export async function downloadPillarTemplate(module: Module, periodId: PeriodId,
     { text: "Initiative lists (Process/Tech Initiatives, People Development Programme) stay entered directly in-app — each row is a name, a date range and a status, not one number per quarter.", size: 11, bold: false, color: BODY },
     { text: "For Managed Entities KPI Detail and Governance KPI Detail, only the scored figures (Rating/Weighted) are here — the item catalog and its FY/YTD Target and YTD Actual wording (a mix of %, ratings and counts, not a uniform number) stay entered directly in-app on CP004.", size: 11, bold: false, color: BODY },
     { text: "Likewise for External Client Satisfaction's service breakdown: only the current rating is here — each service's prior-year comparison rating and survey sent/received counts stay entered directly in-app on CP005.", size: 11, bold: false, color: BODY },
-    { text: "The Variance Commentary notes (PFH003) are also entered directly in-app — a commentary sentence per line, not a number.", size: 11, bold: false, color: BODY },
     { text: "PFH004's Other Investments deal schedule (each deal's own bank, dates, rating, instrument, tenure and interest rate) stays entered directly in-app too — it's a list of deals, not one figure per quarter.", size: 11, bold: false, color: BODY },
     { text: "", size: 11, bold: false, color: BODY },
     { text: "No conditional formatting or colour-coded cells are used anywhere in this workbook — every figure is a plain number; status colours on the dashboard itself are computed from the value, not carried in the file.", size: 11, bold: false, color: BODY },
@@ -169,13 +172,19 @@ export async function downloadPillarTemplate(module: Module, periodId: PeriodId,
     labelCell.font = { name: "Calibri", size: 10, bold: isKpiRow };
     ws.getCell(r, 2).value = f.sub;
 
+    const isTextRow = f.dest === "metric" && f.valueKind === "text";
     const value = currentValueFor(f, periodId, lookup);
     const valueCell = ws.getCell(r, 3);
     valueCell.value = value;
     valueCell.font = { name: "Calibri", size: 10, color: { argb: VALUE_TEXT } };
     valueCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: VALUE_FILL } };
-    valueCell.numFmt = value !== null && !Number.isInteger(value) ? "#,##0.00" : "#,##0";
-    valueCell.alignment = { horizontal: "right" };
+    if (isTextRow) {
+      valueCell.alignment = { horizontal: "left", vertical: "top", wrapText: true };
+      ws.getRow(r).height = 60;
+    } else {
+      valueCell.numFmt = typeof value === "number" && !Number.isInteger(value) ? "#,##0.00" : "#,##0";
+      valueCell.alignment = { horizontal: "right" };
+    }
     valueCell.protection = { locked: false };
 
     const remarkCell = ws.getCell(r, 4);
